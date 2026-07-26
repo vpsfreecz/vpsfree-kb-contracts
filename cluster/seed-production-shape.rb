@@ -593,6 +593,13 @@ def upsert_capture_notifications!(user:)
     action: 'sms',
     label: 'Suspension telephone',
     target_value: '+420123456789',
+    verified: true
+  )
+  upsert_capture_notification_target!(
+    user:,
+    action: 'sms',
+    label: 'Suspension telephone verification',
+    target_value: '+420123456780',
     verification_token: '123456',
     config: {
       NotificationTarget::SMS_VERIFICATION_CODE_CREATED_AT_KEY => Time.now.iso8601

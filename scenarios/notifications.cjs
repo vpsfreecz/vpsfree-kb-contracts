@@ -248,7 +248,7 @@ async function run({ page, session }) {
   await goto(page, '/?page=notifications&action=targets');
   await goto(page, await editUrlForRow(
     page,
-    'Suspension telephone',
+    'Suspension telephone verification',
     'target_edit',
   ));
   const smsVerificationForm = page.locator('form').filter({
@@ -262,10 +262,6 @@ async function run({ page, session }) {
       smsVerificationForm,
     ],
   );
-  await smsVerificationForm.locator('input[name="code"]').fill('123456');
-  await smsVerificationForm.locator(
-    'input[type="submit"], button[type="submit"]',
-  ).click();
 
   await goto(page, '/?page=notifications&action=receivers');
   await goto(page, await editUrlForRow(page, 'Suspension SMS', 'receiver_edit'));

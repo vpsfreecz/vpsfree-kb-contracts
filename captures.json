@@ -5242,10 +5242,10 @@
             "width": 821,
             "height": 411
           },
-          "sha256": "f64a61ebb56e0f99e6a6d80318e69fa7366123da46ad1f20bcf597c41f600d75",
+          "sha256": "65d1000c22d503cecc2f7ff9cd0edad54225381831869f7137020731ba3ef238",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=target_edit&id=9",
+            "page": "/?page=notifications&action=target_edit&id=12",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -5263,10 +5263,10 @@
             "width": 821,
             "height": 411
           },
-          "sha256": "7c2d407559f180ee338cf6c31ce43ceb7726582f11ab9898320fb132ee52c24e",
+          "sha256": "8cc6e938382247d44633ae46a7a3df4da628f3983a7e900f75589ce99dd8691e",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=target_edit&id=9",
+            "page": "/?page=notifications&action=target_edit&id=12",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -5300,7 +5300,7 @@
             "width": 610,
             "height": 453
           },
-          "sha256": "bc170c721ed7a85a717390567bfa76c091d1254e7bab1c2c6b61da21dadf5393",
+          "sha256": "bf6b307039367d90feb5d771595142a81a1219ed67ab37e486149cd460f1039e",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=receiver_edit&id=12",
@@ -5321,7 +5321,7 @@
             "width": 632,
             "height": 453
           },
-          "sha256": "912ce4b2c4edc81ce81975df28fbcfc0bea65ebedf8cf5807f2412fe7f50315d",
+          "sha256": "e53c3935e273c937dc55fea6131fc8112655eee9970ac9d811b79e48be42ee0d",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=receiver_edit&id=12",
