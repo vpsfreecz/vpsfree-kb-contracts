@@ -200,6 +200,13 @@ controls:
       contains: "'notifications.events'"
       fingerprint: 2b3a450670e46bd44cc6d8562eeee21d5f858a01a2beea8dc5be0e8a545d0ede
 
+  - id: notifications.groups
+    label: { en: Notification groups, cs: Skupiny notifikací }
+    source:
+      path: webui/forms/notifications.forms.php
+      contains: "'notifications.groups'"
+      fingerprint: 1cf6b463e426c8d2c898ce0d442325653f94c7ee2ef60f73b3195db75fd65f8c
+
   - id: notifications.routes
     label: { en: Routes, cs: Routy }
     source:
@@ -866,23 +873,69 @@ paths:
   - id: notifications.routes.open
     steps: [notifications.menu, notifications.routes]
     pages:
+      cs:
+        - navody:notifikace
+        - navody:notifikace:role_udalosti
+        - navody:notifikace:ztlumeni_oom
+        - navody:notifikace:ztlumeni_incidentu
+        - navody:notifikace:telegram
+        - navody:notifikace:sms
+        - navody:notifikace:webhook
+      en:
+        - manuals:notifications
+        - manuals:notifications:event_roles
+        - manuals:notifications:mute_oom
+        - manuals:notifications:mute_incidents
+        - manuals:notifications:telegram
+        - manuals:notifications:sms
+        - manuals:notifications:webhook
+
+  - id: notifications.groups.open
+    steps: [notifications.menu, notifications.groups]
+    pages:
       cs: [navody:notifikace]
       en: [manuals:notifications]
 
   - id: notifications.receivers.open
     steps: [notifications.menu, notifications.receivers, notifications.receiver-form]
     pages:
-      cs: [navody:notifikace]
-      en: [manuals:notifications]
+      cs:
+        - navody:notifikace
+        - navody:notifikace:role_udalosti
+        - navody:notifikace:telegram
+        - navody:notifikace:sms
+        - navody:notifikace:webhook
+      en:
+        - manuals:notifications
+        - manuals:notifications:event_roles
+        - manuals:notifications:telegram
+        - manuals:notifications:sms
+        - manuals:notifications:webhook
 
   - id: notifications.target-form.open
     steps: [notifications.menu, notifications.target-form]
     pages:
-      cs: [navody:notifikace]
-      en: [manuals:notifications]
+      cs:
+        - navody:notifikace
+        - navody:notifikace:role_udalosti
+        - navody:notifikace:telegram
+        - navody:notifikace:sms
+        - navody:notifikace:webhook
+      en:
+        - manuals:notifications
+        - manuals:notifications:event_roles
+        - manuals:notifications:telegram
+        - manuals:notifications:sms
+        - manuals:notifications:webhook
 
   - id: notifications.time-intervals.open
     steps: [notifications.menu, notifications.time-intervals, notifications.time-interval-form]
+    pages:
+      cs: [navody:notifikace]
+      en: [manuals:notifications]
+
+  - id: notifications.route-grouping-form.open
+    steps: [notifications.menu, notifications.routes, notifications.route-grouping-form]
     pages:
       cs: [navody:notifikace]
       en: [manuals:notifications]
@@ -896,8 +949,22 @@ paths:
   - id: notifications.event-route-matches.open
     steps: [notifications.menu, notifications.events, notifications.event-route-matches]
     pages:
-      cs: [navody:notifikace]
-      en: [manuals:notifications]
+      cs:
+        - navody:notifikace
+        - navody:notifikace:role_udalosti
+        - navody:notifikace:ztlumeni_oom
+        - navody:notifikace:ztlumeni_incidentu
+        - navody:notifikace:telegram
+        - navody:notifikace:sms
+        - navody:notifikace:webhook
+      en:
+        - manuals:notifications
+        - manuals:notifications:event_roles
+        - manuals:notifications:mute_oom
+        - manuals:notifications:mute_incidents
+        - manuals:notifications:telegram
+        - manuals:notifications:sms
+        - manuals:notifications:webhook
 
   - id: networking.routable-addresses.open
     steps: [networking.menu, networking.routable-addresses]

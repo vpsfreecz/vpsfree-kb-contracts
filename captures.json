@@ -4488,7 +4488,7 @@
             "width": 611,
             "height": 156
           },
-          "sha256": "e0bbc4f81215dd6f59df8e026aad3efa919bfe5b26c5cd077a463bd7f81e58a4",
+          "sha256": "1eaad29e7690e50d4320ee804d37e44dc31131d362ad9b80892183b67888a707",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=event_show&id=1",
@@ -4509,7 +4509,7 @@
             "width": 627,
             "height": 156
           },
-          "sha256": "a11057eef1f0b9ac45061e58b009729c19903a454a58fdc45181e6befb058051",
+          "sha256": "d7d671b6e2eb52b17223c6400b3124c47c97443f56f1ab622bdb71440aaa61f1",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=event_show&id=1",
@@ -4536,7 +4536,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:role_udalosti"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-role-receiver.png"
           },
@@ -4557,7 +4557,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:event_roles"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-role-receiver.png"
           },
@@ -4594,7 +4594,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:role_udalosti"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-role-routing.png"
           },
@@ -4615,7 +4615,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:event_roles"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-role-routing.png"
           },
@@ -4652,7 +4652,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:role_udalosti"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-role-admin-route.png"
           },
@@ -4673,7 +4673,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:event_roles"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-role-admin-route.png"
           },
@@ -4710,7 +4710,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:role_udalosti"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-role-result.png"
           },
@@ -4731,7 +4731,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:event_roles"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-role-result.png"
           },
@@ -4757,7 +4757,7 @@
       "checkpoint": "notifications/example-mute-oom",
       "driver": "webui",
       "fixtures": [],
-      "description": "Muted raw OOM route selected by VPS and cgroup",
+      "description": "Muted OOM report route selected by VPS and cgroup",
       "viewport": {
         "width": 1440,
         "height": 1100,
@@ -4768,7 +4768,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:ztlumeni_oom"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-mute-oom.png"
           },
@@ -4776,9 +4776,9 @@
           "review_status": "pending",
           "dimensions": {
             "width": 821,
-            "height": 889
+            "height": 708
           },
-          "sha256": "25f8f40f970bf61ceada1f8687f7f4f0ba3f16092e80647db4d17206ca9c48c1",
+          "sha256": "063d7162e66062f8c699106f74718275e41318da73e3f00d9cef65e674fb2c17",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=10",
@@ -4789,7 +4789,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:mute_oom"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-mute-oom.png"
           },
@@ -4797,9 +4797,9 @@
           "review_status": "pending",
           "dimensions": {
             "width": 821,
-            "height": 843
+            "height": 651
           },
-          "sha256": "f1f1ff64476555ca13f19f89742bebdb3641a45a1d406ff2b19ca8d768d0bea8",
+          "sha256": "ef344dfded6ff4b2f2cc5afe229cd504f5acf7f6630d42fd0bdf0da6e7bf8dee",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=10",
@@ -4884,7 +4884,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:ztlumeni_incidentu"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-mute-incident-route.png"
           },
@@ -4892,9 +4892,9 @@
           "review_status": "pending",
           "dimensions": {
             "width": 821,
-            "height": 889
+            "height": 708
           },
-          "sha256": "a90b4c2cf75e93630700ea1981f1734765530130a4214038d4549bd157d9d181",
+          "sha256": "b32728ffc697e2d9209e7214990014dcd61c9c52192851ca59d89111bf789f18",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=11",
@@ -4905,7 +4905,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:mute_incidents"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-mute-incident-route.png"
           },
@@ -4913,9 +4913,9 @@
           "review_status": "pending",
           "dimensions": {
             "width": 821,
-            "height": 843
+            "height": 651
           },
-          "sha256": "7aeed97e4bc4d2fcbed1678517b7d535f2ceb84dc6d452495b7bf845eafdb134",
+          "sha256": "53baf084613888b042007e7be4a09c883c965eb74c238c82c2a76da654903a41",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=11",
@@ -4942,7 +4942,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:ztlumeni_incidentu"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-mute-result.png"
           },
@@ -4963,7 +4963,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:mute_incidents"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-mute-result.png"
           },
@@ -5000,7 +5000,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:telegram"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-telegram-target.png"
           },
@@ -5021,7 +5021,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:telegram"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-telegram-target.png"
           },
@@ -5058,7 +5058,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:telegram"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-telegram.png"
           },
@@ -5079,7 +5079,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:telegram"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-telegram.png"
           },
@@ -5116,7 +5116,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:telegram"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-telegram-monitoring-route.png"
           },
@@ -5137,7 +5137,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:telegram"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-telegram-monitoring-route.png"
           },
@@ -5174,7 +5174,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:telegram"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-telegram-incident-route.png"
           },
@@ -5195,7 +5195,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:telegram"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-telegram-incident-route.png"
           },
@@ -5232,7 +5232,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:telegram"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-telegram-result.png"
           },
@@ -5253,7 +5253,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:telegram"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-telegram-result.png"
           },
@@ -5290,7 +5290,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:sms"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-sms-verification.png"
           },
@@ -5311,7 +5311,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:sms"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-sms-verification.png"
           },
@@ -5348,7 +5348,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:sms"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-sms.png"
           },
@@ -5369,7 +5369,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:sms"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-sms.png"
           },
@@ -5406,7 +5406,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:sms"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-sms-account-route.png"
           },
@@ -5427,7 +5427,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:sms"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-sms-account-route.png"
           },
@@ -5464,7 +5464,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:sms"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-sms-vps-route.png"
           },
@@ -5485,7 +5485,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:sms"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-sms-vps-route.png"
           },
@@ -5522,7 +5522,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:sms"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-sms-result.png"
           },
@@ -5543,7 +5543,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:sms"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-sms-result.png"
           },
@@ -5580,7 +5580,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:webhook"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-webhook-target.png"
           },
@@ -5601,7 +5601,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:webhook"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-webhook-target.png"
           },
@@ -5638,7 +5638,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:webhook"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-webhook.png"
           },
@@ -5659,7 +5659,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:webhook"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-webhook.png"
           },
@@ -5696,7 +5696,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:webhook"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-webhook-route.png"
           },
@@ -5717,7 +5717,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:webhook"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-webhook-route.png"
           },
@@ -5754,7 +5754,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:webhook"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:example-webhook-result.png"
           },
@@ -5775,7 +5775,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:webhook"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:example-webhook-result.png"
           },

@@ -21,17 +21,22 @@ async function routeTables(page, documentationId, matcherField) {
     `[data-vpsadmin-doc-id="${documentationId}"]`,
   ).first();
   const route = heading.locator('xpath=following-sibling::form[1]');
-  const matchers = page.locator('#content-in table')
+  const matcherForm = page.locator(
+    'form[action*="page=notifications"][action*="action=matcher_save"]',
+  )
     .filter({ has: page.locator('code', { hasText: matcherField }) })
     .first();
-  const matcherForm = matchers.locator('xpath=ancestor::form[1]');
+  const matchers = matcherForm.locator('table')
+    .filter({ has: page.locator('code', { hasText: matcherField }) })
+    .first();
   const matcherHeading = matcherForm.locator('xpath=preceding-sibling::*[1]');
 
   await route.evaluate((routeForm, field) => {
-    const matcherTable = Array.from(document.querySelectorAll('#content-in table'))
-      .find((table) => Array.from(table.querySelectorAll('code'))
-        .some((code) => code.textContent.trim() === field));
-    const finalHeading = matcherTable?.closest('form')?.previousElementSibling;
+    const finalForm = Array.from(document.querySelectorAll(
+      'form[action*="page=notifications"][action*="action=matcher_save"]',
+    )).find((form) => Array.from(form.querySelectorAll('code'))
+      .some((code) => code.textContent.trim() === field));
+    const finalHeading = finalForm?.previousElementSibling;
 
     for (
       let sibling = routeForm.nextElementSibling;
