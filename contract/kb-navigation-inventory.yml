@@ -436,14 +436,14 @@ discoveries:
     musí být ověřeny a Telegram musí být spárován.
   paths:
   - notifications.target-form.open
-- id: 7ae5dd1df1b504ce
+- id: 72532b3b453271db
   language: cs
   page: navody:notifikace
   paragraph: 22
   text: V **Notifikace → Skupiny notifikací** lze prohlížet otevřené, zpožděné, neaktivní
     i historické skupiny. Detail ukazuje routu, příjemce, seskupovací hodnoty, časování,
     čekající události a doručení. Jednotlivá doručení zůstávají viditelná v detailu
-    události a správcům také ve frontě a protokolu doručení.
+    události.
   paths:
   - notifications.groups.open
 - id: 8afd60f8360b4cae
@@ -468,41 +468,41 @@ discoveries:
   paragraph: 2
   text: 'Základní tok je **událost → routa → příjemce → cíl**:'
   reason: Conceptual notification flow, not a WebUI navigation instruction.
-- id: 392acef2e046b1dd
+- id: 86e4b1faea8275b5
   language: cs
   page: navody:notifikace:role_udalosti
-  paragraph: 21
+  paragraph: 23
   text: Vytvořenou událost otevřete v **Notifikace → Události → detail události**.
     V tabulce odpovídajících rout musí být obě nové routy. Test provádí skutečná doručení,
     takže zprávu mají dostat obě ověřené adresy.
   paths:
   - notifications.event-route-matches.open
-- id: 882251c88578b4ab
+- id: 5fc0fbe363fe4134
   language: cs
   page: navody:notifikace:role_udalosti
-  paragraph: 12
+  paragraph: 13
   text: 'Routu uložte. V jejím detailu zvolte **Přidat podmínku**:'
   reason: Action on the route already opened in the preceding annotated step, not
     a separate navigation path.
-- id: b76108c56254c4c5
+- id: 7069bafd88f8a3eb
   language: cs
   page: navody:notifikace:role_udalosti
-  paragraph: 6
+  paragraph: 7
   text: V **Notifikace → Příjemci** vytvořte **Kontakt účtu**. Otevřete jej a přidejte
     ověřený cíl **E-mail účtu**.
   paths:
   - notifications.receivers.open
-- id: d9a0e9bbc672a317
+- id: fa819180bf34a73a
   language: cs
   page: navody:notifikace:role_udalosti
-  paragraph: 10
+  paragraph: 11
   text: 'V **Notifikace → Routy** zvolte **Přidat routu**:'
   paths:
   - notifications.routes.open
-- id: db3c328f0606e407
+- id: 9d65617ac7746fd9
   language: cs
   page: navody:notifikace:role_udalosti
-  paragraph: 4
+  paragraph: 5
   text: V **Notifikace → Cíle** přidejte dva e-mailové cíle, například **E-mail účtu**
     a **E-mail správce**. Než budete pokračovat, otevřete odkaz v každé ověřovací
     zprávě.
@@ -1571,51 +1571,51 @@ discoveries:
     evaluated from top to bottom. Every matcher on one route must match.
   paths:
   - notifications.routes.open
-- id: f446330f5eb6082d
+- id: 97da486e2fff32e5
   language: en
   page: manuals:notifications
   paragraph: 22
   text: Open **Notifications → Notification groups** to inspect open, overdue, idle,
     and historical groups. A group detail shows its route, receiver, grouping labels,
     timing, pending events, and deliveries. Individual deliveries remain visible in
-    the event detail and, for administrators, in the delivery queue and log.
+    the event detail.
   paths:
   - notifications.groups.open
-- id: 339b160bbd35c8b8
+- id: c52ae095cc2804c4
   language: en
   page: manuals:notifications:event_roles
-  paragraph: 10
+  paragraph: 11
   text: 'At **Notifications → Routes**, select **Add route** and set:'
   paths:
   - notifications.routes.open
-- id: 4abdc3c4a03b240a
+- id: 6ae9af0b390fe924
   language: en
   page: manuals:notifications:event_roles
-  paragraph: 6
+  paragraph: 7
   text: At **Notifications → Receivers**, create **Account contact**. Open it and
     add the verified **Account e-mail** target.
   paths:
   - notifications.receivers.open
-- id: 623ebca9662fa50b
+- id: 49635223dd178aa2
   language: en
   page: manuals:notifications:event_roles
-  paragraph: 4
+  paragraph: 5
   text: At **Notifications → Targets**, add two e-mail targets. Give them descriptive
     labels, for example **Account e-mail** and **Administrator e-mail**. Open the
     link in each verification message before continuing.
   paths:
   - notifications.target-form.open
-- id: a4e78a8b4407a997
+- id: 8fe4a5f663f68059
   language: en
   page: manuals:notifications:event_roles
-  paragraph: 12
+  paragraph: 13
   text: 'Save the route. On its detail, select **Add matcher** and set:'
   reason: Action on the route already opened in the preceding annotated step, not
     a separate navigation path.
-- id: b2de54cb0764a57a
+- id: 0c08383eff0557b6
   language: en
   page: manuals:notifications:event_roles
-  paragraph: 21
+  paragraph: 23
   text: Open the created event at **Notifications → Event log → event detail**. Both
     new routes must appear in its matched-routes table. Test events perform real deliveries,
     so both verified addresses should receive the message.
