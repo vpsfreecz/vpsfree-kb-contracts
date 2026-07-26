@@ -42,7 +42,10 @@ async function routeTables(page, documentationId, matcherField) {
     }
   }, matcherField);
 
-  return [heading, route, matcherHeading, matcherForm];
+  // The matcher table can overflow its form when translated column labels need
+  // more space. Include the table explicitly so the crop follows its rendered
+  // width instead of clipping controls that extend beyond the form.
+  return [heading, route, matcherHeading, matcherForm, matchers];
 }
 
 function routeForm(page, documentationId) {
@@ -184,7 +187,7 @@ async function run({ page, session }) {
   await session.shot(
     page,
     'notifications/grouping-route',
-    await routeTables(page, 'notifications.route-form', 'vps_id'),
+    routeForm(page, 'notifications.route-grouping-form'),
   );
 
   await goto(page, '/?page=notifications&action=routes');

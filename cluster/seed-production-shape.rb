@@ -414,6 +414,11 @@ def upsert_capture_event!(user:, event_type:, subject:, payload:)
 end
 
 def upsert_capture_notifications!(user:)
+  # The database setup service runs seed files before its final built-in
+  # notification-template installation step. The fixtures below emit routed
+  # events, so their delivery plans need templates while this seed is running.
+  VpsAdmin::API::NotificationTemplates.install_defaults!
+
   target_value = 'documentation@example.test'
   target = NotificationTarget.find_or_initialize_by(
     user:,

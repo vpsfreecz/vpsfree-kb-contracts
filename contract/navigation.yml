@@ -205,7 +205,7 @@ controls:
     source:
       path: webui/forms/notifications.forms.php
       contains: "'notifications.routes'"
-      fingerprint: 1a3e412d41aaf9f72ce2f337190a4cd1861b4bdfcb6705e70e269fa9e32f2ec0
+      fingerprint: 0e7d8cc6e7a69ed49b7d201bf39a26b6cb14fef7c23a1c7a8063214ee5bb2563
     captures:
       - notifications/routes
 
@@ -219,13 +219,21 @@ controls:
       - notifications/example-role-routing
       - notifications/example-role-admin-route
       - notifications/example-mute-oom
-      - notifications/grouping-route
       - notifications/example-mute-incident-route
       - notifications/example-telegram-monitoring-route
       - notifications/example-telegram-incident-route
       - notifications/example-sms-account-route
       - notifications/example-sms-vps-route
       - notifications/example-webhook-route
+
+  - id: notifications.route-grouping-form
+    label: { en: Notification grouping, cs: Seskupování notifikací }
+    source:
+      path: webui/forms/notifications.forms.php
+      contains: "'notifications.route-grouping-form'"
+      fingerprint: 01e845039c4fef71ed17a338ed7c13ea94f41777bb52631691aaf1db4caf61c5
+    captures:
+      - notifications/grouping-route
 
   - id: notifications.receivers
     label: { en: Receivers, cs: Příjemci }
@@ -561,14 +569,14 @@ semantic_selectors:
         );
 
   - capture: notifications/grouping-route
-    control: notifications.route-form
+    control: notifications.route-grouping-form
     source:
       path: scenarios/notifications.cjs
       declaration: |
         await session.shot(
           page,
           'notifications/grouping-route',
-          await routeTables(page, 'notifications.route-form', 'vps_id'),
+          routeForm(page, 'notifications.route-grouping-form'),
         );
 
   - capture: notifications/example-mute-incident-route
