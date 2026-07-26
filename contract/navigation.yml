@@ -212,7 +212,7 @@ controls:
     source:
       path: webui/forms/notifications.forms.php
       contains: "'notifications.routes'"
-      fingerprint: 0e7d8cc6e7a69ed49b7d201bf39a26b6cb14fef7c23a1c7a8063214ee5bb2563
+      fingerprint: 8bbccfb49857c1775364278fbcc55597bcb384baf73597ffd48cfb27ffd01b8f
     captures:
       - notifications/routes
 
