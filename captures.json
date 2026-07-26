@@ -4488,7 +4488,7 @@
             "width": 611,
             "height": 156
           },
-          "sha256": "1eaad29e7690e50d4320ee804d37e44dc31131d362ad9b80892183b67888a707",
+          "sha256": "e8416ffa575ddcf90b4f947c70150a750ac77c33e80e202f5450bf35a5fae047",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=event_show&id=1",
@@ -4509,7 +4509,7 @@
             "width": 627,
             "height": 156
           },
-          "sha256": "d7d671b6e2eb52b17223c6400b3124c47c97443f56f1ab622bdb71440aaa61f1",
+          "sha256": "b60f7d3a70533c960110656d76049a1e2a87fab24a27d8db90eba9beceb0682f",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=event_show&id=1",

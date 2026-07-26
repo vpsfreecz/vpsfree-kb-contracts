@@ -93,8 +93,46 @@ async function editUrlForRow(page, text, action) {
   return link.getAttribute('href');
 }
 
+async function assertRouteListLayout(page) {
+  const table = documentationTable(page, 'notifications.routes');
+  const result = await table.evaluate((element) => {
+    const headers = Array.from(element.querySelectorAll('th'));
+    const row = Array.from(element.querySelectorAll('tr'))
+      .find((candidate) => candidate.querySelector('a[href*="action=route_delete"]'));
+    const cells = row ? Array.from(row.children) : [];
+    const content = document.querySelector('#content-in');
+    const tableRect = element.getBoundingClientRect();
+    const contentRect = content?.getBoundingClientRect();
+
+    return {
+      headerCount: headers.length,
+      actionHeaders: headers.slice(-3).map((header) => header.textContent.trim()),
+      cellCount: cells.length,
+      editCell: cells.at(-3)?.querySelector('a[href*="action=route_edit"]') !== null,
+      addCell: cells.at(-2)?.querySelector('a[href*="action=route_new"]') !== null,
+      deleteCell: cells.at(-1)?.querySelector('a[href*="action=route_delete"]') !== null,
+      actionWidths: cells.slice(-3).map((cell) => cell.getBoundingClientRect().width),
+      overflowsContent: contentRect ? tableRect.right > contentRect.right + 1 : true,
+    };
+  });
+
+  if (
+    result.headerCount !== 7
+    || result.actionHeaders.some(Boolean)
+    || result.cellCount !== 7
+    || !result.editCell
+    || !result.addCell
+    || !result.deleteCell
+    || result.overflowsContent
+    || result.actionWidths.some((width) => width > 64)
+  ) {
+    throw new Error(`Unexpected notification route table layout: ${JSON.stringify(result)}`);
+  }
+}
+
 async function run({ page, session }) {
   await goto(page, '/?page=notifications&action=routes');
+  await assertRouteListLayout(page);
   await session.locator(
     page,
     'notifications/routes',
