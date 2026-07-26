@@ -136,7 +136,7 @@ bindings:
 - language: cs
   page: navody:notifikace
   path: notifications.event-route-matches.open
-  count: 2
+  count: 5
 - language: cs
   page: navody:notifikace
   path: notifications.open
@@ -144,7 +144,7 @@ bindings:
 - language: cs
   page: navody:notifikace
   path: notifications.receivers.open
-  count: 1
+  count: 2
 - language: cs
   page: navody:notifikace
   path: notifications.route-time-intervals.open
@@ -152,7 +152,11 @@ bindings:
 - language: cs
   page: navody:notifikace
   path: notifications.routes.open
-  count: 1
+  count: 3
+- language: cs
+  page: navody:notifikace
+  path: notifications.target-form.open
+  count: 4
 - language: cs
   page: navody:notifikace
   path: notifications.time-intervals.open
@@ -284,7 +288,7 @@ bindings:
 - language: en
   page: manuals:notifications
   path: notifications.event-route-matches.open
-  count: 2
+  count: 3
 - language: en
   page: manuals:notifications
   path: notifications.open
@@ -292,7 +296,7 @@ bindings:
 - language: en
   page: manuals:notifications
   path: notifications.receivers.open
-  count: 1
+  count: 2
 - language: en
   page: manuals:notifications
   path: notifications.route-time-intervals.open
@@ -301,6 +305,10 @@ bindings:
   page: manuals:notifications
   path: notifications.routes.open
   count: 1
+- language: en
+  page: manuals:notifications
+  path: notifications.target-form.open
+  count: 3
 - language: en
   page: manuals:notifications
   path: notifications.time-intervals.open

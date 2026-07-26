@@ -45,6 +45,35 @@ async function routeTables(page, documentationId, matcherField) {
   return [heading, route, matcherHeading, matcherForm];
 }
 
+function routeForm(page, documentationId) {
+  const heading = page.locator(
+    `[data-vpsadmin-doc-id="${documentationId}"]`,
+  ).first();
+  return [
+    heading,
+    heading.locator('xpath=following-sibling::form[1]'),
+  ];
+}
+
+function targetForms(page, documentationId) {
+  if (documentationId !== 'notifications.target-form') {
+    throw new Error(`Unexpected target form documentation ID: ${documentationId}`);
+  }
+  return page.locator(
+    'form[action*="page=notifications"][action*="action=target_edit"]',
+  ).first();
+}
+
+async function openRouteMatchDetails(page) {
+  const details = documentationTable(
+    page,
+    'notifications.event-route-matches',
+  ).locator('details');
+  for (let i = 0; i < await details.count(); i += 1) {
+    await details.nth(i).evaluate((element) => { element.open = true; });
+  }
+}
+
 async function editUrlForRow(page, text, action) {
   const link = page.locator('#content-in tr')
     .filter({ hasText: text })
@@ -105,12 +134,41 @@ async function run({ page, session }) {
     documentationTable(page, 'notifications.event-route-matches'),
   );
 
+  await goto(page, '/?page=notifications&action=receivers');
+  await goto(page, await editUrlForRow(page, 'Account contact', 'receiver_edit'));
+  await session.shot(
+    page,
+    'notifications/example-role-receiver',
+    receiverTables(page, 'notifications.receiver-form'),
+  );
+
   await goto(page, '/?page=notifications&action=routes');
   await goto(page, await editUrlForRow(page, 'Account-role notifications', 'route_edit'));
   await session.shot(
     page,
     'notifications/example-role-routing',
     await routeTables(page, 'notifications.route-form', 'roles'),
+  );
+
+  await goto(page, '/?page=notifications&action=routes');
+  await goto(page, await editUrlForRow(page, 'Admin-role notifications', 'route_edit'));
+  await session.shot(
+    page,
+    'notifications/example-role-admin-route',
+    await routeTables(page, 'notifications.route-form', 'roles'),
+  );
+
+  await goto(page, '/?page=notifications&action=events');
+  await goto(page, await editUrlForRow(
+    page,
+    'Role-routing documentation event',
+    'event_show',
+  ));
+  await openRouteMatchDetails(page);
+  await session.shot(
+    page,
+    'notifications/example-role-result',
+    documentationTable(page, 'notifications.event-route-matches'),
   );
 
   await goto(page, '/?page=notifications&action=routes');
@@ -121,6 +179,35 @@ async function run({ page, session }) {
     await routeTables(page, 'notifications.route-form', 'cgroup'),
   );
 
+  await goto(page, '/?page=notifications&action=routes');
+  await goto(page, await editUrlForRow(page, 'Mute incident feed for VPS', 'route_edit'));
+  await session.shot(
+    page,
+    'notifications/example-mute-incident-route',
+    await routeTables(page, 'notifications.route-form', 'codename'),
+  );
+
+  await goto(page, '/?page=notifications&action=events');
+  await goto(page, await editUrlForRow(
+    page,
+    'Muted incident documentation event',
+    'event_show',
+  ));
+  await openRouteMatchDetails(page);
+  await session.shot(
+    page,
+    'notifications/example-mute-result',
+    documentationTable(page, 'notifications.event-route-matches'),
+  );
+
+  await goto(page, '/?page=notifications&action=targets');
+  await goto(page, await editUrlForRow(page, 'Operations Telegram', 'target_edit'));
+  await session.shot(
+    page,
+    'notifications/example-telegram-target',
+    targetForms(page, 'notifications.target-form'),
+  );
+
   await goto(page, '/?page=notifications&action=receivers');
   await goto(page, await editUrlForRow(page, 'Operations Telegram', 'receiver_edit'));
   await session.shot(
@@ -128,6 +215,57 @@ async function run({ page, session }) {
     'notifications/example-telegram',
     receiverTables(page, 'notifications.receiver-form'),
   );
+
+  await goto(page, '/?page=notifications&action=routes');
+  await goto(page, await editUrlForRow(page, 'Monitoring to Telegram', 'route_edit'));
+  await session.shot(
+    page,
+    'notifications/example-telegram-monitoring-route',
+    routeForm(page, 'notifications.route-form'),
+  );
+
+  await goto(page, '/?page=notifications&action=routes');
+  await goto(page, await editUrlForRow(page, 'Incident reports to Telegram', 'route_edit'));
+  await session.shot(
+    page,
+    'notifications/example-telegram-incident-route',
+    routeForm(page, 'notifications.route-form'),
+  );
+
+  await goto(page, '/?page=notifications&action=events');
+  await goto(page, await editUrlForRow(
+    page,
+    'Telegram delivery documentation event',
+    'event_show',
+  ));
+  await openRouteMatchDetails(page);
+  await session.shot(
+    page,
+    'notifications/example-telegram-result',
+    documentationTable(page, 'notifications.event-route-matches'),
+  );
+
+  await goto(page, '/?page=notifications&action=targets');
+  await goto(page, await editUrlForRow(
+    page,
+    'Suspension telephone',
+    'target_edit',
+  ));
+  const smsVerificationForm = page.locator('form').filter({
+    has: page.locator('input[name="code"]'),
+  }).first();
+  await session.shot(
+    page,
+    'notifications/example-sms-verification',
+    [
+      targetForms(page, 'notifications.target-form'),
+      smsVerificationForm,
+    ],
+  );
+  await smsVerificationForm.locator('input[name="code"]').fill('123456');
+  await smsVerificationForm.locator(
+    'input[type="submit"], button[type="submit"]',
+  ).click();
 
   await goto(page, '/?page=notifications&action=receivers');
   await goto(page, await editUrlForRow(page, 'Suspension SMS', 'receiver_edit'));
@@ -137,12 +275,70 @@ async function run({ page, session }) {
     receiverTables(page, 'notifications.receiver-form'),
   );
 
+  await goto(page, '/?page=notifications&action=routes');
+  await goto(page, await editUrlForRow(page, 'Account suspension SMS', 'route_edit'));
+  await session.shot(
+    page,
+    'notifications/example-sms-account-route',
+    routeForm(page, 'notifications.route-form'),
+  );
+
+  await goto(page, '/?page=notifications&action=routes');
+  await goto(page, await editUrlForRow(page, 'VPS suspension SMS', 'route_edit'));
+  await session.shot(
+    page,
+    'notifications/example-sms-vps-route',
+    routeForm(page, 'notifications.route-form'),
+  );
+
+  await goto(page, '/?page=notifications&action=events');
+  await goto(page, await editUrlForRow(
+    page,
+    'SMS suspension documentation event',
+    'event_show',
+  ));
+  await openRouteMatchDetails(page);
+  await session.shot(
+    page,
+    'notifications/example-sms-result',
+    documentationTable(page, 'notifications.event-route-matches'),
+  );
+
+  await goto(page, '/?page=notifications&action=targets');
+  await goto(page, await editUrlForRow(page, 'Resource-change endpoint', 'target_edit'));
+  await session.shot(
+    page,
+    'notifications/example-webhook-target',
+    targetForms(page, 'notifications.target-form'),
+  );
+
   await goto(page, '/?page=notifications&action=receivers');
   await goto(page, await editUrlForRow(page, 'Resource-change webhook', 'receiver_edit'));
   await session.shot(
     page,
     'notifications/example-webhook',
     receiverTables(page, 'notifications.receiver-form'),
+  );
+
+  await goto(page, '/?page=notifications&action=routes');
+  await goto(page, await editUrlForRow(page, 'VPS resource-change webhook', 'route_edit'));
+  await session.shot(
+    page,
+    'notifications/example-webhook-route',
+    routeForm(page, 'notifications.route-form'),
+  );
+
+  await goto(page, '/?page=notifications&action=events');
+  await goto(page, await editUrlForRow(
+    page,
+    'Webhook delivery documentation event',
+    'event_show',
+  ));
+  await openRouteMatchDetails(page);
+  await session.shot(
+    page,
+    'notifications/example-webhook-result',
+    documentationTable(page, 'notifications.event-route-matches'),
   );
 }
 

@@ -19,16 +19,16 @@ languages = %w[cs en]
 errors << "expected schema 5, found #{manifest['schema'].inspect}" unless manifest['schema'] == 5
 errors << "invalid top-level vpsAdmin commit" \
   unless manifest.fetch('vpsadmin_commit', '').match?(/\A[0-9a-f]{40}\z/)
-errors << "expected 69 concepts, found #{assets.length}" unless assets.length == 69
+errors << "expected 85 concepts, found #{assets.length}" unless assets.length == 85
 variant_count = assets.sum { |asset| asset.fetch('variants').length }
-errors << "expected 138 variants, found #{variant_count}" unless variant_count == 138
+errors << "expected 170 variants, found #{variant_count}" unless variant_count == 170
 references = languages.to_h do |language|
   [language, assets.sum { |asset| asset.dig('variants', language, 'wiki', 'source_pages')&.length.to_i }]
 end
-errors << "expected 71 Czech page references, found #{references.fetch('cs')}" \
-  unless references.fetch('cs') == 71
-errors << "expected 62 English page references, found #{references.fetch('en')}" \
-  unless references.fetch('en') == 62
+errors << "expected 86 Czech page references, found #{references.fetch('cs')}" \
+  unless references.fetch('cs') == 86
+errors << "expected 77 English page references, found #{references.fetch('en')}" \
+  unless references.fetch('en') == 77
 
 %w[id checkpoint].each do |field|
   duplicates = assets.group_by { |asset| asset.fetch(field) }
