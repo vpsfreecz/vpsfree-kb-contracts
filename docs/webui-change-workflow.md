@@ -83,6 +83,7 @@ workspace at runtime.
 nix develop
 bin/devcluster start FEATURE-SLUG --topology screenshots
 bin/capture --cluster FEATURE-SLUG --language cs --scenario SCENARIO
+bin/validate --update
 bin/capture --cluster FEATURE-SLUG --language en --scenario SCENARIO
 bin/validate --update
 bin/check
@@ -100,7 +101,9 @@ From the vpsFree.cz coordination workspace, fetch every accessible production
 page into a new initiative directory:
 
 ```sh
-bin/kb-contract-fetch --output work/SLUG/kb-sources
+bin/kb-contract-fetch --output work/SLUG/kb-sources \
+  --expect-new cs:navody:NEW-PAGE \
+  --expect-new en:manuals:NEW-PAGE
 ```
 
 Prepare an exact YAML replacement plan and apply it:
@@ -109,6 +112,7 @@ Prepare an exact YAML replacement plan and apply it:
 bin/kb-contract-build \
   --source work/SLUG/kb-sources \
   --plan work/SLUG/kb-annotation-plan.yml \
+  --captures worktrees/SLUG/vpsadmin-kb-captures \
   --output work/SLUG/kb-candidates
 ```
 
@@ -118,19 +122,35 @@ only when the semantic tag must cover less text than the matched source. Every
 affected path/page pair must be a binding or a truthful exception.
 
 ```yaml
-schema: 1
+schema: 2
+new_pages:
+  - language: en
+    page: manuals:NEW-PAGE
+    body: |
+      ====== New page ======
+      Open the relevant WebUI section here.
 replacements:
   - language: en
     page: manuals:vps:management
     path: member.public-keys.add
     before: Edit profile → Public keys → Add public key
     count: 1
+media:
+  - language: en
+    capture: ssh-keys/add-public-key
 exceptions: []
 ```
 
 `body` may override the visible text inside the generated tag. `replacement`
 may override the complete replacement, including the tag, when surrounding
 prose must remain outside its semantic span.
+
+Schema 2 can add guarded pages and select capture media. Every `new_pages`
+entry must have an exact `--expect-new` source guard; candidate construction
+fails if production has created the page in the meantime or if a guarded page
+is omitted from the plan. Capture IDs select the language-specific media ID,
+PNG, and recorded checksum from `captures.json`. Use schema 1 and omit
+`--captures` when no pages or media are being added.
 
 Validate the immutable source inventory against the candidates:
 
@@ -143,6 +163,8 @@ ruby /path/to/vpsadmin-kb-captures/tools/check-kb-annotations.rb \
 Review `kb-candidates/review.md`. The checker rejects malformed or unknown
 tags, count drift, partial or duplicated page inventories, newly unclassified
 source paragraphs, and navigation tags missed by independent discovery.
+For a guarded new page, independent discovery scans the candidate because the
+guarded source is intentionally empty.
 
 ## 6. Build and stage guarded releases
 
@@ -170,13 +192,17 @@ session owns it and a clean production mirror is required:
 bin/kb-stage start
 bin/kb-stage reset --yes
 bin/kb-release stage --manifest work/SLUG/kb-release-cs.yml --yes
-bin/kb-release verify --manifest work/SLUG/kb-release-cs.yml
 bin/kb-release stage --manifest work/SLUG/kb-release-en.yml --yes
+bin/kb-release verify --manifest work/SLUG/kb-release-cs.yml
 bin/kb-release verify --manifest work/SLUG/kb-release-en.yml
 ```
 
 Review both sites through their staging hostnames. Verify normal page IDs,
 screenshots, rendered navigation markers, and bidirectional language links.
+When both manifests create counterpart pages, stage both languages before the
+strict verification commands so each counterpart exists when links are
+checked. Staging still verifies page and media bytes immediately; it defers
+language-link checks for a manifest containing a create-only page.
 Only one manifest can be the pending promotion at a time; staging the second
 language intentionally replaces the first pending record. Both page sets remain
 available for review.

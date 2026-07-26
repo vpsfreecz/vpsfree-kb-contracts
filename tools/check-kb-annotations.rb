@@ -97,6 +97,9 @@ if options[:candidate_index]
     content = File.read(File.join(root, page.fetch('file')))
     [[page.fetch('language'), page.fetch('id')], KbNavigationDiscovery.paragraphs(content)]
   end
+  candidate_pages_by_key = candidate_pages.to_h do |page|
+    [page.values_at('language', 'id'), page]
+  end
   actual = Hash.new(0)
   tag_pattern = /<vpsadmin-nav\s+id="([a-z][a-z0-9.-]*)">(.*?)<\/vpsadmin-nav>/m
 
@@ -124,10 +127,16 @@ if options[:candidate_index]
   end
 
   discoveries = source_pages.flat_map do |page|
+    content = if page['missing'] == true
+                candidate_page = candidate_pages_by_key.fetch(page.values_at('language', 'id'))
+                File.read(File.join(root, candidate_page.fetch('file')))
+              else
+                File.read(File.join(source_root, page.fetch('file')))
+              end
     KbNavigationDiscovery.discover(
       language: page.fetch('language'),
       page: page.fetch('id'),
-      content: File.read(File.join(source_root, page.fetch('file')))
+      content:
     )
   end
   discovered_by_id = discoveries.to_h { |entry| [entry.fetch('id'), entry] }
@@ -142,11 +151,41 @@ if options[:candidate_index]
     abort "independent navigation inventory mismatch; unclassified=#{missing.inspect}, stale=#{stale.inspect}"
   end
 
+  structural_replacements = index.fetch('annotations', []).select do |annotation|
+    annotation['before'] && annotation['replacement'] &&
+      KbNavigationDiscovery.paragraphs(annotation.fetch('before')).length > 1
+  end
   discoveries.each do |discovery|
     inventoried = inventory_by_id.fetch(discovery.fetch('id'))
     %w[language page paragraph text].each do |key|
       abort "#{discovery.fetch('id')}: inventory #{key} drift" unless inventoried.fetch(key) == discovery.fetch(key)
     end
+
+    paragraphs = candidate_paragraphs.fetch(
+      [discovery.fetch('language'), discovery.fetch('page')]
+    )
+    candidate_matches = paragraphs.each_index.select do |paragraph_index|
+      KbNavigationDiscovery.normalize(paragraphs.fetch(paragraph_index)) == discovery.fetch('text')
+    end
+    if candidate_matches.empty?
+      replaced = structural_replacements.any? do |annotation|
+        next false unless annotation.values_at('language', 'page') ==
+                          discovery.values_at('language', 'page')
+
+        KbNavigationDiscovery.paragraphs(annotation.fetch('before')).any? do |paragraph|
+          replacement_text = KbNavigationDiscovery.normalize(paragraph)
+          !replacement_text.empty? &&
+            (replacement_text.include?(discovery.fetch('text')) ||
+             discovery.fetch('text').include?(replacement_text))
+        end
+      end
+      abort "#{discovery.fetch('id')}: source navigation paragraph disappeared without a replacement" unless replaced
+
+      next
+    end
+    abort "#{discovery.fetch('id')}: source navigation paragraph is ambiguous in candidate" \
+      unless candidate_matches.length == 1
+
     expected_paths = inventoried.fetch('paths', []).sort
     expected_paths.each do |path_id|
       path = paths_by_id[path_id]
@@ -156,9 +195,7 @@ if options[:candidate_index]
       end
     end
 
-    candidate_paragraph = candidate_paragraphs
-                          .fetch([discovery.fetch('language'), discovery.fetch('page')])
-                          .fetch(discovery.fetch('paragraph'))
+    candidate_paragraph = paragraphs.fetch(candidate_matches.first)
     actual_paths = candidate_paragraph.scan(tag_pattern).map(&:first).sort
     reason = inventoried['reason']
     if reason
@@ -171,8 +208,14 @@ if options[:candidate_index]
     end
   end
 
-
-  discovery_locations = discoveries.map { |entry| entry.values_at('language', 'page', 'paragraph') }
+  candidate_discovery_locations = candidate_pages.flat_map do |page|
+    content = File.read(File.join(root, page.fetch('file')))
+    KbNavigationDiscovery.discover(
+      language: page.fetch('language'),
+      page: page.fetch('id'),
+      content:
+    ).map { |entry| entry.values_at('language', 'page', 'paragraph') }
+  end
   tagged_locations = candidate_pages.flat_map do |page|
     candidate_paragraphs.fetch([page.fetch('language'), page.fetch('id')]).each_with_index.filter_map do |paragraph, paragraph_index|
       if KbNavigationDiscovery.semantic_content(paragraph).include?('<vpsadmin-nav')
@@ -180,7 +223,7 @@ if options[:candidate_index]
       end
     end
   end
-  missed = tagged_locations - discovery_locations
+  missed = tagged_locations - candidate_discovery_locations
   abort "independent scanner missed annotated paragraphs: #{missed.inspect}" unless missed.empty?
 end
 
