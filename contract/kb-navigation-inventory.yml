@@ -372,6 +372,84 @@ discoveries:
     Play]]. Doporučujeme v nastavení (tři čárky vlevo nahoře → settings) změnit server
     na meet.vpsfree.cz.'
   reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
+- id: 28da55a4063fbe9f
+  language: cs
+  page: navody:notifikace
+  paragraph: 54
+  text: Interval se k routě přiřazuje v Notifikace → Routy → upravit routu v režimu
+    **Aktivní interval** nebo **Ztlumující interval**.
+  paths:
+  - notifications.route-time-intervals.open
+- id: 34dc8d0c9b14b951
+  language: cs
+  page: navody:notifikace
+  paragraph: 59
+  text: Výsledek najdete v Notifikace → Události → detail události. Detail ukazuje
+    odpovídající routy, stav časových intervalů a snímek jejich vyhodnocení v čase
+    vzniku události. Stav ''inactive'' znamená, že neodpovídal žádný aktivní interval;
+    ''muted'' znamená shodu ztlumujícího intervalu.
+  paths:
+  - notifications.event-route-matches.open
+- id: 3925f3d35b2dd5d3
+  language: cs
+  page: navody:notifikace
+  paragraph: 1
+  text: Notifikační systém vpsAdminu zpracovává události a podle rout je předává příjemcům.
+    Nastavení najdete v hlavní nabídce Notifikace.
+  paths:
+  - notifications.open
+- id: a5be1d12154d2f58
+  language: cs
+  page: navody:notifikace
+  paragraph: 5
+  text: Routy se spravují v Notifikace → Routy. Vyhodnocují se podle pořadí. Routa
+    může pokračovat na další odpovídající routu, obsahovat podřízené routy nebo po
+    prvním použití zaniknout. Výchozí routy zajišťují běžné doručování na primární
+    e-mailovou adresu; lze je doplnit vlastními routami nebo použít příjemce **Ztlumit**.
+  paths:
+  - notifications.routes.open
+- id: cf452d4e6cee630c
+  language: cs
+  page: navody:notifikace
+  paragraph: 9
+  text: Příjemce v Notifikace → Příjemci sdružuje jeden nebo více cílů. Jeden příjemce
+    tak může například současně odeslat e-mail a zavolat webhook. Cíl **Výchozí**
+    používá aktuální primární e-mailovou adresu účtu. Vlastní e-mailové adresy se
+    přidávají jako cíle a musí být před použitím ověřeny.
+  paths:
+  - notifications.receivers.open
+- id: e38668e865fd376f
+  language: cs
+  page: navody:notifikace
+  paragraph: 28
+  text: Vytvořte cíl typu **Telegram**, otevřete párovací odkaz v soukromém chatu
+    s botem a stisknutím Start dokončete párování. Spárovaný cíl přidejte do příjemce
+    **Provozní Telegram**.
+  reason: The target-specific Telegram pairing link leaves the WebUI for a bot chat.
+- id: e56d49ad4085bfef
+  language: cs
+  page: navody:notifikace
+  paragraph: 23
+  text: Operátor ''=*'' znamená **odpovídá glob vzoru**. Cesta cgroup je úplná cesta
+    bez prefixu ''/sys/fs/cgroup''. Kódové označení incidentu určuje jeho zdroj; správnou
+    hodnotu zkopírujte z detailu skutečného incidentu v přehledu událostí.
+  paths:
+  - notifications.event-route-matches.open
+- id: eb1aadfa715bc9a6
+  language: cs
+  page: navody:notifikace
+  paragraph: 48
+  text: Opakovaně použitelné intervaly se definují v Notifikace → Časové intervaly.
+    Každý interval má název, časové pásmo IANA (například ''Europe/Prague'') a jednu
+    nebo více specifikací.
+  paths:
+  - notifications.time-intervals.open
+- id: f068df932817a3fb
+  language: cs
+  page: navody:notifikace
+  paragraph: 2
+  text: 'Základní tok je **událost → routa → příjemce → cíl**:'
+  reason: Conceptual event flow is not a WebUI navigation instruction.
 - id: 17cdb2d1b37afe4a
   language: cs
   page: navody:server:firewall
@@ -1225,6 +1303,84 @@ discoveries:
     is the VPS ID) and mount it to ''/persistent''."
   paths:
   - datasets.mount.open
+- id: 04f71fd489a93767
+  language: en
+  page: manuals:notifications
+  paragraph: 54
+  text: Assign an interval to a route at Notifications → Routes → edit route, using
+    **Active interval** or **Mute interval** mode.
+  paths:
+  - notifications.route-time-intervals.open
+- id: 0a46759bcdbeca71
+  language: en
+  page: manuals:notifications
+  paragraph: 28
+  text: Create a **Telegram** target, open its pairing link in a private chat with
+    the bot, and press Start to complete pairing. Add the paired target to an **Operations
+    Telegram** receiver.
+  reason: The target-specific Telegram pairing link leaves the WebUI for a bot chat.
+- id: 390d3115a9bfe5b5
+  language: en
+  page: manuals:notifications
+  paragraph: 5
+  text: Manage routes at Notifications → Routes. Routes are evaluated in order. A
+    route can continue to another matching route, contain child routes, or expire
+    after its first use. Default routes provide normal delivery to the primary e-mail
+    address; you can add custom routes or select the **Mute** receiver.
+  paths:
+  - notifications.routes.open
+- id: 3d312ec9c0075a62
+  language: en
+  page: manuals:notifications
+  paragraph: 48
+  text: Define reusable intervals at Notifications → Time intervals. Every interval
+    has a name, an IANA time zone (for example ''Europe/Prague''), and one or more
+    specifications.
+  paths:
+  - notifications.time-intervals.open
+- id: 9cb7a4109512d0f6
+  language: en
+  page: manuals:notifications
+  paragraph: 59
+  text: Inspect the result at Notifications → Event log → event detail. The detail
+    shows matching routes, the time-interval state and the evaluation snapshot at
+    the event timestamp. ''inactive'' means no active interval matched; ''muted''
+    means a mute interval matched.
+  paths:
+  - notifications.event-route-matches.open
+- id: aaedb1d4c4bb8a43
+  language: en
+  page: manuals:notifications
+  paragraph: 2
+  text: 'The basic flow is **event → route → receiver → target**:'
+  reason: Conceptual event flow is not a WebUI navigation instruction.
+- id: b14275b3edc40549
+  language: en
+  page: manuals:notifications
+  paragraph: 1
+  text: The vpsAdmin notification system processes events and sends them to receivers
+    according to routes. Open it from the main Notifications menu.
+  paths:
+  - notifications.open
+- id: d5a35585b5e979bc
+  language: en
+  page: manuals:notifications
+  paragraph: 9
+  text: A receiver at Notifications → Receivers groups one or more targets. One receiver
+    can therefore send an e-mail and call a webhook at the same time. The **Default**
+    target uses the account's current primary e-mail address. Add other e-mail addresses
+    as custom targets; they have to be verified before use.
+  paths:
+  - notifications.receivers.open
+- id: f8ceda71b497f4a6
+  language: en
+  page: manuals:notifications
+  paragraph: 23
+  text: The ''=*'' operator means **matches glob**. The cgroup value is the full path
+    without a ''/sys/fs/cgroup'' prefix. Incident codenames are assigned by their
+    source; copy the exact value from the detail of a real incident in the event log.
+  paths:
+  - notifications.event-route-matches.open
 - id: 0a3fe5d179529430
   language: en
   page: manuals:server:primary_dns
@@ -1807,125 +1963,3 @@ discoveries:
   text: -> <- <-> => <= <=> >> << -- --- 640x480 (c) (tm) (r) "He thought 'It's a
     man's world'..."
   reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: '094f5fb0eec5240d'
-  language: cs
-  page: navody:notifikace
-  paragraph: 13
-  text: Opakovaně použitelné intervaly se definují v Notifikace → Časové intervaly.
-    Každý interval má název, časové pásmo IANA (například ''Europe/Prague'') a jednu
-    nebo více specifikací.
-  paths:
-  - notifications.time-intervals.open
-- id: 23afce56ca3d4dd5
-  language: cs
-  page: navody:notifikace
-  paragraph: 24
-  text: Výsledek najdete v Notifikace → Události → detail události. Detail ukazuje
-    odpovídající routy, stav časových intervalů a snímek jejich vyhodnocení v čase
-    vzniku události. Stav ''inactive'' znamená, že neodpovídal žádný aktivní interval;
-    ''muted'' znamená shodu ztlumujícího intervalu.
-  paths:
-  - notifications.event-route-matches.open
-- id: a5be1d12154d2f58
-  language: cs
-  page: navody:notifikace
-  paragraph: 5
-  text: Routy se spravují v Notifikace → Routy. Vyhodnocují se podle pořadí. Routa
-    může pokračovat na další odpovídající routu, obsahovat podřízené routy nebo po
-    prvním použití zaniknout. Výchozí routy zajišťují běžné doručování na primární
-    e-mailovou adresu; lze je doplnit vlastními routami nebo použít příjemce **Ztlumit**.
-  paths:
-  - notifications.routes.open
-- id: cf452d4e6cee630c
-  language: cs
-  page: navody:notifikace
-  paragraph: 9
-  text: Příjemce v Notifikace → Příjemci sdružuje jeden nebo více cílů. Jeden příjemce
-    tak může například současně odeslat e-mail a zavolat webhook. Cíl **Výchozí**
-    používá aktuální primární e-mailovou adresu účtu. Vlastní e-mailové adresy se
-    přidávají jako cíle a musí být před použitím ověřeny.
-  paths:
-  - notifications.receivers.open
-- id: dda0ee672f4c9746
-  language: cs
-  page: navody:notifikace
-  paragraph: 19
-  text: Interval se k routě přiřazuje v Notifikace → Routy → upravit routu v režimu
-    **Aktivní interval** nebo **Ztlumující interval**.
-  paths:
-  - notifications.route-time-intervals.open
-- id: f068df932817a3fb
-  language: cs
-  page: navody:notifikace
-  paragraph: 2
-  text: 'Základní tok je **událost → routa → příjemce → cíl**:'
-  reason: Conceptual event flow is not a WebUI navigation instruction.
-- id: 390d3115a9bfe5b5
-  language: en
-  page: manuals:notifications
-  paragraph: 5
-  text: Manage routes at Notifications → Routes. Routes are evaluated in order. A
-    route can continue to another matching route, contain child routes, or expire
-    after its first use. Default routes provide normal delivery to the primary e-mail
-    address; you can add custom routes or select the **Mute** receiver.
-  paths:
-  - notifications.routes.open
-- id: 528a27c1144f98b7
-  language: en
-  page: manuals:notifications
-  paragraph: 13
-  text: Define reusable intervals at Notifications → Time intervals. Every interval
-    has a name, an IANA time zone (for example ''Europe/Prague''), and one or more
-    specifications.
-  paths:
-  - notifications.time-intervals.open
-- id: 92f751056ebc8c45
-  language: en
-  page: manuals:notifications
-  paragraph: 24
-  text: Inspect the result at Notifications → Event log → event detail. The detail
-    shows matching routes, the time-interval state and the evaluation snapshot at
-    the event timestamp. ''inactive'' means no active interval matched; ''muted''
-    means a mute interval matched.
-  paths:
-  - notifications.event-route-matches.open
-- id: aaedb1d4c4bb8a43
-  language: en
-  page: manuals:notifications
-  paragraph: 2
-  text: 'The basic flow is **event → route → receiver → target**:'
-  reason: Conceptual event flow is not a WebUI navigation instruction.
-- id: b14275b3edc40549
-  language: en
-  page: manuals:notifications
-  paragraph: 1
-  text: The vpsAdmin notification system processes events and sends them to receivers
-    according to routes. Open it from the main Notifications menu.
-  paths:
-  - notifications.open
-- id: d5a35585b5e979bc
-  language: en
-  page: manuals:notifications
-  paragraph: 9
-  text: A receiver at Notifications → Receivers groups one or more targets. One receiver
-    can therefore send an e-mail and call a webhook at the same time. The **Default**
-    target uses the account's current primary e-mail address. Add other e-mail addresses
-    as custom targets; they have to be verified before use.
-  paths:
-  - notifications.receivers.open
-- id: dbedac600c6529e7
-  language: en
-  page: manuals:notifications
-  paragraph: 19
-  text: Assign an interval to a route at Notifications → Routes → edit route, using
-    **Active interval** or **Mute interval** mode.
-  paths:
-  - notifications.route-time-intervals.open
-- id: 3925f3d35b2dd5d3
-  language: cs
-  page: navody:notifikace
-  paragraph: 1
-  text: Notifikační systém vpsAdminu zpracovává události a podle rout je předává příjemcům.
-    Nastavení najdete v hlavní nabídce Notifikace.
-  paths:
-  - notifications.open

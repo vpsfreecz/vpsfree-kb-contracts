@@ -209,6 +209,16 @@ controls:
     captures:
       - notifications/routes
 
+  - id: notifications.route-form
+    label: { en: Update route, cs: Upravit routu }
+    source:
+      path: webui/forms/notifications.forms.php
+      contains: "'notifications.route-form'"
+      fingerprint: cbb33270d9ec63cf43f995c7bb49215808c293f4707030810797ae52af16cb7e
+    captures:
+      - notifications/example-role-routing
+      - notifications/example-mute-oom
+
   - id: notifications.receivers
     label: { en: Receivers, cs: Příjemci }
     source:
@@ -224,6 +234,9 @@ controls:
       fingerprint: 748e74b9ceb6a508213b449b0baec4593695ffa428297ecdba28aabaf9ce016f
     captures:
       - notifications/receiver
+      - notifications/example-telegram
+      - notifications/example-sms
+      - notifications/example-webhook
 
   - id: notifications.time-intervals
     label: { en: Time intervals, cs: Časové intervaly }
@@ -464,6 +477,28 @@ semantic_selectors:
           documentationTable(page, 'notifications.routes'),
         );
 
+  - capture: notifications/example-role-routing
+    control: notifications.route-form
+    source:
+      path: scenarios/notifications.cjs
+      declaration: |
+        await session.shot(
+          page,
+          'notifications/example-role-routing',
+          await routeTables(page, 'notifications.route-form', 'roles'),
+        );
+
+  - capture: notifications/example-mute-oom
+    control: notifications.route-form
+    source:
+      path: scenarios/notifications.cjs
+      declaration: |
+        await session.shot(
+          page,
+          'notifications/example-mute-oom',
+          await routeTables(page, 'notifications.route-form', 'cgroup'),
+        );
+
   - capture: notifications/receiver
     control: notifications.receiver-form
     source:
@@ -473,6 +508,39 @@ semantic_selectors:
           page,
           'notifications/receiver',
           documentationTable(page, 'notifications.receiver-form'),
+        );
+
+  - capture: notifications/example-telegram
+    control: notifications.receiver-form
+    source:
+      path: scenarios/notifications.cjs
+      declaration: |
+        await session.shot(
+          page,
+          'notifications/example-telegram',
+          receiverTables(page, 'notifications.receiver-form'),
+        );
+
+  - capture: notifications/example-sms
+    control: notifications.receiver-form
+    source:
+      path: scenarios/notifications.cjs
+      declaration: |
+        await session.shot(
+          page,
+          'notifications/example-sms',
+          receiverTables(page, 'notifications.receiver-form'),
+        );
+
+  - capture: notifications/example-webhook
+    control: notifications.receiver-form
+    source:
+      path: scenarios/notifications.cjs
+      declaration: |
+        await session.shot(
+          page,
+          'notifications/example-webhook',
+          receiverTables(page, 'notifications.receiver-form'),
         );
 
   - capture: notifications/time-interval

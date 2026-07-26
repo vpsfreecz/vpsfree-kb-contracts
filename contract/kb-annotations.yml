@@ -136,7 +136,7 @@ bindings:
 - language: cs
   page: navody:notifikace
   path: notifications.event-route-matches.open
-  count: 1
+  count: 2
 - language: cs
   page: navody:notifikace
   path: notifications.open
@@ -284,7 +284,7 @@ bindings:
 - language: en
   page: manuals:notifications
   path: notifications.event-route-matches.open
-  count: 1
+  count: 2
 - language: en
   page: manuals:notifications
   path: notifications.open
