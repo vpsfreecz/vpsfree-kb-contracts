@@ -4430,10 +4430,10 @@
             "width": 821,
             "height": 169
           },
-          "sha256": "ac7e16c9756ae1e3915c3efc8bd1a9860f409599a92e415322ca9850ba1df83f",
+          "sha256": "25a71613eeae1afe651cdef430a9f650ec18e3a145cfdbe0f9370a075d15662c",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=8",
+            "page": "/?page=notifications&action=route_edit&id=11",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -4451,10 +4451,10 @@
             "width": 821,
             "height": 169
           },
-          "sha256": "934adb0770c163bde825ff84eacf68694aaf38cfbf3463ecb03bcf05f229f490",
+          "sha256": "badd1cd6deaee36d9e6f848fdad8d5474efdb22899f9f8b826da978aa7123d6d",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=8",
+            "page": "/?page=notifications&action=route_edit&id=11",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -4488,10 +4488,10 @@
             "width": 611,
             "height": 156
           },
-          "sha256": "90f459113368fbbba6e1ab181817c01a45536c43efb00d630ef6d7886e0e9a90",
+          "sha256": "e8921029d500cf017a9f0bab1282a68cecfd30588b9f5d26f8e50ab2b4cd7558",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=event_show&id=19",
+            "page": "/?page=notifications&action=event_show&id=1",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -4509,10 +4509,10 @@
             "width": 627,
             "height": 156
           },
-          "sha256": "137edfbabb28db1b4100f76af15103863f25efbd9ac6f380e0c60230f6a27a2e",
+          "sha256": "31c90d3bd2e2da9f1beca8f56124c408cdf421634d6a8f17a5745d4c077f7481",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=event_show&id=19",
+            "page": "/?page=notifications&action=event_show&id=1",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -4601,13 +4601,13 @@
           "output": "screenshots/cs/notifications/example-role-routing.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 510,
-            "height": 488
+            "width": 821,
+            "height": 677
           },
-          "sha256": "25d5ff584f17b287e00d5e625398adae244866a4c28b9f6c05cf3aabe0d2838a",
+          "sha256": "0cc18c58019f0b087a05d4bceff6883c5076d2f2567684bdd21b4f97ab6f3009",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=12",
+            "page": "/?page=notifications&action=route_edit&id=16",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -4622,13 +4622,13 @@
           "output": "screenshots/en/notifications/example-role-routing.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 541,
-            "height": 488
+            "width": 821,
+            "height": 658
           },
-          "sha256": "bbb34564628742d1cbbf9afdc254d321f4def422fe5e1076a17145c85ba2c88c",
+          "sha256": "49e7544dd5bb179f6e58e23ad95a21cf759b0206fcc12b7c93070f784de74552",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=12",
+            "page": "/?page=notifications&action=route_edit&id=16",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -4659,13 +4659,13 @@
           "output": "screenshots/cs/notifications/example-role-admin-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 510,
-            "height": 488
+            "width": 821,
+            "height": 677
           },
-          "sha256": "abe8882980836c6c0417c6e1894bd4fb9a10e207d4959984d869cb56d794507e",
+          "sha256": "11d8468bc76f2fe948048ecd34470173dab5ecdd908820cfe48e7677977b58f9",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=13",
+            "page": "/?page=notifications&action=route_edit&id=17",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -4680,13 +4680,13 @@
           "output": "screenshots/en/notifications/example-role-admin-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 541,
-            "height": 488
+            "width": 821,
+            "height": 658
           },
-          "sha256": "44985b09e724c548a964a558f30c6a615b55a093e1bbcbe5e1b55e411064ed3e",
+          "sha256": "238f21f641218e20cbaf19cf3da58e84db2fe89679ee1d7b9789bc014b7232b3",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=13",
+            "page": "/?page=notifications&action=route_edit&id=17",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -4723,7 +4723,7 @@
           "sha256": "fc153dc469993fcdd4de93f9a9ae3a54cab38eb6e1a27c5cee17b1d2553d4571",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=event_show&id=20",
+            "page": "/?page=notifications&action=event_show&id=2",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -4744,7 +4744,7 @@
           "sha256": "9fb732cd6a365f43ac955edc7701aefc20c1c235d32ba067bcfde1c785169b9e",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=event_show&id=20",
+            "page": "/?page=notifications&action=event_show&id=2",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -4775,13 +4775,13 @@
           "output": "screenshots/cs/notifications/example-mute-oom.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 481,
-            "height": 545
+            "width": 821,
+            "height": 705
           },
-          "sha256": "79c08386c76538174c38603227300f1a798c7ee36dc330563efcf7676ae6f627",
+          "sha256": "bd41a7220c9800947cef9876448062e1565553fbf4c6ef73d84d455ab3452afa",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=10",
+            "page": "/?page=notifications&action=route_edit&id=13",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -4796,13 +4796,71 @@
           "output": "screenshots/en/notifications/example-mute-oom.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 481,
-            "height": 545
+            "width": 821,
+            "height": 686
           },
-          "sha256": "ebe5b1bdfa5fba75c7959a5e128e4062976b829e8f474c6433686890a64bae6a",
+          "sha256": "768a9ca3c433013335f643d28e0fe76cbfb61fdf5ee1693278c08abc2a03579d",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=10",
+            "page": "/?page=notifications&action=route_edit&id=13",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/grouping-route",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/grouping-route",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "OOM notification route grouped by VPS with explicit timing",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:grouping-route.png"
+          },
+          "output": "screenshots/cs/notifications/grouping-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 677
+          },
+          "sha256": "0281d1b877b15dcf897a51d05398b5a857d9d49f7ad2e8cd49c04f679b805e41",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=23",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:grouping-route.png"
+          },
+          "output": "screenshots/en/notifications/grouping-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 658
+          },
+          "sha256": "e5a97910401fdab64252e31deb4cc7dc12b397ba98dd0b75e37e0a557a585815",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=23",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -4833,13 +4891,13 @@
           "output": "screenshots/cs/notifications/example-mute-incident-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 500,
-            "height": 517
+            "width": 821,
+            "height": 705
           },
-          "sha256": "9213e16fa026c627f57371559b969a03ad9134caaaeea2fe27c322171984b71b",
+          "sha256": "c8a22e7a633fc74c43448fe81d2f7c853d089b4337085b34a781bcde0c4ef5f0",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=11",
+            "page": "/?page=notifications&action=route_edit&id=14",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -4854,13 +4912,13 @@
           "output": "screenshots/en/notifications/example-mute-incident-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 500,
-            "height": 517
+            "width": 821,
+            "height": 686
           },
-          "sha256": "c31f064f5c6399b9021aeffcab2783aca5db8d6d1867af06962551cd21f0def9",
+          "sha256": "6a4c6ade6c07834fbfb1d0d656723e1ec990a6795e337800e872f5f43667b49a",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=11",
+            "page": "/?page=notifications&action=route_edit&id=14",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -4897,7 +4955,7 @@
           "sha256": "487dc94659f4961e0284edc8dec50342a0b45382892332dc816a0353b4e0e7e2",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=event_show&id=21",
+            "page": "/?page=notifications&action=event_show&id=3",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -4918,7 +4976,7 @@
           "sha256": "933679a955b0fb562e4284ef828928f97194aa1aca5a6adf2ad153fe5dba49bc",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=event_show&id=21",
+            "page": "/?page=notifications&action=event_show&id=3",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -5065,13 +5123,13 @@
           "output": "screenshots/cs/notifications/example-telegram-monitoring-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 413,
-            "height": 321
+            "width": 821,
+            "height": 509
           },
-          "sha256": "7cd756e047e75c62a29c737e9176b32ce30c640121846de25af38575f1f146ec",
+          "sha256": "62da4f19f8fe8eac4ac756b4341ca6ff42027adea0435c3bdd46a2c3c475c138",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=14",
+            "page": "/?page=notifications&action=route_edit&id=18",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -5086,13 +5144,13 @@
           "output": "screenshots/en/notifications/example-telegram-monitoring-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 415,
-            "height": 321
+            "width": 821,
+            "height": 490
           },
-          "sha256": "a4c3bfc2ab1d33f4d89fcd83ad67dbd343f5265e295bbf1567eacb56330f0dae",
+          "sha256": "3e44c9a1123e94c36c032feb4a285ae9d95d427710789fb0cf63a5dcb7f50262",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=14",
+            "page": "/?page=notifications&action=route_edit&id=18",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -5123,13 +5181,13 @@
           "output": "screenshots/cs/notifications/example-telegram-incident-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 413,
-            "height": 321
+            "width": 821,
+            "height": 509
           },
-          "sha256": "4951436738b8629c4463fd3def013ccf360f91a136d92363fb11d94ae391ed0c",
+          "sha256": "60b96c3c105a9bb024739023501d2465a8fd64d98b32094f6f3fc0d51ca50de0",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=15",
+            "page": "/?page=notifications&action=route_edit&id=19",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -5144,13 +5202,13 @@
           "output": "screenshots/en/notifications/example-telegram-incident-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 415,
-            "height": 321
+            "width": 821,
+            "height": 490
           },
-          "sha256": "56b13cb8098394729104c714b4e90ccc57c44209341560fb66f7efe5f9b14b58",
+          "sha256": "2dc98e0dc796817f5adf7a1511a609660ccee6da57bfd3ff3de269b0b2bdcacc",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=15",
+            "page": "/?page=notifications&action=route_edit&id=19",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -5187,7 +5245,7 @@
           "sha256": "409867a521dc4cbc65019387d0ef7413b6e916c250a9d4afeedfda830edf0b30",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=event_show&id=23",
+            "page": "/?page=notifications&action=event_show&id=5",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -5208,7 +5266,7 @@
           "sha256": "2018bb8dd2062124b5fba8fee14f0238ef0a3732a0b59c6e10c6ad12e6040179",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=event_show&id=23",
+            "page": "/?page=notifications&action=event_show&id=5",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -5355,13 +5413,13 @@
           "output": "screenshots/cs/notifications/example-sms-account-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 413,
-            "height": 321
+            "width": 821,
+            "height": 509
           },
-          "sha256": "85759b9720e636eaba0fabce7bbd46d8e1bf8726266e8169365c38f9febdad67",
+          "sha256": "a195200b18494bd4b143f9788992c71097a9c724e103d06112137ea1ca209ddc",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=16",
+            "page": "/?page=notifications&action=route_edit&id=20",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -5376,13 +5434,13 @@
           "output": "screenshots/en/notifications/example-sms-account-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 415,
-            "height": 321
+            "width": 821,
+            "height": 490
           },
-          "sha256": "9367b40b80e92a33bb9960948616de79f1dd4b1e9c13eee88e5a263dd2a3938c",
+          "sha256": "83219e5a567a7e302f75ae15b445ce3bd6d7ab30adb66e705ea40118410a8f3c",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=16",
+            "page": "/?page=notifications&action=route_edit&id=20",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -5413,13 +5471,13 @@
           "output": "screenshots/cs/notifications/example-sms-vps-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 413,
-            "height": 321
+            "width": 821,
+            "height": 509
           },
-          "sha256": "29a164b0079b84db0b2407ff9d12347f5eee63ae79d45de5a98517554e43fde0",
+          "sha256": "c48304eb2107e1acda6c28f97c5b3a4031277ce1f5163c27f92eec62c19add14",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=17",
+            "page": "/?page=notifications&action=route_edit&id=21",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -5434,13 +5492,13 @@
           "output": "screenshots/en/notifications/example-sms-vps-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 415,
-            "height": 321
+            "width": 821,
+            "height": 490
           },
-          "sha256": "ce958b63c071d7f90141432979dbc7ecb440c4ec6911758e0ebe2ff9efbf905b",
+          "sha256": "58a953e777416c85722e500adde30a2d6747e106f713f29482547028b7efde35",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=17",
+            "page": "/?page=notifications&action=route_edit&id=21",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -5477,7 +5535,7 @@
           "sha256": "bdfdb0bf16b1bcbad1221f46e93da1fecf9e4f9006aca66bfc29168bd3ab5d3e",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=event_show&id=24",
+            "page": "/?page=notifications&action=event_show&id=6",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -5498,7 +5556,7 @@
           "sha256": "f6abd41fd87846da62686422e9a51421ecbcc47ec46b5df4fa4d80f8e8407b9c",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=event_show&id=24",
+            "page": "/?page=notifications&action=event_show&id=6",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -5535,7 +5593,7 @@
           "sha256": "4596ae8d32a0a4e8e6a5a381034130607b62be24361581e3edd6966992b272ac",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=target_edit&id=11",
+            "page": "/?page=notifications&action=target_edit&id=10",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -5553,10 +5611,10 @@
             "width": 821,
             "height": 257
           },
-          "sha256": "0f6e0cb39bb30f2f36aac411b220124a440ee01f4a55bebf4bf1cb91a29e127c",
+          "sha256": "530ef7a0bbc7bfece2b4d310c133a4b3d52c22b6d3f5ca7b2bc376e04dfa918e",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=target_edit&id=11",
+            "page": "/?page=notifications&action=target_edit&id=10",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -5590,7 +5648,7 @@
             "width": 737,
             "height": 453
           },
-          "sha256": "a526d77d45d285691f03164f6440bbd5ed496ee50b16e3edbefae8ad6a3c78e3",
+          "sha256": "cb9f9fbb752087371b89bb3037722f6ca0857f16beca8ba043a8f55a5ffc2fc4",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=receiver_edit&id=13",
@@ -5611,7 +5669,7 @@
             "width": 769,
             "height": 453
           },
-          "sha256": "9587dc4ef8a7682984dc22044ace2ef523c9cc79392602dff7ebc80ff02c1cb4",
+          "sha256": "ffd39220fe3b986d530faf156a048bd1452490609cb1d71249266647676d652d",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=receiver_edit&id=13",
@@ -5645,13 +5703,13 @@
           "output": "screenshots/cs/notifications/example-webhook-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 413,
-            "height": 321
+            "width": 821,
+            "height": 509
           },
-          "sha256": "e644c6dc6ddaec1443368470a39e4047015885b063d5eeb894ef091a1eff8d72",
+          "sha256": "838a0954cba044e8bf4291894e7f168b92512626e545035028db49976a766d4b",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=18",
+            "page": "/?page=notifications&action=route_edit&id=22",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -5666,13 +5724,13 @@
           "output": "screenshots/en/notifications/example-webhook-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 415,
-            "height": 321
+            "width": 821,
+            "height": 490
           },
-          "sha256": "5ba59ce2e8b31e7b140bec0cb0ea17766887ef91cd69773b563c0d69dd113242",
+          "sha256": "85af581e276612eefb59e7257718032db0a31bbd3ca30d734d5ac69fcd0efad7",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=18",
+            "page": "/?page=notifications&action=route_edit&id=22",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -5706,10 +5764,10 @@
             "width": 449,
             "height": 69
           },
-          "sha256": "39d1fcdf16f00ff490ee41a5725e6244642570cb343d35580d4a4b6fc56c1a4b",
+          "sha256": "9397ad6e9a80a566247634bfda5a618db31aa3c28b2af1c35a5357f411442904",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=event_show&id=25",
+            "page": "/?page=notifications&action=event_show&id=7",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -5727,10 +5785,10 @@
             "width": 450,
             "height": 69
           },
-          "sha256": "8dba59fc858de61919d63523a1a274caa77b46ca7572cc6b1756b026ad87d65b",
+          "sha256": "20a159b73c1a677e9c7bdb70d6686274cf6a0b9708712582302ef13896030815",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=event_show&id=25",
+            "page": "/?page=notifications&action=event_show&id=7",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }

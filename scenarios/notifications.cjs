@@ -180,6 +180,14 @@ async function run({ page, session }) {
   );
 
   await goto(page, '/?page=notifications&action=routes');
+  await goto(page, await editUrlForRow(page, 'Grouped OOM notifications', 'route_edit'));
+  await session.shot(
+    page,
+    'notifications/grouping-route',
+    await routeTables(page, 'notifications.route-form', 'vps_id'),
+  );
+
+  await goto(page, '/?page=notifications&action=routes');
   await goto(page, await editUrlForRow(page, 'Mute incident feed for VPS', 'route_edit'));
   await session.shot(
     page,

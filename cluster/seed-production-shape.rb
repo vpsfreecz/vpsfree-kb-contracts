@@ -369,6 +369,10 @@ def upsert_capture_event_route!(
   continue_route:,
   event_type: nil,
   event_type_pattern: nil,
+  grouping_enabled: false,
+  group_by: [],
+  group_wait_seconds: nil,
+  group_interval_seconds: nil,
   matchers: []
 )
   route = EventRoute.find_or_initialize_by(user:, label:)
@@ -377,6 +381,10 @@ def upsert_capture_event_route!(
     event_type:,
     event_type_pattern:,
     subject_scope: 'self',
+    grouping_enabled:,
+    group_by:,
+    group_wait_seconds:,
+    group_interval_seconds:,
     position:,
     enabled: true,
     single_use: false,
@@ -637,7 +645,6 @@ def upsert_capture_notifications!(user:)
     event_type: 'vps.oom_report',
     matchers: [
       { field: 'vps_id', operator: '==', value: '123' },
-      { field: 'stage', operator: '==', value: 'raw' },
       { field: 'cgroup', operator: '=*', value: '/user.slice/**/*.scope' }
     ]
   )
@@ -728,6 +735,21 @@ def upsert_capture_notifications!(user:)
     continue_route: true,
     event_type: 'vps.resources_changed'
   )
+  upsert_capture_event_route!(
+    user:,
+    receiver:,
+    label: 'Grouped OOM notifications',
+    position: -10,
+    continue_route: false,
+    event_type: 'vps.oom_report',
+    grouping_enabled: true,
+    group_by: ['vps_id'],
+    group_wait_seconds: 60,
+    group_interval_seconds: 10_800,
+    matchers: [
+      { field: 'vps_id', operator: '==', value: '456' }
+    ]
+  )
 
   role_event = upsert_capture_event!(
     user:,
@@ -756,7 +778,6 @@ def upsert_capture_notifications!(user:)
     payload: {
       vps_id: 123,
       vps_hostname: 'example-vps',
-      stage: 'raw',
       cgroup: '/user.slice/user-1000.slice/session-2.scope',
       cgroups: ['/user.slice/user-1000.slice/session-2.scope'],
       count: 1,

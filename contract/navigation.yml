@@ -219,6 +219,7 @@ controls:
       - notifications/example-role-routing
       - notifications/example-role-admin-route
       - notifications/example-mute-oom
+      - notifications/grouping-route
       - notifications/example-mute-incident-route
       - notifications/example-telegram-monitoring-route
       - notifications/example-telegram-incident-route
@@ -557,6 +558,17 @@ semantic_selectors:
           page,
           'notifications/example-mute-oom',
           await routeTables(page, 'notifications.route-form', 'cgroup'),
+        );
+
+  - capture: notifications/grouping-route
+    control: notifications.route-form
+    source:
+      path: scenarios/notifications.cjs
+      declaration: |
+        await session.shot(
+          page,
+          'notifications/grouping-route',
+          await routeTables(page, 'notifications.route-form', 'vps_id'),
         );
 
   - capture: notifications/example-mute-incident-route
