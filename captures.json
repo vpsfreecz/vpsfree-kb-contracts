@@ -4314,7 +4314,7 @@
             "width": 610,
             "height": 311
           },
-          "sha256": "0ee700b015bb6bfa1a9c1d38fcf727d7b474ca4851e0f5bcd95073e1d1006746",
+          "sha256": "7161a9b1f6c08a3f6a1a327e2fd1bbfa32b2254c1b12534b38b4e9e27acf21ce",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=receiver_edit&id=8",
@@ -4335,7 +4335,7 @@
             "width": 621,
             "height": 311
           },
-          "sha256": "dd6ada08a4926e1e114309869c4988b7d4c09bc29c8efb0f183a40b20621ead4",
+          "sha256": "9909b554a00c7efab9c996f84c02e5f772b278e3df03adbea49a5859bb1772aa",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=receiver_edit&id=8",
@@ -4372,7 +4372,7 @@
             "width": 821,
             "height": 943
           },
-          "sha256": "ce74f8496357928381d400a25cac7fb714661919dc34b77092babcf6f59c4d56",
+          "sha256": "82277ac2c5ef3cb1ce8e2fad7165ab75e7c38c096f73d6460160d8f015c8e558",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=time_interval_edit&id=1",
@@ -4393,7 +4393,7 @@
             "width": 821,
             "height": 943
           },
-          "sha256": "e15c5dd7ff9527fbb02afc0cee61d6f58b614eb746a18106b6873a2fcdf2b7c1",
+          "sha256": "57b09b3a779a5e96ed10f2d156484b04cd1b86455a9242b9b3c47c23f1082a20",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=time_interval_edit&id=1",
@@ -4428,9 +4428,9 @@
           "review_status": "pending",
           "dimensions": {
             "width": 821,
-            "height": 160
+            "height": 169
           },
-          "sha256": "c410613e150f41f52d9f7f08e55d914b1fd4163a70d13099b0a412defbf79902",
+          "sha256": "389ef724e324677442b7edebeabf84bac31e929369806d4de217862a2284ff13",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=8",
@@ -4449,9 +4449,9 @@
           "review_status": "pending",
           "dimensions": {
             "width": 821,
-            "height": 160
+            "height": 169
           },
-          "sha256": "602bb4ad2564ad20288d2393229c40a7467a860ba1d645ea38867bd1cc2297bb",
+          "sha256": "5fa2f42f7ae29ac4a9afba48bd627fd86e3a13a697a190c1525c59374bceec1b",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=8",
@@ -4488,7 +4488,7 @@
             "width": 611,
             "height": 156
           },
-          "sha256": "e91078a696ee2e2786e34ca28a7a5fc55d990e72115d6c676e90781f2419ab0d",
+          "sha256": "e0bbc4f81215dd6f59df8e026aad3efa919bfe5b26c5cd077a463bd7f81e58a4",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=event_show&id=1",
@@ -4509,7 +4509,7 @@
             "width": 627,
             "height": 156
           },
-          "sha256": "4fd5a00adc953d754d696087c637aaea02e92973d9d34f217d561ab17c6c675a",
+          "sha256": "a11057eef1f0b9ac45061e58b009729c19903a454a58fdc45181e6befb058051",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=event_show&id=1",
@@ -4546,7 +4546,7 @@
             "width": 675,
             "height": 453
           },
-          "sha256": "b4e5dc05ce5735221b7b545cdf428c5f4dcb828f6e1bd06006306ef3cba86e77",
+          "sha256": "199793e51baac91f8b950be9803cf284a035552f2d7f818b65b189cf347a48a5",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=receiver_edit&id=9",
@@ -4567,7 +4567,7 @@
             "width": 706,
             "height": 453
           },
-          "sha256": "659f8a3c03db2805d30fb0c7b6376186d3bb99caa7c03f5aa092d2e8002d9669",
+          "sha256": "7d86ca1acbd4fc99e92ccc9cf9b0ce13d631263051446cd38c9111b3243d5ed4",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=receiver_edit&id=9",
@@ -4601,10 +4601,10 @@
           "output": "screenshots/cs/notifications/example-role-routing.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 510,
-            "height": 488
+            "width": 821,
+            "height": 680
           },
-          "sha256": "25d5ff584f17b287e00d5e625398adae244866a4c28b9f6c05cf3aabe0d2838a",
+          "sha256": "1b50b9a1d05a6f44e0cd5d76873761358695f4edbe40ce7acb9c8e56bb4f7d61",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=13",
@@ -4622,10 +4622,10 @@
           "output": "screenshots/en/notifications/example-role-routing.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 541,
-            "height": 488
+            "width": 821,
+            "height": 623
           },
-          "sha256": "bbb34564628742d1cbbf9afdc254d321f4def422fe5e1076a17145c85ba2c88c",
+          "sha256": "7c61a30563096235bd3ad0550c7448a1e8c80990d00bb9cfb5776a87e1d584f3",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=13",
@@ -4659,10 +4659,10 @@
           "output": "screenshots/cs/notifications/example-role-admin-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 510,
-            "height": 488
+            "width": 821,
+            "height": 680
           },
-          "sha256": "abe8882980836c6c0417c6e1894bd4fb9a10e207d4959984d869cb56d794507e",
+          "sha256": "9e8fe7a083458411e6cbb417ce7624923d0a73279d128f35c928f3ef8aaec188",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=14",
@@ -4680,10 +4680,10 @@
           "output": "screenshots/en/notifications/example-role-admin-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 541,
-            "height": 488
+            "width": 821,
+            "height": 623
           },
-          "sha256": "44985b09e724c548a964a558f30c6a615b55a093e1bbcbe5e1b55e411064ed3e",
+          "sha256": "bc3b20f0f313f6979c40665ba1bf5580662ce1979ca8e1f7c2c5813f2b68bb5d",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=14",
@@ -4775,10 +4775,10 @@
           "output": "screenshots/cs/notifications/example-mute-oom.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 481,
-            "height": 517
+            "width": 821,
+            "height": 889
           },
-          "sha256": "95be54453df0e1e18fe70bd82bfde161dd2e180b9d31d63ba9f2c9f7bbc49dbe",
+          "sha256": "25f8f40f970bf61ceada1f8687f7f4f0ba3f16092e80647db4d17206ca9c48c1",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=10",
@@ -4796,10 +4796,10 @@
           "output": "screenshots/en/notifications/example-mute-oom.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 481,
-            "height": 517
+            "width": 821,
+            "height": 843
           },
-          "sha256": "43b800bc5ef9427cb08a4d15561b10513008b961eefc425b18488f0ba5d08758",
+          "sha256": "f1f1ff64476555ca13f19f89742bebdb3641a45a1d406ff2b19ca8d768d0bea8",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=10",
@@ -4834,9 +4834,9 @@
           "review_status": "pending",
           "dimensions": {
             "width": 821,
-            "height": 274
+            "height": 377
           },
-          "sha256": "cbf56415ffb3b5ff726ea534e24f43679a3ef70e6b49dda1e60777a3ce9b4ca7",
+          "sha256": "8fd5a77b21ef9729b801cc832b15316c952241d04a8413fa74e1278a72c7e239",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=20",
@@ -4855,9 +4855,9 @@
           "review_status": "pending",
           "dimensions": {
             "width": 821,
-            "height": 254
+            "height": 389
           },
-          "sha256": "8a25b6d8302e3aff25b3e63e5a3993bc05f1cae56e0c218474476029e5fd328b",
+          "sha256": "3ff3641f1374770ceb6f8e14dbee2d0adc6841e5d089fa92566c84a841636134",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=20",
@@ -4891,10 +4891,10 @@
           "output": "screenshots/cs/notifications/example-mute-incident-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 500,
-            "height": 517
+            "width": 821,
+            "height": 889
           },
-          "sha256": "9213e16fa026c627f57371559b969a03ad9134caaaeea2fe27c322171984b71b",
+          "sha256": "a90b4c2cf75e93630700ea1981f1734765530130a4214038d4549bd157d9d181",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=11",
@@ -4912,10 +4912,10 @@
           "output": "screenshots/en/notifications/example-mute-incident-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 500,
-            "height": 517
+            "width": 821,
+            "height": 843
           },
-          "sha256": "c31f064f5c6399b9021aeffcab2783aca5db8d6d1867af06962551cd21f0def9",
+          "sha256": "7aeed97e4bc4d2fcbed1678517b7d535f2ceb84dc6d452495b7bf845eafdb134",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=11",
@@ -5010,7 +5010,7 @@
             "width": 821,
             "height": 233
           },
-          "sha256": "b29f3f65295046c3f9b56796b7f1054808e5c541e2fa52deda9f3c036007f0c3",
+          "sha256": "b79d292785cf213275fcddc8ae1ce1749f743b731f7ef1a34085a892fcde92bb",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=target_edit&id=8",
@@ -5068,7 +5068,7 @@
             "width": 711,
             "height": 453
           },
-          "sha256": "b10a20f15ef1e56f789f237825dd229afd565d37c7e5c695dd9fb1c424c1cec6",
+          "sha256": "43bbb3dd4cd01238408eae58058f7ad1e945f616c4187287ac10fd543680b14c",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=receiver_edit&id=11",
@@ -5089,7 +5089,7 @@
             "width": 719,
             "height": 453
           },
-          "sha256": "6edb25693a674b1ee0876e822efb1f36a45c531424290b2a21bf4c4a65b7c74c",
+          "sha256": "a417fdb482b6a83c11b6b10eb7eabde3eb7b8077b5ffc8c34bb29c4beb3bca8d",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=receiver_edit&id=11",
@@ -5123,10 +5123,10 @@
           "output": "screenshots/cs/notifications/example-telegram-monitoring-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 413,
-            "height": 321
+            "width": 821,
+            "height": 513
           },
-          "sha256": "7cd756e047e75c62a29c737e9176b32ce30c640121846de25af38575f1f146ec",
+          "sha256": "b68f3e681cbfb43d60bd538c1aec8c3fbd7d5175ee380a5835da5edb207b4309",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=15",
@@ -5144,10 +5144,10 @@
           "output": "screenshots/en/notifications/example-telegram-monitoring-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 415,
-            "height": 321
+            "width": 821,
+            "height": 455
           },
-          "sha256": "a4c3bfc2ab1d33f4d89fcd83ad67dbd343f5265e295bbf1567eacb56330f0dae",
+          "sha256": "fa37689ffc18690213fd22bc4468d575e496c8980e7d79bc76c50b16b5f2ac8e",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=15",
@@ -5181,10 +5181,10 @@
           "output": "screenshots/cs/notifications/example-telegram-incident-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 413,
-            "height": 321
+            "width": 821,
+            "height": 513
           },
-          "sha256": "4951436738b8629c4463fd3def013ccf360f91a136d92363fb11d94ae391ed0c",
+          "sha256": "a3c093f271e2e544f8e7f9e0aebd3c95eb9f58a4550daa68ccb0d3768d32bbb8",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=16",
@@ -5202,10 +5202,10 @@
           "output": "screenshots/en/notifications/example-telegram-incident-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 415,
-            "height": 321
+            "width": 821,
+            "height": 455
           },
-          "sha256": "56b13cb8098394729104c714b4e90ccc57c44209341560fb66f7efe5f9b14b58",
+          "sha256": "e29ff0d62d55c901399700dcfd1909bfe26bbbcc0c6e009494d73dea0609a563",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=16",
@@ -5300,7 +5300,7 @@
             "width": 821,
             "height": 411
           },
-          "sha256": "0c29258211eea40ca7e943f1fbd1f884bde3fee04e4e57257a6c3b3d2b1175ae",
+          "sha256": "65d1000c22d503cecc2f7ff9cd0edad54225381831869f7137020731ba3ef238",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=target_edit&id=10",
@@ -5321,7 +5321,7 @@
             "width": 821,
             "height": 411
           },
-          "sha256": "8cc6e938382247d44633ae46a7a3df4da628f3983a7e900f75589ce99dd8691e",
+          "sha256": "67a101798f3083dca3683b89ccc5726401bfbd69c9eae782aedc52e137836ca6",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=target_edit&id=10",
@@ -5358,7 +5358,7 @@
             "width": 610,
             "height": 453
           },
-          "sha256": "ee4eec151e9290b9907c468a1468e78f0093e0629d121812b3eb4396399e19fc",
+          "sha256": "bf6b307039367d90feb5d771595142a81a1219ed67ab37e486149cd460f1039e",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=receiver_edit&id=12",
@@ -5379,7 +5379,7 @@
             "width": 632,
             "height": 453
           },
-          "sha256": "e53c3935e273c937dc55fea6131fc8112655eee9970ac9d811b79e48be42ee0d",
+          "sha256": "f4f90bf2b3e4d237725a646228f80b46e7846faab1ed6d08daf44862dd96dc09",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=receiver_edit&id=12",
@@ -5413,10 +5413,10 @@
           "output": "screenshots/cs/notifications/example-sms-account-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 413,
-            "height": 321
+            "width": 821,
+            "height": 513
           },
-          "sha256": "85759b9720e636eaba0fabce7bbd46d8e1bf8726266e8169365c38f9febdad67",
+          "sha256": "61a4a79a6b16357ba5766f7683d7ff46ef466cedfd796bea9e56ca24cdeeae53",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=17",
@@ -5434,10 +5434,10 @@
           "output": "screenshots/en/notifications/example-sms-account-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 415,
-            "height": 321
+            "width": 821,
+            "height": 455
           },
-          "sha256": "9367b40b80e92a33bb9960948616de79f1dd4b1e9c13eee88e5a263dd2a3938c",
+          "sha256": "27122b01eccb06c9601d332d11c26b050b816b619f752da5307119b28ba3c48a",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=17",
@@ -5471,10 +5471,10 @@
           "output": "screenshots/cs/notifications/example-sms-vps-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 413,
-            "height": 321
+            "width": 821,
+            "height": 513
           },
-          "sha256": "29a164b0079b84db0b2407ff9d12347f5eee63ae79d45de5a98517554e43fde0",
+          "sha256": "9f1958f8a099f9b12fe40906960250ebbc74cf464f8682cfd358a73ed3885d14",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=18",
@@ -5492,10 +5492,10 @@
           "output": "screenshots/en/notifications/example-sms-vps-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 415,
-            "height": 321
+            "width": 821,
+            "height": 455
           },
-          "sha256": "ce958b63c071d7f90141432979dbc7ecb440c4ec6911758e0ebe2ff9efbf905b",
+          "sha256": "04dcc061c74f3cf9f0e223f65762bfbb200e8e731c87f02a4e35aa704dcf4c35",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=18",
@@ -5590,7 +5590,7 @@
             "width": 821,
             "height": 257
           },
-          "sha256": "3374d6a56eabbcb537c2d700090e15e549d3ac5b995b63a1543c396a5694d3f3",
+          "sha256": "4596ae8d32a0a4e8e6a5a381034130607b62be24361581e3edd6966992b272ac",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=target_edit&id=11",
@@ -5611,7 +5611,7 @@
             "width": 821,
             "height": 257
           },
-          "sha256": "530ef7a0bbc7bfece2b4d310c133a4b3d52c22b6d3f5ca7b2bc376e04dfa918e",
+          "sha256": "0f6e0cb39bb30f2f36aac411b220124a440ee01f4a55bebf4bf1cb91a29e127c",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=target_edit&id=11",
@@ -5648,7 +5648,7 @@
             "width": 737,
             "height": 453
           },
-          "sha256": "f5df282a818200896f85691fd2b9245170465c564c2eb79512a7b289425d6863",
+          "sha256": "cb9f9fbb752087371b89bb3037722f6ca0857f16beca8ba043a8f55a5ffc2fc4",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=receiver_edit&id=13",
@@ -5669,7 +5669,7 @@
             "width": 769,
             "height": 453
           },
-          "sha256": "ffd39220fe3b986d530faf156a048bd1452490609cb1d71249266647676d652d",
+          "sha256": "711feffe549a7cfa1d3051055035addfb6a02db86226832022919a781764329c",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=receiver_edit&id=13",
@@ -5703,10 +5703,10 @@
           "output": "screenshots/cs/notifications/example-webhook-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 413,
-            "height": 321
+            "width": 821,
+            "height": 513
           },
-          "sha256": "e644c6dc6ddaec1443368470a39e4047015885b063d5eeb894ef091a1eff8d72",
+          "sha256": "85f18dd0c5457811e5b5b11e581bb1db6b21e7eabf6875bff811924656f8e248",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=19",
@@ -5724,10 +5724,10 @@
           "output": "screenshots/en/notifications/example-webhook-route.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 415,
-            "height": 321
+            "width": 821,
+            "height": 455
           },
-          "sha256": "5ba59ce2e8b31e7b140bec0cb0ea17766887ef91cd69773b563c0d69dd113242",
+          "sha256": "5d188a9e5335db67bd41509720e27d1a3370025c639e235e2962af222b86246a",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=19",
