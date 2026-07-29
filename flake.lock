@@ -164,17 +164,17 @@
         "vpsadminos": "vpsadminos"
       },
       "locked": {
-        "lastModified": 1785089456,
-        "narHash": "sha256-fcKQn9IPnZMmZflM0z3JM1G+Zbe9+T+rCmmE+eeo5gI=",
+        "lastModified": 1785409379,
+        "narHash": "sha256-HOuD6W4irFHjn57nu7VU/sKxFTmEwHnVKyvr7OmuJIc=",
         "owner": "vpsfreecz",
         "repo": "vpsadmin",
-        "rev": "5e04c0c50173157bf3e55a69370397da43db78ea",
+        "rev": "a1321b2485ce5f14087d4d93429a97ea8cf28306",
         "type": "github"
       },
       "original": {
         "owner": "vpsfreecz",
         "repo": "vpsadmin",
-        "rev": "5e04c0c50173157bf3e55a69370397da43db78ea",
+        "rev": "a1321b2485ce5f14087d4d93429a97ea8cf28306",
         "type": "github"
       }
     },
