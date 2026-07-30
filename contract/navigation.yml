@@ -143,7 +143,7 @@ controls:
     source:
       path: webui/pages/page_adminm.php
       contains: "action=pubkeys"
-      fingerprint: 82a62335809cd562321876c9e1fc4167c0229db1d78c2dbffc81d553f68f5bdf
+      fingerprint: ce9d9c61ace7aa580287f830b0bce9a47184c964e4df195945f79d117b7439c1
     captures:
       - ssh-keys/deploy-public-key
 
@@ -182,16 +182,6 @@ controls:
     captures:
       - environments/environment-configs
 
-  - id: member.advanced-email-configuration
-    label: { en: Advanced e-mail configuration, cs: Pokročilá konfigurace e-mailu }
-    source:
-      path: webui/pages/page_adminm.php
-      contains: "action=template_recipients"
-      fingerprint: a21d29ff82087c0bf7da3ca992aee0d6de20ae4e4b54abd8054c9ba0218b65a4
-    captures:
-      - account/mail-template-recipients
-      - account/email-roles
-
   - id: member.totp-devices
     label: { en: TOTP devices, cs: TOTP zařízení }
     source:
@@ -219,6 +209,79 @@ controls:
     captures:
       - account/session-list
       - account/session-settings
+
+  - id: notifications.menu
+    label: { en: Notifications, cs: Notifikace }
+    source:
+      path: webui/public/index.php
+      contains: "'notifications.menu'"
+      fingerprint: 91c5fbd4f814260030c88263e2d25c45946cd8df3d621805b7af0efe98aece3e
+
+  - id: notifications.events
+    label: { en: Event log, cs: Události }
+    source:
+      path: webui/forms/notifications.forms.php
+      contains: "'notifications.events'"
+      fingerprint: 2b3a450670e46bd44cc6d8562eeee21d5f858a01a2beea8dc5be0e8a545d0ede
+
+  - id: notifications.routes
+    label: { en: Routes, cs: Routy }
+    source:
+      path: webui/forms/notifications.forms.php
+      contains: "'notifications.routes'"
+      fingerprint: 1a3e412d41aaf9f72ce2f337190a4cd1861b4bdfcb6705e70e269fa9e32f2ec0
+    captures:
+      - notifications/routes
+
+  - id: notifications.receivers
+    label: { en: Receivers, cs: Příjemci }
+    source:
+      path: webui/forms/notifications.forms.php
+      contains: "'notifications.receivers'"
+      fingerprint: 8c03718bfbe881d8e03432ced85cb5d6e612637126cef935f551e1423fc6ab91
+
+  - id: notifications.receiver-form
+    label: { en: Update receiver, cs: Upravit příjemce }
+    source:
+      path: webui/forms/notifications.forms.php
+      contains: "'notifications.receiver-form'"
+      fingerprint: 748e74b9ceb6a508213b449b0baec4593695ffa428297ecdba28aabaf9ce016f
+    captures:
+      - notifications/receiver
+
+  - id: notifications.time-intervals
+    label: { en: Time intervals, cs: Časové intervaly }
+    source:
+      path: webui/forms/notifications.forms.php
+      contains: "'notifications.time-intervals'"
+      fingerprint: dbe1123ea5391e0c5c0e3f69fdcb5267dab513d5d3147b131fc74f4b1a4b65ec
+
+  - id: notifications.time-interval-form
+    label: { en: Update time interval, cs: Upravit časový interval }
+    source:
+      path: webui/forms/notifications.forms.php
+      contains: "'notifications.time-interval-form'"
+      fingerprint: 2294c134c5dea53a1978d86fa017895d23caf3205da47e9e4bd43bc3c0a8403c
+    captures:
+      - notifications/time-interval
+
+  - id: notifications.route-time-intervals
+    label: { en: Route time intervals, cs: Časové intervaly routy }
+    source:
+      path: webui/forms/notifications.forms.php
+      contains: "'notifications.route-time-intervals'"
+      fingerprint: 0a2d4b33482713ecf365e91acceddb0bc2c4331a3bcb909d19fb0448a0243d52
+    captures:
+      - notifications/route-time-intervals
+
+  - id: notifications.event-route-matches
+    label: { en: Matched routes, cs: Odpovídající routy }
+    source:
+      path: webui/forms/notifications.forms.php
+      contains: "'notifications.event-route-matches'"
+      fingerprint: e840d1c58bb53f0fb853c3d98cdde7a055c81a8a1187aed75139731ff620493c
+    captures:
+      - notifications/event-suppressed
 
   - id: networking.menu
     label: { en: Networking, cs: Sítě }
@@ -263,7 +326,7 @@ controls:
     source:
       path: webui/public/index.php
       contains: "?page=dns"
-      fingerprint: 9297933197a903d22c9984e442dec634313559fe7080a6ba48855b87865cca0c
+      fingerprint: 15d7f05fc194eea86d2aade4b348fbd333bdc9232e20d3bf872073ceb6f3a67e
 
   - id: dns.primary-zones
     label: { en: Primary zones, cs: Primární zóny }
@@ -425,6 +488,61 @@ semantic_selectors:
           'vps.boot-rescue',
         );
 
+  - capture: notifications/routes
+    control: notifications.routes
+    source:
+      path: scenarios/notifications.cjs
+      declaration: |
+        await session.locator(
+          page,
+          'notifications/routes',
+          documentationTable(page, 'notifications.routes'),
+        );
+
+  - capture: notifications/receiver
+    control: notifications.receiver-form
+    source:
+      path: scenarios/notifications.cjs
+      declaration: |
+        await session.locator(
+          page,
+          'notifications/receiver',
+          documentationTable(page, 'notifications.receiver-form'),
+        );
+
+  - capture: notifications/time-interval
+    control: notifications.time-interval-form
+    source:
+      path: scenarios/notifications.cjs
+      declaration: |
+        await session.locator(
+          page,
+          'notifications/time-interval',
+          documentationTable(page, 'notifications.time-interval-form'),
+        );
+
+  - capture: notifications/route-time-intervals
+    control: notifications.route-time-intervals
+    source:
+      path: scenarios/notifications.cjs
+      declaration: |
+        await session.locator(
+          page,
+          'notifications/route-time-intervals',
+          documentationTable(page, 'notifications.route-time-intervals'),
+        );
+
+  - capture: notifications/event-suppressed
+    control: notifications.event-route-matches
+    source:
+      path: scenarios/notifications.cjs
+      declaration: |
+        await session.locator(
+          page,
+          'notifications/event-suppressed',
+          documentationTable(page, 'notifications.event-route-matches'),
+        );
+
 paths:
   - id: session.login.open
     steps: [session.login]
@@ -486,12 +604,6 @@ paths:
       cs: [navody:vps:uzivatele]
       en: [manuals:vps:users]
 
-  - id: member.advanced-email-configuration.open
-    steps: [member.edit-profile, member.advanced-email-configuration]
-    pages:
-      cs: [navody:vps:uzivatele]
-      en: [manuals:vps:users]
-
   - id: member.totp-devices.open
     steps: [member.edit-profile, member.totp-devices]
     pages:
@@ -503,6 +615,42 @@ paths:
     pages:
       cs: [navody:vps:uzivatele]
       en: [manuals:vps:users]
+
+  - id: notifications.open
+    steps: [notifications.menu]
+    pages:
+      cs: [navody:notifikace, navody:vps:uzivatele]
+      en: [manuals:notifications, manuals:vps:users]
+
+  - id: notifications.routes.open
+    steps: [notifications.menu, notifications.routes]
+    pages:
+      cs: [navody:notifikace]
+      en: [manuals:notifications]
+
+  - id: notifications.receivers.open
+    steps: [notifications.menu, notifications.receivers, notifications.receiver-form]
+    pages:
+      cs: [navody:notifikace]
+      en: [manuals:notifications]
+
+  - id: notifications.time-intervals.open
+    steps: [notifications.menu, notifications.time-intervals, notifications.time-interval-form]
+    pages:
+      cs: [navody:notifikace]
+      en: [manuals:notifications]
+
+  - id: notifications.route-time-intervals.open
+    steps: [notifications.menu, notifications.routes, notifications.route-time-intervals]
+    pages:
+      cs: [navody:notifikace]
+      en: [manuals:notifications]
+
+  - id: notifications.event-route-matches.open
+    steps: [notifications.menu, notifications.events, notifications.event-route-matches]
+    pages:
+      cs: [navody:notifikace]
+      en: [manuals:notifications]
 
   - id: networking.routable-addresses.open
     steps: [networking.menu, networking.routable-addresses]
