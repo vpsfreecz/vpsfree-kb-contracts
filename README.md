@@ -67,7 +67,7 @@ example `cs:screenshots:vpsadmin:console:web-console.png`. Display-order
 prefixes and revision suffixes are deliberately absent: scenario code defines
 capture order, while Git and DokuWiki provide revision history.
 
-`captures.json` contains 60 language-neutral screenshot concepts. Every
+`captures.json` contains 87 language-neutral screenshot concepts. Every
 concept has Czech and English variants with independent source-page bindings,
 canonical media ID, output, dimensions, SHA-256, review state, and capture
 provenance; migrated screenshots also retain their legacy identities. Topic,
