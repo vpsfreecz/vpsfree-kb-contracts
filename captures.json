@@ -4237,6 +4237,7 @@
       "scenario": "notifications",
       "checkpoint": "notifications/routes",
       "driver": "webui",
+      "retired": true,
       "fixtures": [],
       "description": "Notification routes with deterministic documentation examples",
       "viewport": {
@@ -4248,18 +4249,16 @@
         "cs": {
           "legacy_aliases": [],
           "wiki": {
-            "source_pages": [
-              "navody:notifikace"
-            ],
+            "source_pages": [],
             "media_id": "cs:screenshots:vpsadmin:notifications:routes.png"
           },
           "output": "screenshots/cs/notifications/routes.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 835,
-            "height": 348
+            "width": 884,
+            "height": 922
           },
-          "sha256": "94738ad34c61dc11edc068dbfe9bb416487655af8f69c6759a1d6c77dd9cd297",
+          "sha256": "1a6eaceecd87ea6b22bafea466ca1da8cd6e8ee4beb16608c1befffda5bc1a28",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=routes",
@@ -4269,18 +4268,16 @@
         "en": {
           "legacy_aliases": [],
           "wiki": {
-            "source_pages": [
-              "manuals:notifications"
-            ],
+            "source_pages": [],
             "media_id": "en:screenshots:vpsadmin:notifications:routes.png"
           },
           "output": "screenshots/en/notifications/routes.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 821,
-            "height": 329
+            "width": 826,
+            "height": 903
           },
-          "sha256": "bff3b5484a4d6fc19fd0bb97cff07196ef77d16c89777a270248dc45817f99ab",
+          "sha256": "310470b0e605a6c23c7ac239eb2fae9ef887b1dadda84aab6ca20478fa213c4c",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=routes",
@@ -4338,7 +4335,7 @@
             "width": 621,
             "height": 311
           },
-          "sha256": "9909b554a00c7efab9c996f84c02e5f772b278e3df03adbea49a5859bb1772aa",
+          "sha256": "dd6ada08a4926e1e114309869c4988b7d4c09bc29c8efb0f183a40b20621ead4",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=receiver_edit&id=8",
@@ -4396,7 +4393,7 @@
             "width": 821,
             "height": 943
           },
-          "sha256": "57b09b3a779a5e96ed10f2d156484b04cd1b86455a9242b9b3c47c23f1082a20",
+          "sha256": "e15c5dd7ff9527fbb02afc0cee61d6f58b614eb746a18106b6873a2fcdf2b7c1",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=time_interval_edit&id=1",
@@ -4433,10 +4430,10 @@
             "width": 821,
             "height": 169
           },
-          "sha256": "ac7e16c9756ae1e3915c3efc8bd1a9860f409599a92e415322ca9850ba1df83f",
+          "sha256": "25a71613eeae1afe651cdef430a9f650ec18e3a145cfdbe0f9370a075d15662c",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=8",
+            "page": "/?page=notifications&action=route_edit&id=11",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -4454,10 +4451,10 @@
             "width": 821,
             "height": 169
           },
-          "sha256": "934adb0770c163bde825ff84eacf68694aaf38cfbf3463ecb03bcf05f229f490",
+          "sha256": "badd1cd6deaee36d9e6f848fdad8d5474efdb22899f9f8b826da978aa7123d6d",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=route_edit&id=8",
+            "page": "/?page=notifications&action=route_edit&id=11",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -4491,10 +4488,10 @@
             "width": 611,
             "height": 156
           },
-          "sha256": "13cd491b775f353536d82a1fed33b31e28661565782a5fbee67b2406fa659fc0",
+          "sha256": "e8921029d500cf017a9f0bab1282a68cecfd30588b9f5d26f8e50ab2b4cd7558",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=event_show&id=4",
+            "page": "/?page=notifications&action=event_show&id=1",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         },
@@ -4512,10 +4509,1286 @@
             "width": 627,
             "height": 156
           },
-          "sha256": "bae5860bb0ce09ed73a31c361adfa517904463551758f198cc6ea9ec4742e38a",
+          "sha256": "31c90d3bd2e2da9f1beca8f56124c408cdf421634d6a8f17a5745d4c077f7481",
           "capture": {
             "driver": "webui",
-            "page": "/?page=notifications&action=event_show&id=4",
+            "page": "/?page=notifications&action=event_show&id=1",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-role-receiver",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-role-receiver",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Account-role e-mail receiver and its target",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-role-receiver.png"
+          },
+          "output": "screenshots/cs/notifications/example-role-receiver.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 675,
+            "height": 453
+          },
+          "sha256": "199793e51baac91f8b950be9803cf284a035552f2d7f818b65b189cf347a48a5",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=receiver_edit&id=9",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-role-receiver.png"
+          },
+          "output": "screenshots/en/notifications/example-role-receiver.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 706,
+            "height": 453
+          },
+          "sha256": "659f8a3c03db2805d30fb0c7b6376186d3bb99caa7c03f5aa092d2e8002d9669",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=receiver_edit&id=9",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-role-routing",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-role-routing",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Role matcher on an additive notification route",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-role-routing.png"
+          },
+          "output": "screenshots/cs/notifications/example-role-routing.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 677
+          },
+          "sha256": "0cc18c58019f0b087a05d4bceff6883c5076d2f2567684bdd21b4f97ab6f3009",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=16",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-role-routing.png"
+          },
+          "output": "screenshots/en/notifications/example-role-routing.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 658
+          },
+          "sha256": "49e7544dd5bb179f6e58e23ad95a21cf759b0206fcc12b7c93070f784de74552",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=16",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-role-admin-route",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-role-admin-route",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Admin event-role matcher on an additive notification route",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-role-admin-route.png"
+          },
+          "output": "screenshots/cs/notifications/example-role-admin-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 677
+          },
+          "sha256": "11d8468bc76f2fe948048ecd34470173dab5ecdd908820cfe48e7677977b58f9",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=17",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-role-admin-route.png"
+          },
+          "output": "screenshots/en/notifications/example-role-admin-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 658
+          },
+          "sha256": "238f21f641218e20cbaf19cf3da58e84db2fe89679ee1d7b9789bc014b7232b3",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=17",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-role-result",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-role-result",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Event log result matching both account and admin role routes",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-role-result.png"
+          },
+          "output": "screenshots/cs/notifications/example-role-result.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 412,
+            "height": 121
+          },
+          "sha256": "fc153dc469993fcdd4de93f9a9ae3a54cab38eb6e1a27c5cee17b1d2553d4571",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=event_show&id=2",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-role-result.png"
+          },
+          "output": "screenshots/en/notifications/example-role-result.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 413,
+            "height": 121
+          },
+          "sha256": "9fb732cd6a365f43ac955edc7701aefc20c1c235d32ba067bcfde1c785169b9e",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=event_show&id=2",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-mute-oom",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-mute-oom",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Muted raw OOM route selected by VPS and cgroup",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-mute-oom.png"
+          },
+          "output": "screenshots/cs/notifications/example-mute-oom.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 705
+          },
+          "sha256": "bd41a7220c9800947cef9876448062e1565553fbf4c6ef73d84d455ab3452afa",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=13",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-mute-oom.png"
+          },
+          "output": "screenshots/en/notifications/example-mute-oom.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 686
+          },
+          "sha256": "768a9ca3c433013335f643d28e0fe76cbfb61fdf5ee1693278c08abc2a03579d",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=13",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/grouping-route",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/grouping-route",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "OOM notification route grouped by VPS with explicit timing",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:grouping-route.png"
+          },
+          "output": "screenshots/cs/notifications/grouping-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 677
+          },
+          "sha256": "0281d1b877b15dcf897a51d05398b5a857d9d49f7ad2e8cd49c04f679b805e41",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=23",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:grouping-route.png"
+          },
+          "output": "screenshots/en/notifications/grouping-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 658
+          },
+          "sha256": "e5a97910401fdab64252e31deb4cc7dc12b397ba98dd0b75e37e0a557a585815",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=23",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-mute-incident-route",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-mute-incident-route",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Muted incident route selected by codename and VPS ID",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-mute-incident-route.png"
+          },
+          "output": "screenshots/cs/notifications/example-mute-incident-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 705
+          },
+          "sha256": "c8a22e7a633fc74c43448fe81d2f7c853d089b4337085b34a781bcde0c4ef5f0",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=14",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-mute-incident-route.png"
+          },
+          "output": "screenshots/en/notifications/example-mute-incident-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 686
+          },
+          "sha256": "6a4c6ade6c07834fbfb1d0d656723e1ec990a6795e337800e872f5f43667b49a",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=14",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-mute-result",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-mute-result",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Event log result stopped by an incident mute route",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-mute-result.png"
+          },
+          "output": "screenshots/cs/notifications/example-mute-result.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 422,
+            "height": 69
+          },
+          "sha256": "487dc94659f4961e0284edc8dec50342a0b45382892332dc816a0353b4e0e7e2",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=event_show&id=3",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-mute-result.png"
+          },
+          "output": "screenshots/en/notifications/example-mute-result.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 422,
+            "height": 69
+          },
+          "sha256": "933679a955b0fb562e4284ef828928f97194aa1aca5a6adf2ad153fe5dba49bc",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=event_show&id=3",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-telegram-target",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-telegram-target",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Telegram notification target with pairing controls",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-telegram-target.png"
+          },
+          "output": "screenshots/cs/notifications/example-telegram-target.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 233
+          },
+          "sha256": "b79d292785cf213275fcddc8ae1ce1749f743b731f7ef1a34085a892fcde92bb",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=target_edit&id=8",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-telegram-target.png"
+          },
+          "output": "screenshots/en/notifications/example-telegram-target.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 664,
+            "height": 194
+          },
+          "sha256": "b4613f4dd024dbc0cb0f1e6ffda1b8739bd6e3c64a78ec74101bef623b919f73",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=target_edit&id=8",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-telegram",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-telegram",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Paired Telegram target linked to a receiver",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-telegram.png"
+          },
+          "output": "screenshots/cs/notifications/example-telegram.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 711,
+            "height": 453
+          },
+          "sha256": "43bbb3dd4cd01238408eae58058f7ad1e945f616c4187287ac10fd543680b14c",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=receiver_edit&id=11",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-telegram.png"
+          },
+          "output": "screenshots/en/notifications/example-telegram.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 719,
+            "height": 453
+          },
+          "sha256": "6edb25693a674b1ee0876e822efb1f36a45c531424290b2a21bf4c4a65b7c74c",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=receiver_edit&id=11",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-telegram-monitoring-route",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-telegram-monitoring-route",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Telegram route for the monitoring event family",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-telegram-monitoring-route.png"
+          },
+          "output": "screenshots/cs/notifications/example-telegram-monitoring-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 509
+          },
+          "sha256": "62da4f19f8fe8eac4ac756b4341ca6ff42027adea0435c3bdd46a2c3c475c138",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=18",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-telegram-monitoring-route.png"
+          },
+          "output": "screenshots/en/notifications/example-telegram-monitoring-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 490
+          },
+          "sha256": "3e44c9a1123e94c36c032feb4a285ae9d95d427710789fb0cf63a5dcb7f50262",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=18",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-telegram-incident-route",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-telegram-incident-route",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Telegram route for incident reports",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-telegram-incident-route.png"
+          },
+          "output": "screenshots/cs/notifications/example-telegram-incident-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 509
+          },
+          "sha256": "60b96c3c105a9bb024739023501d2465a8fd64d98b32094f6f3fc0d51ca50de0",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=19",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-telegram-incident-route.png"
+          },
+          "output": "screenshots/en/notifications/example-telegram-incident-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 490
+          },
+          "sha256": "2dc98e0dc796817f5adf7a1511a609660ccee6da57bfd3ff3de269b0b2bdcacc",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=19",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-telegram-result",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-telegram-result",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Telegram connection test stopped at its temporary delivery route",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-telegram-result.png"
+          },
+          "output": "screenshots/cs/notifications/example-telegram-result.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 412,
+            "height": 69
+          },
+          "sha256": "409867a521dc4cbc65019387d0ef7413b6e916c250a9d4afeedfda830edf0b30",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=event_show&id=5",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-telegram-result.png"
+          },
+          "output": "screenshots/en/notifications/example-telegram-result.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 412,
+            "height": 69
+          },
+          "sha256": "2018bb8dd2062124b5fba8fee14f0238ef0a3732a0b59c6e10c6ad12e6040179",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=event_show&id=5",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-sms-verification",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-sms-verification",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "SMS target verification form",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-sms-verification.png"
+          },
+          "output": "screenshots/cs/notifications/example-sms-verification.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 411
+          },
+          "sha256": "65d1000c22d503cecc2f7ff9cd0edad54225381831869f7137020731ba3ef238",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=target_edit&id=12",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-sms-verification.png"
+          },
+          "output": "screenshots/en/notifications/example-sms-verification.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 411
+          },
+          "sha256": "8cc6e938382247d44633ae46a7a3df4da628f3983a7e900f75589ce99dd8691e",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=target_edit&id=12",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-sms",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-sms",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Verified SMS target linked to a suspension receiver",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-sms.png"
+          },
+          "output": "screenshots/cs/notifications/example-sms.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 610,
+            "height": 453
+          },
+          "sha256": "bf6b307039367d90feb5d771595142a81a1219ed67ab37e486149cd460f1039e",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=receiver_edit&id=12",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-sms.png"
+          },
+          "output": "screenshots/en/notifications/example-sms.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 632,
+            "height": 453
+          },
+          "sha256": "e53c3935e273c937dc55fea6131fc8112655eee9970ac9d811b79e48be42ee0d",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=receiver_edit&id=12",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-sms-account-route",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-sms-account-route",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "SMS route for account suspensions",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-sms-account-route.png"
+          },
+          "output": "screenshots/cs/notifications/example-sms-account-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 509
+          },
+          "sha256": "a195200b18494bd4b143f9788992c71097a9c724e103d06112137ea1ca209ddc",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=20",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-sms-account-route.png"
+          },
+          "output": "screenshots/en/notifications/example-sms-account-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 490
+          },
+          "sha256": "83219e5a567a7e302f75ae15b445ce3bd6d7ab30adb66e705ea40118410a8f3c",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=20",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-sms-vps-route",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-sms-vps-route",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "SMS route for VPS suspensions",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-sms-vps-route.png"
+          },
+          "output": "screenshots/cs/notifications/example-sms-vps-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 509
+          },
+          "sha256": "c48304eb2107e1acda6c28f97c5b3a4031277ce1f5163c27f92eec62c19add14",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=21",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-sms-vps-route.png"
+          },
+          "output": "screenshots/en/notifications/example-sms-vps-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 490
+          },
+          "sha256": "58a953e777416c85722e500adde30a2d6747e106f713f29482547028b7efde35",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=21",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-sms-result",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-sms-result",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Account suspension test matched its SMS delivery route",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-sms-result.png"
+          },
+          "output": "screenshots/cs/notifications/example-sms-result.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 415,
+            "height": 69
+          },
+          "sha256": "bdfdb0bf16b1bcbad1221f46e93da1fecf9e4f9006aca66bfc29168bd3ab5d3e",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=event_show&id=6",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-sms-result.png"
+          },
+          "output": "screenshots/en/notifications/example-sms-result.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 416,
+            "height": 69
+          },
+          "sha256": "f6abd41fd87846da62686422e9a51421ecbcc47ec46b5df4fa4d80f8e8407b9c",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=event_show&id=6",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-webhook-target",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-webhook-target",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Signed webhook target URL and secret",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-webhook-target.png"
+          },
+          "output": "screenshots/cs/notifications/example-webhook-target.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 257
+          },
+          "sha256": "4596ae8d32a0a4e8e6a5a381034130607b62be24361581e3edd6966992b272ac",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=target_edit&id=10",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-webhook-target.png"
+          },
+          "output": "screenshots/en/notifications/example-webhook-target.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 257
+          },
+          "sha256": "530ef7a0bbc7bfece2b4d310c133a4b3d52c22b6d3f5ca7b2bc376e04dfa918e",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=target_edit&id=10",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-webhook",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-webhook",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Signed webhook target linked to a resource-change receiver",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-webhook.png"
+          },
+          "output": "screenshots/cs/notifications/example-webhook.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 737,
+            "height": 453
+          },
+          "sha256": "cb9f9fbb752087371b89bb3037722f6ca0857f16beca8ba043a8f55a5ffc2fc4",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=receiver_edit&id=13",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-webhook.png"
+          },
+          "output": "screenshots/en/notifications/example-webhook.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 769,
+            "height": 453
+          },
+          "sha256": "ffd39220fe3b986d530faf156a048bd1452490609cb1d71249266647676d652d",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=receiver_edit&id=13",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-webhook-route",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-webhook-route",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Webhook route for VPS resource changes",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-webhook-route.png"
+          },
+          "output": "screenshots/cs/notifications/example-webhook-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 509
+          },
+          "sha256": "838a0954cba044e8bf4291894e7f168b92512626e545035028db49976a766d4b",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=22",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-webhook-route.png"
+          },
+          "output": "screenshots/en/notifications/example-webhook-route.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 490
+          },
+          "sha256": "85af581e276612eefb59e7257718032db0a31bbd3ca30d734d5ac69fcd0efad7",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=route_edit&id=22",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/example-webhook-result",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/example-webhook-result",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "VPS resource-change test stopped at its temporarily non-continuing webhook route",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:example-webhook-result.png"
+          },
+          "output": "screenshots/cs/notifications/example-webhook-result.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 449,
+            "height": 69
+          },
+          "sha256": "9397ad6e9a80a566247634bfda5a618db31aa3c28b2af1c35a5357f411442904",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=event_show&id=7",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:example-webhook-result.png"
+          },
+          "output": "screenshots/en/notifications/example-webhook-result.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 450,
+            "height": 69
+          },
+          "sha256": "20a159b73c1a677e9c7bdb70d6686274cf6a0b9708712582302ef13896030815",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=event_show&id=7",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
