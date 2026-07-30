@@ -42,8 +42,7 @@ let
   productionLocationDomains = builtins.listToAttrs (
     builtins.concatLists (
       map (
-        environment:
-        map (location: nameValuePair location.key location.domain) environment.locations
+        environment: map (location: nameValuePair location.key location.domain) environment.locations
       ) productionShape.environments
     )
   );
@@ -147,13 +146,22 @@ let
   telegramSecretsVmDir = "/var/lib/vpsadmin/devcluster-telegram";
   telegramBotTokenFile = "${telegramSecretsVmDir}/bot-token";
   telegramWebhookSecretFile = "${telegramSecretsVmDir}/webhook-secret";
-  vpsadminNotificationsModule = vpsadmin.outPath + "/nixos/modules/vpsadmin/notifications.nix";
-  vpsadminNotificationsModuleText =
-    if builtins.pathExists vpsadminNotificationsModule then
-      builtins.readFile vpsadminNotificationsModule
-    else
-      "";
-  vpsadminSupportsSms = lib.hasInfix "sms = {" vpsadminNotificationsModuleText;
+  documentationTelegramBotTokenFile = pkgs.writeText "vpsadmin-documentation-telegram-bot-token" "000000000:documentation-only-token\n";
+  documentationSmsGatewayTokenFile = pkgs.writeText "vpsadmin-documentation-sms-gateway-token" "documentation-only-token\n";
+  documentationSeedNotificationsFile =
+    pkgs.writeText "vpsadmin-documentation-seed-notifications.yml"
+      (
+        builtins.toJSON {
+          telegram = {
+            enabled = true;
+            configured = true;
+          };
+          sms = {
+            enabled = true;
+            configured = true;
+          };
+        }
+      );
   smsConfig = devConfig.sms or { };
   # Screenshot fixtures do not exercise SMS delivery. Keeping it disabled also
   # avoids introducing an unrelated private repository as a cluster input.
@@ -506,9 +514,13 @@ let
 
     production_shape = JSON.parse(${builtins.toJSON (builtins.toJSON productionShape)})
     node_locations = JSON.parse(${
-      builtins.toJSON (builtins.toJSON (map (node: {
-        inherit (node) id location;
-      }) nodeList))
+      builtins.toJSON (
+        builtins.toJSON (
+          map (node: {
+            inherit (node) id location;
+          }) nodeList
+        )
+      )
     })
     capture_infrastructure = upsert_capture_infrastructure!(
       production_shape,
@@ -1536,6 +1548,12 @@ let
         "d ${telegramSecretsVmDir} 0700 root root - -"
       ];
 
+      # Notification targets are validated while database seed files run,
+      # before the API pre-start hook writes its complete runtime config.
+      systemd.services.vpsadmin-database-setup = lib.mkIf (topology == "screenshots") {
+        environment.VPSADMIN_NOTIFICATIONS_CONFIG = documentationSeedNotificationsFile;
+      };
+
       vpsadmin = {
         plugins = lib.mkForce enabledPlugins;
 
@@ -1543,6 +1561,26 @@ let
           "test.nix"
           "${devSeed}"
         ];
+
+        notifications = lib.mkIf (topology == "screenshots") {
+          telegram = {
+            enable = true;
+            botTokenFile = documentationTelegramBotTokenFile;
+            botUsername = "vpsadmin_documentation_bot";
+            receiveMode = "webhook";
+            webhook.autoRegister = false;
+          };
+          sms = {
+            enable = true;
+            gateways = [
+              {
+                name = "documentation";
+                url = "https://sms.example.test/v1/sms";
+                tokenFile = documentationSmsGatewayTokenFile;
+              }
+            ];
+          };
+        };
 
         varnish.api = {
           test.domain = lib.mkForce domains.api;
@@ -1641,6 +1679,9 @@ let
           environment = {
             RACK_ENV = "production";
             SCHEMA = "${dbCfg.stateDirectory}/cache/schema.rb";
+          }
+          // optionalAttrs (topology == "screenshots") {
+            VPSADMIN_NOTIFICATIONS_CONFIG = documentationSeedNotificationsFile;
           };
           serviceConfig = {
             Type = "oneshot";
