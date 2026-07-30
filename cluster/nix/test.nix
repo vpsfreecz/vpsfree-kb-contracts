@@ -1137,6 +1137,10 @@ let
     elsif mail_recipient_seed.any?
       warn 'Skipping devcluster mail recipient seed: neither legacy recipients nor event routes are available'
     end
+
+    with_devcluster_admin_session(admin) do
+      upsert_capture_notifications!(user: User.find_by!(login: 'test-user1'))
+    end
   '';
 
   allDomains = builtins.attrValues domains ++ builtins.attrValues tmpDomains;
