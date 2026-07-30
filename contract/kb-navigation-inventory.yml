@@ -384,72 +384,72 @@ discoveries:
     Play]]. Doporučujeme v nastavení (tři čárky vlevo nahoře → settings) změnit server
     na meet.vpsfree.cz.'
   reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: 0532b9bbf2479e62
+- id: 1d5061baf51a6704
   language: cs
   page: navody:notifikace
-  paragraph: 8
+  paragraph: 9
   text: Routy se spravují v **Notifikace → Routy**. Routy na stejné úrovni se vyhodnocují
     shora dolů. Všechny podmínky jedné routy musí platit.
   paths:
   - notifications.routes.open
-- id: 10decb3f650f7ae4
+- id: 0b32baa603db1790
   language: cs
   page: navody:notifikace
-  paragraph: 31
-  text: Směrování lze zkontrolovat v **Notifikace → Události → detail události**.
-    Detail ukazuje odpovídající routy, stav časových intervalů, doručení a snímek
-    vyhodnocení v okamžiku události. ''inactive'' znamená, že neodpovídal aktivní
-    interval; ''muted'' znamená shodu ztlumujícího intervalu.
+  paragraph: 32
+  text: Uložená doručení lze zkontrolovat v **Notifikace → Historie doručování → detail
+    události**. Detail ukazuje odpovídající routy, doručení a snímek vyhodnocení v
+    okamžiku události. Kandidát zastavený pouze ztlumením, neaktivním intervalem nebo
+    bez odpovídající routy se neukládá, proto se v historii nezobrazí.
   paths:
   - notifications.event-route-matches.open
-- id: 339cdf5bc91db85a
+- id: '029d0c22eb5232b2'
   language: cs
   page: navody:notifikace
-  paragraph: 28
+  paragraph: 29
   text: Interval se přiřazuje v **Notifikace → Routy → upravit routu** jako **Aktivní
     interval** nebo **Ztlumující interval**. Bez aktivního intervalu není doba routy
     omezena. Shoda libovolného ztlumujícího intervalu danou routu potlačí.
   paths:
   - notifications.route-time-intervals.open
-- id: 3bf822f363d55637
+- id: 5a83ef1a3c42af94
   language: cs
   page: navody:notifikace
-  paragraph: 13
+  paragraph: 14
   text: Příjemci se spravují v **Notifikace → Příjemci**. Příjemce může obsahovat
     několik cílů. Routa odkazuje na příjemce, nikoli přímo na adresu. Vestavěný příjemce
     **Ztlumit** nemá doručovací cíl a odpovídající události potlačí.
   paths:
   - notifications.receivers.open
-- id: 541a56a11cf82824
+- id: 55cf02ff768d0e6f
   language: cs
   page: navody:notifikace
-  paragraph: 24
+  paragraph: 25
   text: 'Opakovaně použitelné intervaly se definují v **Notifikace → Časové intervaly**.
     Hodí se například pro:'
   paths:
   - notifications.time-intervals.open
-- id: 786484b2cc2a35e8
+- id: 50344fa20027e665
   language: cs
   page: navody:notifikace
-  paragraph: 12
+  paragraph: 13
   text: Konkrétní adresy se spravují v **Notifikace → Cíle**. Vlastní e-mail a SMS
     musí být ověřeny a Telegram musí být spárován.
   paths:
   - notifications.target-form.open
-- id: 72532b3b453271db
+- id: 1e2892b9e7d369cb
   language: cs
   page: navody:notifikace
-  paragraph: 22
+  paragraph: 23
   text: V **Notifikace → Skupiny notifikací** lze prohlížet otevřené, zpožděné, neaktivní
     i historické skupiny. Detail ukazuje routu, příjemce, seskupovací hodnoty, časování,
     čekající události a doručení. Jednotlivá doručení zůstávají viditelná v detailu
     události.
   paths:
   - notifications.groups.open
-- id: 8afd60f8360b4cae
+- id: 486ba6bdf900dee2
   language: cs
   page: navody:notifikace
-  paragraph: 17
+  paragraph: 18
   text: 'Seskupování se nastavuje samostatně na existující routě v **Notifikace →
     Routy → upravit routu → Seskupování notifikací**:'
   paths:
@@ -468,13 +468,13 @@ discoveries:
   paragraph: 2
   text: 'Základní tok je **událost → routa → příjemce → cíl**:'
   reason: Conceptual notification flow, not a WebUI navigation instruction.
-- id: 86e4b1faea8275b5
+- id: b6ca94cb6e109363
   language: cs
   page: navody:notifikace:role_udalosti
   paragraph: 23
-  text: Vytvořenou událost otevřete v **Notifikace → Události → detail události**.
-    V tabulce odpovídajících rout musí být obě nové routy. Test provádí skutečná doručení,
-    takže zprávu mají dostat obě ověřené adresy.
+  text: Vytvořenou událost otevřete v **Notifikace → Historie doručování → detail
+    události**. V tabulce odpovídajících rout musí být obě nové routy. Test provádí
+    skutečná doručení, takže zprávu mají dostat obě ověřené adresy.
   paths:
   - notifications.event-route-matches.open
 - id: 5fc0fbe363fe4134
@@ -524,13 +524,13 @@ discoveries:
     ověřený SMS cíl.
   paths:
   - notifications.receivers.open
-- id: 69b69c7d74b5b97f
+- id: 8eb17fb3721adb8f
   language: cs
   page: navody:notifikace:sms
   paragraph: 23
-  text: Výsledek zkontrolujte v **Notifikace → Události → detail události**. Routa
-    VPS se ověří při příštím skutečném pozastavení, protože obecný test není spojen
-    s reálnou VPS potřebnou šablonou zprávy.
+  text: Výsledek zkontrolujte v **Notifikace → Historie doručování → detail události**.
+    Routa VPS se ověří při příštím skutečném pozastavení, protože obecný test není
+    spojen s reálnou VPS potřebnou šablonou zprávy.
   paths:
   - notifications.event-route-matches.open
 - id: 784a178f53f2cc20
@@ -563,12 +563,12 @@ discoveries:
   text: 'V **Notifikace → Routy** přidejte:'
   paths:
   - notifications.routes.open
-- id: af9ac2336e229360
+- id: 79a5fef6d4a35f08
   language: cs
   page: navody:notifikace:telegram
   paragraph: 22
-  text: Příští skutečný monitoring nebo incident zkontrolujte v **Notifikace → Události
-    → detail události**. Obecná syntetická událost nemusí mít reálný monitoringový
+  text: Příští skutečný monitoring nebo incident zkontrolujte v **Notifikace → Historie
+    doručování → detail události**. Obecná syntetická událost nemusí mít reálný monitoringový
     nebo incidentní objekt, který potřebuje šablona; spojení proto testujte dočasnou
     routou.
   paths:
@@ -605,20 +605,12 @@ discoveries:
   text: 'V **Notifikace → Routy** přidejte:'
   paths:
   - notifications.routes.open
-- id: 892a45a0e32a2c40
+- id: 90a9fbcbfaed9939
   language: cs
   page: navody:notifikace:webhook
   paragraph: 20
-  text: Odpovídající routu zkontrolujte v **Notifikace → Události → detail události**
-    a poté znovu zapněte **Pokračovat**.
-  paths:
-  - notifications.event-route-matches.open
-- id: 615c0dd963bcfb35
-  language: cs
-  page: navody:notifikace:ztlumeni_incidentu
-  paragraph: 16
-  text: V **Notifikace → Události → detail události** musí být nová ztlumující routa
-    první shodou a další routy se již nesmí vyhodnotit.
+  text: Odpovídající routu zkontrolujte v **Notifikace → Historie doručování → detail
+    události** a poté znovu zapněte **Pokračovat**.
   paths:
   - notifications.event-route-matches.open
 - id: ec0a73e02c8ec436
@@ -635,14 +627,6 @@ discoveries:
   text: 'V **Notifikace → Routy** zvolte **Přidat routu**:'
   paths:
   - notifications.routes.open
-- id: 6edf72803428decf
-  language: cs
-  page: navody:notifikace:ztlumeni_oom
-  paragraph: 17
-  text: V **Notifikace → Události → detail události** musí být ztlumující routa první
-    shodou a další routy se již nesmí vyhodnotit.
-  paths:
-  - notifications.event-route-matches.open
 - id: 17cdb2d1b37afe4a
   language: cs
   page: navody:server:firewall
@@ -1496,49 +1480,49 @@ discoveries:
     is the VPS ID) and mount it to ''/persistent''."
   paths:
   - datasets.mount.open
-- id: 2789701187fa8f67
+- id: 212fa949f2f13f0b
   language: en
   page: manuals:notifications
-  paragraph: 17
+  paragraph: 18
   text: 'Grouping is configured separately on an existing route at **Notifications
     → Routes → edit route → Notification grouping**:'
   paths:
   - notifications.route-grouping-form.open
-- id: 7cf4b81a6773327f
+- id: af7ec82f89660f09
   language: en
   page: manuals:notifications
-  paragraph: 28
+  paragraph: 29
   text: Assign an interval at **Notifications → Routes → edit route** as an **Active
     interval** or **Mute interval**. With no active interval, the route has no active-time
     restriction. A matching mute interval suppresses that route.
   paths:
   - notifications.route-time-intervals.open
-- id: 98ee14be83227a8f
+- id: 130af0674a7e0ab7
   language: en
   page: manuals:notifications
-  paragraph: 12
+  paragraph: 13
   text: Manage concrete destinations at **Notifications → Targets**. Custom e-mail
     and SMS targets must be verified and Telegram targets must be paired before they
     can receive notifications.
   paths:
   - notifications.target-form.open
-- id: 9e5994b0136a4bef
+- id: 8a28de8e1057b3c7
   language: en
   page: manuals:notifications
-  paragraph: 13
+  paragraph: 14
   text: Manage receivers under **Notifications → Receivers**. A receiver can contain
     several targets. A route points to the receiver, not directly to an address. The
     built-in **Mute** receiver has no delivery target and suppresses matching events.
   paths:
   - notifications.receivers.open
-- id: a428fd529eeb318c
+- id: 3df566ddbd108909
   language: en
   page: manuals:notifications
-  paragraph: 31
-  text: Inspect routing at **Notifications → Event log → event detail**. The detail
-    shows matched routes, time-interval state, deliveries, and the routing snapshot
-    captured when the event occurred. ''inactive'' means no active interval matched;
-    ''muted'' means a mute interval matched.
+  paragraph: 32
+  text: Inspect stored deliveries at **Notifications → Delivery history → event detail**.
+    The detail shows matched routes, deliveries, and the routing snapshot captured
+    when the event occurred. A candidate stopped only by a mute, an inactive interval,
+    or the absence of a matching route is not stored and does not appear here.
   paths:
   - notifications.event-route-matches.open
 - id: aaedb1d4c4bb8a43
@@ -1555,26 +1539,26 @@ discoveries:
     or webhook deliveries. Open it from the main **Notifications** menu.
   paths:
   - notifications.open
-- id: d71a657a0a6be6c3
+- id: 52a58d0264bea5b5
   language: en
   page: manuals:notifications
-  paragraph: 24
+  paragraph: 25
   text: 'Define reusable intervals under **Notifications → Time intervals**. A time
     interval is useful for:'
   paths:
   - notifications.time-intervals.open
-- id: e7578e9f41eb2c67
+- id: 575f73edfacf4cc9
   language: en
   page: manuals:notifications
-  paragraph: 8
+  paragraph: 9
   text: Manage routes at **Notifications → Routes**. Routes at the same level are
     evaluated from top to bottom. Every matcher on one route must match.
   paths:
   - notifications.routes.open
-- id: 97da486e2fff32e5
+- id: fa0fd8e14a4cbb3e
   language: en
   page: manuals:notifications
-  paragraph: 22
+  paragraph: 23
   text: Open **Notifications → Notification groups** to inspect open, overdue, idle,
     and historical groups. A group detail shows its route, receiver, grouping labels,
     timing, pending events, and deliveries. Individual deliveries remain visible in
@@ -1612,13 +1596,13 @@ discoveries:
   text: 'Save the route. On its detail, select **Add matcher** and set:'
   reason: Action on the route already opened in the preceding annotated step, not
     a separate navigation path.
-- id: 0c08383eff0557b6
+- id: d0b1d16417c55d6d
   language: en
   page: manuals:notifications:event_roles
   paragraph: 23
-  text: Open the created event at **Notifications → Event log → event detail**. Both
-    new routes must appear in its matched-routes table. Test events perform real deliveries,
-    so both verified addresses should receive the message.
+  text: Open the created event at **Notifications → Delivery history → event detail**.
+    Both new routes must appear in its matched-routes table. Test notifications perform
+    real deliveries, so both verified addresses should receive the message.
   paths:
   - notifications.event-route-matches.open
 - id: 95066e5a1e9d677c
@@ -1628,14 +1612,6 @@ discoveries:
   text: 'At **Notifications → Routes**, select **Add route** and set:'
   paths:
   - notifications.routes.open
-- id: faa6b8ade880604b
-  language: en
-  page: manuals:notifications:mute_incidents
-  paragraph: 16
-  text: At **Notifications → Event log → event detail**, the new mute route must be
-    the first match and later routes must not be evaluated.
-  paths:
-  - notifications.event-route-matches.open
 - id: 4ca8b6f3d98e7959
   language: en
   page: manuals:notifications:mute_oom
@@ -1643,14 +1619,6 @@ discoveries:
   text: 'At **Notifications → Routes**, select **Add route** and set:'
   paths:
   - notifications.routes.open
-- id: c8b2fdd29e122b06
-  language: en
-  page: manuals:notifications:mute_oom
-  paragraph: 17
-  text: At **Notifications → Event log → event detail**, the mute route must be the
-    first match and later routes must not be evaluated.
-  paths:
-  - notifications.event-route-matches.open
 - id: 2affb5c006ec1096
   language: en
   page: manuals:notifications:sms
@@ -1666,13 +1634,13 @@ discoveries:
   text: 'At **Notifications → Routes**, add:'
   paths:
   - notifications.routes.open
-- id: 4b8e31817fcd5344
+- id: 46d980dbf8c992ee
   language: en
   page: manuals:notifications:sms
   paragraph: 23
-  text: Inspect the result at **Notifications → Event log → event detail**. Verify
-    the VPS route on the next real VPS suspension because a generic test is not attached
-    to the real VPS required by its message template.
+  text: Inspect the result at **Notifications → Delivery history → event detail**.
+    Verify the VPS route on the next real VPS suspension because a generic test is
+    not attached to the real VPS required by its message template.
   paths:
   - notifications.event-route-matches.open
 - id: eaa23249e079337f
@@ -1691,14 +1659,14 @@ discoveries:
   text: 'At **Notifications → Routes**, add:'
   paths:
   - notifications.routes.open
-- id: 1d80ae5928eec3ef
+- id: 751628e91807623c
   language: en
   page: manuals:notifications:telegram
   paragraph: 22
-  text: Inspect the next real monitoring or incident event at **Notifications → Event
-    log → event detail**. A generic synthetic event may lack the real monitoring or
-    incident object required by its message template, so use the temporary test route
-    to test the connection itself.
+  text: Inspect the next real monitoring or incident event at **Notifications → Delivery
+    history → event detail**. A generic synthetic event may lack the real monitoring
+    or incident object required by its message template, so use the temporary test
+    route to test the connection itself.
   paths:
   - notifications.event-route-matches.open
 - id: 92255b5cf2a7cdb4
@@ -1725,11 +1693,11 @@ discoveries:
     Telegram**.
   paths:
   - notifications.target-form.open
-- id: 80e4101897e2c265
+- id: e989eb0ec3ab6a3b
   language: en
   page: manuals:notifications:webhook
   paragraph: 20
-  text: Inspect the matched route at **Notifications → Event log → event detail**,
+  text: Inspect the matched route at **Notifications → Delivery history → event detail**,
     then re-enable **Continue**.
   paths:
   - notifications.event-route-matches.open

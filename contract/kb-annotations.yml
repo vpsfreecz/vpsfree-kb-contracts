@@ -187,15 +187,7 @@ bindings:
   count: 1
 - language: cs
   page: navody:notifikace:ztlumeni_oom
-  path: notifications.event-route-matches.open
-  count: 1
-- language: cs
-  page: navody:notifikace:ztlumeni_oom
   path: notifications.routes.open
-  count: 1
-- language: cs
-  page: navody:notifikace:ztlumeni_incidentu
-  path: notifications.event-route-matches.open
   count: 1
 - language: cs
   page: navody:notifikace:ztlumeni_incidentu
@@ -427,15 +419,7 @@ bindings:
   count: 1
 - language: en
   page: manuals:notifications:mute_oom
-  path: notifications.event-route-matches.open
-  count: 1
-- language: en
-  page: manuals:notifications:mute_oom
   path: notifications.routes.open
-  count: 1
-- language: en
-  page: manuals:notifications:mute_incidents
-  path: notifications.event-route-matches.open
   count: 1
 - language: en
   page: manuals:notifications:mute_incidents

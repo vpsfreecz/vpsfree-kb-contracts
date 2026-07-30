@@ -1,5 +1,5 @@
 schema: 1
-vpsadmin_revision: a1321b2485ce5f14087d4d93429a97ea8cf28306
+vpsadmin_revision: 07bab67421f0ba76fad397944b6011d23f54b31c
 languages:
   - cs
   - en
@@ -194,11 +194,14 @@ controls:
       fingerprint: 91c5fbd4f814260030c88263e2d25c45946cd8df3d621805b7af0efe98aece3e
 
   - id: notifications.events
-    label: { en: Event log, cs: Události }
+    label: { en: Delivery history, cs: Historie doručování }
     source:
       path: webui/forms/notifications.forms.php
       contains: "'notifications.events'"
-      fingerprint: 2b3a450670e46bd44cc6d8562eeee21d5f858a01a2beea8dc5be0e8a545d0ede
+      related:
+        - path: webui/forms/notifications.forms.php
+          contains: "_('Delivery history')"
+      fingerprint: de8d5a80b7498f90fb607c0c6864cd5a5c3c7fadd12e4556311c067aebf99193
 
   - id: notifications.groups
     label: { en: Notification groups, cs: Skupiny notifikací }
@@ -308,9 +311,7 @@ controls:
       contains: "'notifications.event-route-matches'"
       fingerprint: e840d1c58bb53f0fb853c3d98cdde7a055c81a8a1187aed75139731ff620493c
     captures:
-      - notifications/event-suppressed
       - notifications/example-role-result
-      - notifications/example-mute-result
       - notifications/example-telegram-result
       - notifications/example-sms-result
       - notifications/example-webhook-result
@@ -597,17 +598,6 @@ semantic_selectors:
           await routeTables(page, 'notifications.route-form', 'codename'),
         );
 
-  - capture: notifications/example-mute-result
-    control: notifications.event-route-matches
-    source:
-      path: scenarios/notifications.cjs
-      declaration: |
-        await session.shot(
-          page,
-          'notifications/example-mute-result',
-          documentationTable(page, 'notifications.event-route-matches'),
-        );
-
   - capture: notifications/example-telegram-result
     control: notifications.event-route-matches
     source:
@@ -798,17 +788,6 @@ semantic_selectors:
           documentationTable(page, 'notifications.route-time-intervals'),
         );
 
-  - capture: notifications/event-suppressed
-    control: notifications.event-route-matches
-    source:
-      path: scenarios/notifications.cjs
-      declaration: |
-        await session.locator(
-          page,
-          'notifications/event-suppressed',
-          documentationTable(page, 'notifications.event-route-matches'),
-        );
-
 paths:
   - id: member.edit-profile.open
     steps: [member.edit-profile]
@@ -952,16 +931,12 @@ paths:
       cs:
         - navody:notifikace
         - navody:notifikace:role_udalosti
-        - navody:notifikace:ztlumeni_oom
-        - navody:notifikace:ztlumeni_incidentu
         - navody:notifikace:telegram
         - navody:notifikace:sms
         - navody:notifikace:webhook
       en:
         - manuals:notifications
         - manuals:notifications:event_roles
-        - manuals:notifications:mute_oom
-        - manuals:notifications:mute_incidents
         - manuals:notifications:telegram
         - manuals:notifications:sms
         - manuals:notifications:webhook

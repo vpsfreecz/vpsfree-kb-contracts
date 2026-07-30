@@ -163,23 +163,6 @@ async function run({ page, session }) {
     documentationTable(page, 'notifications.route-time-intervals'),
   );
 
-  await goto(page, '/?page=notifications&action=events');
-  await goto(page, await editUrlForRow(
-    page,
-    'Scheduled-out documentation event',
-    'event_show',
-  ));
-  const matches = documentationTable(page, 'notifications.event-route-matches');
-  const details = matches.locator('details');
-  if (await details.count()) {
-    await details.first().evaluate((element) => { element.open = true; });
-  }
-  await session.locator(
-    page,
-    'notifications/event-suppressed',
-    documentationTable(page, 'notifications.event-route-matches'),
-  );
-
   await goto(page, '/?page=notifications&action=receivers');
   await goto(page, await editUrlForRow(page, 'Account contact', 'receiver_edit'));
   await session.shot(
@@ -239,19 +222,6 @@ async function run({ page, session }) {
     page,
     'notifications/example-mute-incident-route',
     await routeTables(page, 'notifications.route-form', 'codename'),
-  );
-
-  await goto(page, '/?page=notifications&action=events');
-  await goto(page, await editUrlForRow(
-    page,
-    'Muted incident documentation event',
-    'event_show',
-  ));
-  await openRouteMatchDetails(page);
-  await session.shot(
-    page,
-    'notifications/example-mute-result',
-    documentationTable(page, 'notifications.event-route-matches'),
   );
 
   await goto(page, '/?page=notifications&action=targets');
