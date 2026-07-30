@@ -298,6 +298,121 @@ def ensure_capture_nas_dataset!(user:, pool:, quota:)
   dips.last.dataset
 end
 
+def upsert_capture_notification_target!(
+  user:,
+  action:,
+  label:,
+  target_value:,
+  secret: nil,
+  verified: false,
+  verification_token: nil,
+  config: {}
+)
+  identity_key = NotificationTarget.identity_key_for(
+    action,
+    'custom',
+    target_value,
+    secret
+  )
+  target = NotificationTarget.find_or_initialize_by(
+    user:,
+    action:,
+    identity_key:
+  )
+  target.assign_attributes(
+    label:,
+    target_kind: 'custom',
+    target_value:,
+    secret:,
+    enabled: true,
+    verified_at: verified ? Time.utc(2025, 1, 15, 12, 0) : nil,
+    verification_token: verified ? nil : verification_token,
+    config:
+  )
+  target.save!
+  target
+end
+
+def upsert_capture_notification_receiver!(
+  user:,
+  label:,
+  description:,
+  targets:
+)
+  receiver = NotificationReceiver.find_or_initialize_by(user:, label:)
+  receiver.assign_attributes(
+    description:,
+    enabled: true,
+    mute: false
+  )
+  receiver.save!
+
+  receiver.notification_receiver_targets
+          .where.not(notification_target: targets)
+          .delete_all
+  targets.each do |target|
+    link = receiver.notification_receiver_targets.find_or_initialize_by(
+      notification_target: target
+    )
+    link.position ||= NotificationReceiver.next_receiver_target_position(receiver)
+    link.save!
+  end
+
+  receiver
+end
+
+def upsert_capture_event_route!(
+  user:,
+  receiver:,
+  label:,
+  position:,
+  continue_route:,
+  event_type: nil,
+  event_type_pattern: nil,
+  grouping_enabled: false,
+  group_by: [],
+  group_wait_seconds: nil,
+  group_interval_seconds: nil,
+  matchers: []
+)
+  route = EventRoute.find_or_initialize_by(user:, label:)
+  route.assign_attributes(
+    notification_receiver: receiver,
+    event_type:,
+    event_type_pattern:,
+    subject_scope: 'self',
+    grouping_enabled:,
+    group_by:,
+    group_wait_seconds:,
+    group_interval_seconds:,
+    position:,
+    enabled: true,
+    single_use: false,
+    continue: continue_route,
+    hit_count: 0
+  )
+  route.save!
+  route.event_route_time_intervals.delete_all
+  route.event_route_matchers.delete_all
+  matchers.each do |matcher|
+    route.event_route_matchers.create!(matcher)
+  end
+  route
+end
+
+def upsert_capture_event!(user:, event_type:, subject:, payload:)
+  events = Event.where(user:, event_type:, subject:).order(:id)
+  event = events.first
+  events.where.not(id: event.id).destroy_all if event
+  event || VpsAdmin::API::Events.emit!(
+    event_type,
+    user:,
+    subject:,
+    payload:,
+    persist: :always
+  )
+end
+
 def upsert_capture_notifications!(user:)
   target_value = 'documentation@example.test'
   target = NotificationTarget.find_or_initialize_by(
@@ -373,7 +488,8 @@ def upsert_capture_notifications!(user:)
     position: 10,
     enabled: true,
     single_use: false,
-    continue: false
+    continue: false,
+    hit_count: 0
   )
   documentation_route.save!
   documentation_route.event_route_time_intervals.where.not(
@@ -394,12 +510,19 @@ def upsert_capture_notifications!(user:)
     event_type: 'user.test_notification',
     event_type_pattern: nil,
     subject_scope: 'self',
-    position: 20,
+    position: -85,
     enabled: true,
     single_use: false,
-    continue: false
+    continue: false,
+    hit_count: 0
   )
   scheduled_route.save!
+  scheduled_route.event_route_matchers.delete_all
+  scheduled_route.event_route_matchers.create!(
+    field: 'subject',
+    operator: '==',
+    value: 'Scheduled-out documentation event'
+  )
   scheduled_route.event_route_time_intervals.where.not(
     event_time_interval: past_window
   ).delete_all
@@ -409,12 +532,14 @@ def upsert_capture_notifications!(user:)
   assignment.mode = :active
   assignment.save!
 
-  Event.where(
+  scheduled_events = Event.where(
     user:,
     event_type: 'user.test_notification',
     subject: 'Scheduled-out documentation event'
-  ).destroy_all
-  event = VpsAdmin::API::Events.emit!(
+  ).order(:id)
+  event = scheduled_events.first
+  scheduled_events.where.not(id: event.id).destroy_all if event
+  event ||= VpsAdmin::API::Events.emit!(
     'user.test_notification',
     user:,
     subject: 'Scheduled-out documentation event',
@@ -425,5 +550,331 @@ def upsert_capture_notifications!(user:)
     raise "scheduled capture event was not suppressed: event=#{event.id} state=#{event.routing_state}"
   end
 
-  event
+  %i[telegram sms].each do |delivery_method|
+    user.set_notification_delivery_method!(delivery_method, true)
+  end
+
+  account_target = upsert_capture_notification_target!(
+    user:,
+    action: 'email',
+    label: 'Account contact',
+    target_value: 'account-notifications@example.test',
+    verified: true
+  )
+  account_receiver = upsert_capture_notification_receiver!(
+    user:,
+    label: 'Account contact',
+    description: 'Additional delivery for account-role events',
+    targets: [account_target]
+  )
+
+  admin_target = upsert_capture_notification_target!(
+    user:,
+    action: 'email',
+    label: 'Administrator contact',
+    target_value: 'admin-notifications@example.test',
+    verified: true
+  )
+  admin_receiver = upsert_capture_notification_receiver!(
+    user:,
+    label: 'Administrator contact',
+    description: 'Additional delivery for admin-role events',
+    targets: [admin_target]
+  )
+
+  telegram_target = upsert_capture_notification_target!(
+    user:,
+    action: 'telegram',
+    label: 'Operations Telegram',
+    target_value: '-1001234567890',
+    verified: true
+  )
+  telegram_receiver = upsert_capture_notification_receiver!(
+    user:,
+    label: 'Operations Telegram',
+    description: 'Monitoring and incident notifications',
+    targets: [telegram_target]
+  )
+
+  sms_target = upsert_capture_notification_target!(
+    user:,
+    action: 'sms',
+    label: 'Suspension telephone',
+    target_value: '+420123456789',
+    verified: true
+  )
+  upsert_capture_notification_target!(
+    user:,
+    action: 'sms',
+    label: 'Suspension telephone verification',
+    target_value: '+420123456780',
+    verification_token: '123456',
+    config: {
+      NotificationTarget::SMS_VERIFICATION_CODE_CREATED_AT_KEY => Time.now.iso8601
+    }
+  )
+  sms_receiver = upsert_capture_notification_receiver!(
+    user:,
+    label: 'Suspension SMS',
+    description: 'SMS notifications for account and VPS suspensions',
+    targets: [sms_target]
+  )
+
+  webhook_target = upsert_capture_notification_target!(
+    user:,
+    action: 'webhook',
+    label: 'Resource-change endpoint',
+    target_value: 'https://events.example.test/vpsadmin',
+    secret: 'documentation-webhook-secret'
+  )
+  webhook_receiver = upsert_capture_notification_receiver!(
+    user:,
+    label: 'Resource-change webhook',
+    description: 'Signed webhook for VPS resource changes',
+    targets: [webhook_target]
+  )
+
+  mute_receiver = NotificationReceiver.ensure_default_mute_receiver_for!(user)
+
+  oom_mute_route = upsert_capture_event_route!(
+    user:,
+    receiver: mute_receiver,
+    label: 'Mute selected OOM reports',
+    position: -100,
+    continue_route: false,
+    event_type: 'vps.oom_report',
+    matchers: [
+      { field: 'vps_id', operator: '==', value: '123' },
+      { field: 'cgroup', operator: '=*', value: '/user.slice/**/*.scope' }
+    ]
+  )
+  incident_mute_route = upsert_capture_event_route!(
+    user:,
+    receiver: mute_receiver,
+    label: 'Mute incident feed for VPS',
+    position: -90,
+    continue_route: false,
+    event_type: 'vps.incident_report',
+    matchers: [
+      { field: 'vps_id', operator: '==', value: '123' },
+      { field: 'codename', operator: '==', value: 'abuse-feed' }
+    ]
+  )
+  telegram_test_route = upsert_capture_event_route!(
+    user:,
+    receiver: telegram_receiver,
+    label: 'Telegram connection test',
+    position: -95,
+    continue_route: false,
+    event_type: 'user.test_notification',
+    matchers: [
+      {
+        field: 'subject',
+        operator: '==',
+        value: 'Telegram delivery documentation event'
+      }
+    ]
+  )
+  account_role_route = upsert_capture_event_route!(
+    user:,
+    receiver: account_receiver,
+    label: 'Account-role notifications',
+    position: -80,
+    continue_route: true,
+    matchers: [
+      { field: 'roles', operator: 'contains', value: 'account' }
+    ]
+  )
+  admin_role_route = upsert_capture_event_route!(
+    user:,
+    receiver: admin_receiver,
+    label: 'Admin-role notifications',
+    position: -70,
+    continue_route: true,
+    matchers: [
+      { field: 'roles', operator: 'contains', value: 'admin' }
+    ]
+  )
+  upsert_capture_event_route!(
+    user:,
+    receiver: telegram_receiver,
+    label: 'Monitoring to Telegram',
+    position: -60,
+    continue_route: true,
+    event_type_pattern: 'monitoring.*'
+  )
+  upsert_capture_event_route!(
+    user:,
+    receiver: telegram_receiver,
+    label: 'Incident reports to Telegram',
+    position: -50,
+    continue_route: true,
+    event_type: 'vps.incident_report'
+  )
+  account_sms_route = upsert_capture_event_route!(
+    user:,
+    receiver: sms_receiver,
+    label: 'Account suspension SMS',
+    position: -40,
+    continue_route: true,
+    event_type: 'user.suspended'
+  )
+  upsert_capture_event_route!(
+    user:,
+    receiver: sms_receiver,
+    label: 'VPS suspension SMS',
+    position: -30,
+    continue_route: true,
+    event_type: 'vps.suspended'
+  )
+  webhook_route = upsert_capture_event_route!(
+    user:,
+    receiver: webhook_receiver,
+    label: 'VPS resource-change webhook',
+    position: -20,
+    continue_route: true,
+    event_type: 'vps.resources_changed'
+  )
+  upsert_capture_event_route!(
+    user:,
+    receiver:,
+    label: 'Grouped OOM notifications',
+    position: -10,
+    continue_route: false,
+    event_type: 'vps.oom_report',
+    grouping_enabled: true,
+    group_by: ['vps_id'],
+    group_wait_seconds: 60,
+    group_interval_seconds: 10_800,
+    matchers: [
+      { field: 'vps_id', operator: '==', value: '456' }
+    ]
+  )
+
+  role_event = upsert_capture_event!(
+    user:,
+    event_type: 'user.test_notification',
+    subject: 'Role-routing documentation event',
+    payload: {
+      roles: %w[account admin],
+      note: 'Synthetic event used only for role-routing screenshots.'
+    }
+  )
+  incident_event = upsert_capture_event!(
+    user:,
+    event_type: 'vps.incident_report',
+    subject: 'Muted incident documentation event',
+    payload: {
+      subject: 'Documentation incident',
+      text: 'Synthetic incident used only for notification screenshots.',
+      codename: 'abuse-feed',
+      vps_id: 123
+    }
+  )
+  oom_event = upsert_capture_event!(
+    user:,
+    event_type: 'vps.oom_report',
+    subject: 'Muted OOM documentation event',
+    payload: {
+      vps_id: 123,
+      vps_hostname: 'example-vps',
+      cgroup: '/user.slice/user-1000.slice/session-2.scope',
+      cgroups: ['/user.slice/user-1000.slice/session-2.scope'],
+      count: 1,
+      killed_name: 'python3',
+      report_count: 1,
+      selected_report_count: 1,
+      selected_oom_count: 1
+    }
+  )
+  telegram_event = upsert_capture_event!(
+    user:,
+    event_type: 'user.test_notification',
+    subject: 'Telegram delivery documentation event',
+    payload: {
+      roles: [],
+      note: 'Synthetic event used only for Telegram routing screenshots.'
+    }
+  )
+  sms_event = upsert_capture_event!(
+    user:,
+    event_type: 'user.suspended',
+    subject: 'SMS suspension documentation event',
+    payload: {
+      roles: [],
+      state: 'suspended',
+      reason: 'Synthetic event used only for SMS routing screenshots.'
+    }
+  )
+  webhook_route.update!(continue: false)
+  begin
+    webhook_event = upsert_capture_event!(
+      user:,
+      event_type: 'vps.resources_changed',
+      subject: 'Webhook delivery documentation event',
+      payload: {
+        roles: [],
+        vps_id: 123,
+        vps_hostname: 'example-vps',
+        cpu: 4,
+        cpu_limit: 400,
+        memory: 8192,
+        swap: 2048,
+        reason: 'Synthetic event used only for webhook routing screenshots.'
+      }
+    )
+  ensure
+    webhook_route.update!(continue: true)
+  end
+
+  role_route_ids = role_event.event_route_matches.pluck(:event_route_id)
+  unless role_route_ids.include?(account_role_route.id) &&
+         role_route_ids.include?(admin_role_route.id)
+    raise "role capture event did not match both role routes: #{role_route_ids.inspect}"
+  end
+  unless incident_event.suppressed_routing_state? &&
+         incident_event.event_route_matches.first.event_route_id == incident_mute_route.id
+    raise "incident capture event did not stop at the mute route: event=#{incident_event.id}"
+  end
+  unless oom_event.suppressed_routing_state? &&
+         oom_event.event_route_matches.first.event_route_id == oom_mute_route.id
+    raise "OOM capture event did not stop at the mute route: event=#{oom_event.id}"
+  end
+  unless telegram_event.event_route_matches.sole.event_route_id == telegram_test_route.id
+    raise "Telegram capture event did not stop at its test route: event=#{telegram_event.id}"
+  end
+  unless sms_event.event_route_matches.pluck(:event_route_id).include?(account_sms_route.id)
+    raise "SMS capture event did not match its suspension route: event=#{sms_event.id}"
+  end
+  unless webhook_event.event_route_matches.sole.event_route_id == webhook_route.id
+    raise "webhook capture event did not stop at its route: event=#{webhook_event.id}"
+  end
+
+  fixture_events = [
+    event,
+    role_event,
+    incident_event,
+    oom_event,
+    telegram_event,
+    sms_event,
+    webhook_event
+  ]
+  hit_counts = EventRouteMatch
+               .where(event: fixture_events)
+               .group(:event_route_id)
+               .count
+  user.event_routes.update_all(hit_count: 0)
+  hit_counts.each do |route_id, count|
+    user.event_routes.where(id: route_id).update_all(hit_count: count)
+  end
+
+  {
+    scheduled: event,
+    role: role_event,
+    incident: incident_event,
+    oom: oom_event,
+    telegram: telegram_event,
+    sms: sms_event,
+    webhook: webhook_event
+  }
 end
