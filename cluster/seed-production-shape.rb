@@ -297,3 +297,133 @@ def ensure_capture_nas_dataset!(user:, pool:, quota:)
   )
   dips.last.dataset
 end
+
+def upsert_capture_notifications!(user:)
+  target_value = 'documentation@example.test'
+  target = NotificationTarget.find_or_initialize_by(
+    user:,
+    action: 'email',
+    identity_key: NotificationTarget.identity_key_for('email', 'custom', target_value)
+  )
+  target.assign_attributes(
+    label: 'Documentation e-mail',
+    target_kind: 'custom',
+    target_value:,
+    enabled: true,
+    verified_at: target.verified_at || Time.utc(2025, 1, 15, 12, 0)
+  )
+  target.skip_delivery_method_enabled_validation = true
+  target.save!
+
+  receiver = NotificationReceiver.find_or_initialize_by(
+    user:,
+    label: 'Documentation e-mail'
+  )
+  receiver.assign_attributes(
+    description: 'E-mail receiver used in the notification guide',
+    enabled: true,
+    mute: false
+  )
+  receiver.save!
+
+  link = receiver.notification_receiver_targets.find_or_initialize_by(
+    notification_target: target
+  )
+  link.position ||= NotificationReceiver.next_receiver_target_position(receiver)
+  link.save!
+
+  office_hours = EventTimeInterval.find_or_initialize_by(
+    user:,
+    name: 'Office hours'
+  )
+  office_hours.assign_attributes(
+    time_zone: 'Europe/Prague',
+    specs: [
+      {
+        times: [{ start_time: '09:00', end_time: '17:00' }],
+        weekdays: [{ start: 'monday', end: 'friday' }]
+      },
+      {
+        times: [{ start_time: '09:00', end_time: '12:00' }],
+        weekdays: [{ start: 'saturday', end: 'saturday' }]
+      }
+    ]
+  )
+  office_hours.save!
+
+  past_window = EventTimeInterval.find_or_initialize_by(
+    user:,
+    name: 'Past documentation window'
+  )
+  past_window.assign_attributes(
+    time_zone: 'UTC',
+    specs: [{ years: [{ start: 1, end: 1 }] }]
+  )
+  past_window.save!
+
+  documentation_route = EventRoute.find_or_initialize_by(
+    user:,
+    label: 'Documentation alerts'
+  )
+  documentation_route.assign_attributes(
+    notification_receiver: receiver,
+    event_type: 'vps.incident_report',
+    event_type_pattern: nil,
+    subject_scope: 'self',
+    position: 10,
+    enabled: true,
+    single_use: false,
+    continue: false
+  )
+  documentation_route.save!
+  documentation_route.event_route_time_intervals.where.not(
+    event_time_interval: office_hours
+  ).delete_all
+  assignment = documentation_route.event_route_time_intervals.find_or_initialize_by(
+    event_time_interval: office_hours
+  )
+  assignment.mode = :active
+  assignment.save!
+
+  scheduled_route = EventRoute.find_or_initialize_by(
+    user:,
+    label: 'Scheduled-out documentation route'
+  )
+  scheduled_route.assign_attributes(
+    notification_receiver: receiver,
+    event_type: 'user.test_notification',
+    event_type_pattern: nil,
+    subject_scope: 'self',
+    position: 20,
+    enabled: true,
+    single_use: false,
+    continue: false
+  )
+  scheduled_route.save!
+  scheduled_route.event_route_time_intervals.where.not(
+    event_time_interval: past_window
+  ).delete_all
+  assignment = scheduled_route.event_route_time_intervals.find_or_initialize_by(
+    event_time_interval: past_window
+  )
+  assignment.mode = :active
+  assignment.save!
+
+  Event.where(
+    user:,
+    event_type: 'user.test_notification',
+    subject: 'Scheduled-out documentation event'
+  ).destroy_all
+  event = VpsAdmin::API::Events.emit!(
+    'user.test_notification',
+    user:,
+    subject: 'Scheduled-out documentation event',
+    payload: { note: 'This delivery is outside its active interval.' }
+  )
+  unless event.suppressed_routing_state? &&
+         event.event_route_matches.sole.time_interval_state == 'inactive'
+    raise "scheduled capture event was not suppressed: event=#{event.id} state=#{event.routing_state}"
+  end
+
+  event
+end
