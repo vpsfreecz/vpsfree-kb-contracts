@@ -5,8 +5,8 @@ require 'digest'
 module KbNavigationDiscovery
   SIGNAL = /(?:
     (?<!<)(?:->|→)|\s>\s|
-    vpsadmin.{0,240}(?:->|→|\bmenu\b|\bsection\b|\bdetails?\b|\bprofile\b|\bform\b|profil|detail|formulář|panel)|
-    (?:\bmenu\b|\bdetails?\b|\bform\b|sidebar|nabídk\w*|detail\w*|formulář\w*|panel\w*).{0,240}(?:->|→|\/\/|\*\*)|
+    vpsadmin.{0,240}(?:->|→|\bmenu\b|\bsection\b|\bdetails?\b|\bprofile\b|\bform\b|profil|detail|formulář|nabídk\w*|nabídc\w*|panel)|
+    (?:\bmenu\b|\bdetails?\b|\bform\b|sidebar|nabídk\w*|nabídc\w*|detail\w*|formulář\w*|panel\w*).{0,240}(?:->|→|\/\/|\*\*)|
     (?:\/\/|\*\*)[^\n]{0,160}(?:->|→)[^\n]{0,160}(?:\/\/|\*\*)|
     \bmenu\s+[[:upper:]][^.,;:]{1,60}|
     [[:upper:]][[:alpha:] ]{1,60}\s+menu\b|

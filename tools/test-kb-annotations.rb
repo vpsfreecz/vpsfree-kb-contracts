@@ -70,6 +70,36 @@ class KbAnnotationsCheckerTest < Minitest::Test
     assert_match(/duplicate candidate page IDs/, error)
   end
 
+  def test_guarded_new_page_is_discovered_from_the_candidate
+    _out, error, status = run_checker(missing_source: true)
+
+    assert(status.success?, error)
+  end
+
+  def test_structural_replacement_can_remove_an_obsolete_navigation_path
+    source_body = 'vpsAdmin -> Advanced e-mail settings'
+    inventory = KbNavigationDiscovery.discover(
+      language: 'cs',
+      page: 'navody:test',
+      content: source_body
+    )
+    inventory.first['paths'] = ['removed.path']
+    replacement = {
+      'language' => 'cs',
+      'page' => 'navody:test',
+      'before' => "#{source_body}\n\nObsolete screenshot",
+      'replacement' => 'vpsAdmin -> Edit profile'
+    }
+
+    _out, error, status = run_checker(
+      candidate_annotations: [replacement],
+      inventory_discoveries: inventory,
+      source_body:
+    )
+
+    assert(status.success?, error)
+  end
+
   private
 
   def run_checker(
@@ -77,7 +107,9 @@ class KbAnnotationsCheckerTest < Minitest::Test
     body: '<vpsadmin-nav id="member.public-keys.open">vpsAdmin -> Edit profile</vpsadmin-nav>',
     source_body: nil,
     inventory_discoveries: nil,
-    duplicate_candidate: false
+    candidate_annotations: nil,
+    duplicate_candidate: false,
+    missing_source: false
   )
     Dir.mktmpdir do |dir|
       navigation = {
@@ -95,6 +127,7 @@ class KbAnnotationsCheckerTest < Minitest::Test
           { 'language' => 'cs', 'id' => 'navody:test', 'file' => 'cs/navody/test.txt' }
         ]
       }
+      candidate['annotations'] = candidate_annotations if candidate_annotations
       candidate['pages'] << candidate['pages'].first.dup if duplicate_candidate
       source_body ||= body.gsub(%r{</?vpsadmin-nav(?:\s+[^>]*)?>}, '')
       source = {
@@ -103,6 +136,7 @@ class KbAnnotationsCheckerTest < Minitest::Test
         ],
         'en' => []
       }
+      source.fetch('cs').first['missing'] = true if missing_source
       navigation_path = File.join(dir, 'navigation.yml')
       annotations_path = File.join(dir, 'annotations.yml')
       candidate_path = File.join(dir, 'index.json')
@@ -117,18 +151,20 @@ class KbAnnotationsCheckerTest < Minitest::Test
       File.write(candidate_path, JSON.dump(candidate))
       File.write(source_path, JSON.dump(source))
       File.write(page_path, body)
-      File.write(source_page_path, source_body)
+      File.write(source_page_path, missing_source ? '' : source_body)
       source['cs'][0]['file'] = 'source/cs/navody/test.txt'
       File.write(source_path, JSON.dump(source))
       discoveries = inventory_discoveries || KbNavigationDiscovery.discover(
         language: 'cs',
         page: 'navody:test',
-        content: source_body
+        content: missing_source ? body : source_body
       )
       candidate_paths = KbNavigationDiscovery.semantic_content(body)
                                              .scan(/<vpsadmin-nav\s+id="([a-z][a-z0-9.-]*)">/)
                                              .flatten
-      discoveries.each { |entry| entry['paths'] = candidate_paths unless candidate_paths.empty? }
+      discoveries.each do |entry|
+        entry['paths'] = candidate_paths if !candidate_paths.empty? && !entry.key?('paths')
+      end
       File.write(
         inventory_path,
         YAML.dump(

@@ -50,13 +50,15 @@ async function main() {
   try {
     await login(page, cluster, options.language);
     const required = [...new Set(session.assets.flatMap((asset) => asset.fixtures))];
-    const fixtures = await prepareFixtures({
-      cluster,
-      page,
-      language: options.language,
-      required,
-      repoRoot,
-    });
+    const fixtures = required.length === 0
+      ? {}
+      : await prepareFixtures({
+        cluster,
+        page,
+        language: options.language,
+        required,
+        repoRoot,
+      });
     const scenarios = [...new Set(session.assets.map((asset) => asset.scenario))];
     for (const scenario of scenarios) {
       process.stdout.write(`Capturing ${scenario}\n`);

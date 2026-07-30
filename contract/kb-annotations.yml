@@ -115,10 +115,6 @@ bindings:
   count: 1
 - language: cs
   page: navody:vps:uzivatele
-  path: member.advanced-email-configuration.open
-  count: 1
-- language: cs
-  page: navody:vps:uzivatele
   path: member.edit-profile.open
   count: 4
 - language: cs
@@ -132,6 +128,34 @@ bindings:
 - language: cs
   page: navody:vps:uzivatele
   path: member.totp-devices.open
+  count: 1
+- language: cs
+  page: navody:vps:uzivatele
+  path: notifications.open
+  count: 1
+- language: cs
+  page: navody:notifikace
+  path: notifications.event-route-matches.open
+  count: 1
+- language: cs
+  page: navody:notifikace
+  path: notifications.open
+  count: 1
+- language: cs
+  page: navody:notifikace
+  path: notifications.receivers.open
+  count: 1
+- language: cs
+  page: navody:notifikace
+  path: notifications.route-time-intervals.open
+  count: 1
+- language: cs
+  page: navody:notifikace
+  path: notifications.routes.open
+  count: 1
+- language: cs
+  page: navody:notifikace
+  path: notifications.time-intervals.open
   count: 1
 - language: cs
   page: navody:vps:vpsadminos:oprava
@@ -239,10 +263,6 @@ bindings:
   count: 1
 - language: en
   page: manuals:vps:users
-  path: member.advanced-email-configuration.open
-  count: 1
-- language: en
-  page: manuals:vps:users
   path: member.edit-profile.open
   count: 4
 - language: en
@@ -256,6 +276,34 @@ bindings:
 - language: en
   page: manuals:vps:users
   path: member.totp-devices.open
+  count: 1
+- language: en
+  page: manuals:vps:users
+  path: notifications.open
+  count: 1
+- language: en
+  page: manuals:notifications
+  path: notifications.event-route-matches.open
+  count: 1
+- language: en
+  page: manuals:notifications
+  path: notifications.open
+  count: 1
+- language: en
+  page: manuals:notifications
+  path: notifications.receivers.open
+  count: 1
+- language: en
+  page: manuals:notifications
+  path: notifications.route-time-intervals.open
+  count: 1
+- language: en
+  page: manuals:notifications
+  path: notifications.routes.open
+  count: 1
+- language: en
+  page: manuals:notifications
+  path: notifications.time-intervals.open
   count: 1
 - language: en
   page: manuals:vps:vpsadminos:recovery
