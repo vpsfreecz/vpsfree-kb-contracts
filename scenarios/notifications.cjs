@@ -21,17 +21,22 @@ async function routeTables(page, documentationId, matcherField) {
     `[data-vpsadmin-doc-id="${documentationId}"]`,
   ).first();
   const route = heading.locator('xpath=following-sibling::form[1]');
-  const matchers = page.locator('#content-in table')
+  const matcherForm = page.locator(
+    'form[action*="page=notifications"][action*="action=matcher_save"]',
+  )
     .filter({ has: page.locator('code', { hasText: matcherField }) })
     .first();
-  const matcherForm = matchers.locator('xpath=ancestor::form[1]');
+  const matchers = matcherForm.locator('table')
+    .filter({ has: page.locator('code', { hasText: matcherField }) })
+    .first();
   const matcherHeading = matcherForm.locator('xpath=preceding-sibling::*[1]');
 
   await route.evaluate((routeForm, field) => {
-    const matcherTable = Array.from(document.querySelectorAll('#content-in table'))
-      .find((table) => Array.from(table.querySelectorAll('code'))
-        .some((code) => code.textContent.trim() === field));
-    const finalHeading = matcherTable?.closest('form')?.previousElementSibling;
+    const finalForm = Array.from(document.querySelectorAll(
+      'form[action*="page=notifications"][action*="action=matcher_save"]',
+    )).find((form) => Array.from(form.querySelectorAll('code'))
+      .some((code) => code.textContent.trim() === field));
+    const finalHeading = finalForm?.previousElementSibling;
 
     for (
       let sibling = routeForm.nextElementSibling;
@@ -42,7 +47,10 @@ async function routeTables(page, documentationId, matcherField) {
     }
   }, matcherField);
 
-  return [heading, route, matcherHeading, matcherForm];
+  // The matcher table can overflow its form when translated column labels need
+  // more space. Include the table explicitly so the crop follows its rendered
+  // width instead of clipping controls that extend beyond the form.
+  return [heading, route, matcherHeading, matcherForm, matchers];
 }
 
 function routeForm(page, documentationId) {
@@ -85,8 +93,46 @@ async function editUrlForRow(page, text, action) {
   return link.getAttribute('href');
 }
 
+async function assertRouteListLayout(page) {
+  const table = documentationTable(page, 'notifications.routes');
+  const result = await table.evaluate((element) => {
+    const headers = Array.from(element.querySelectorAll('th'));
+    const row = Array.from(element.querySelectorAll('tr'))
+      .find((candidate) => candidate.querySelector('a[href*="action=route_delete"]'));
+    const cells = row ? Array.from(row.children) : [];
+    const content = document.querySelector('#content-in');
+    const tableRect = element.getBoundingClientRect();
+    const contentRect = content?.getBoundingClientRect();
+
+    return {
+      headerCount: headers.length,
+      actionHeaders: headers.slice(-3).map((header) => header.textContent.trim()),
+      cellCount: cells.length,
+      editCell: cells.at(-3)?.querySelector('a[href*="action=route_edit"]') !== null,
+      addCell: cells.at(-2)?.querySelector('a[href*="action=route_new"]') !== null,
+      deleteCell: cells.at(-1)?.querySelector('a[href*="action=route_delete"]') !== null,
+      actionWidths: cells.slice(-3).map((cell) => cell.getBoundingClientRect().width),
+      overflowsContent: contentRect ? tableRect.right > contentRect.right + 1 : true,
+    };
+  });
+
+  if (
+    result.headerCount !== 7
+    || result.actionHeaders.some(Boolean)
+    || result.cellCount !== 7
+    || !result.editCell
+    || !result.addCell
+    || !result.deleteCell
+    || result.overflowsContent
+    || result.actionWidths.some((width) => width > 64)
+  ) {
+    throw new Error(`Unexpected notification route table layout: ${JSON.stringify(result)}`);
+  }
+}
+
 async function run({ page, session }) {
   await goto(page, '/?page=notifications&action=routes');
+  await assertRouteListLayout(page);
   await session.locator(
     page,
     'notifications/routes',
@@ -115,23 +161,6 @@ async function run({ page, session }) {
     page,
     'notifications/route-time-intervals',
     documentationTable(page, 'notifications.route-time-intervals'),
-  );
-
-  await goto(page, '/?page=notifications&action=events');
-  await goto(page, await editUrlForRow(
-    page,
-    'Scheduled-out documentation event',
-    'event_show',
-  ));
-  const matches = documentationTable(page, 'notifications.event-route-matches');
-  const details = matches.locator('details');
-  if (await details.count()) {
-    await details.first().evaluate((element) => { element.open = true; });
-  }
-  await session.locator(
-    page,
-    'notifications/event-suppressed',
-    documentationTable(page, 'notifications.event-route-matches'),
   );
 
   await goto(page, '/?page=notifications&action=receivers');
@@ -184,7 +213,7 @@ async function run({ page, session }) {
   await session.shot(
     page,
     'notifications/grouping-route',
-    await routeTables(page, 'notifications.route-form', 'vps_id'),
+    routeForm(page, 'notifications.route-grouping-form'),
   );
 
   await goto(page, '/?page=notifications&action=routes');
@@ -193,19 +222,6 @@ async function run({ page, session }) {
     page,
     'notifications/example-mute-incident-route',
     await routeTables(page, 'notifications.route-form', 'codename'),
-  );
-
-  await goto(page, '/?page=notifications&action=events');
-  await goto(page, await editUrlForRow(
-    page,
-    'Muted incident documentation event',
-    'event_show',
-  ));
-  await openRouteMatchDetails(page);
-  await session.shot(
-    page,
-    'notifications/example-mute-result',
-    documentationTable(page, 'notifications.event-route-matches'),
   );
 
   await goto(page, '/?page=notifications&action=targets');
