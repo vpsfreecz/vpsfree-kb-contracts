@@ -390,23 +390,10 @@ discoveries:
     Play]]. Doporučujeme v nastavení (tři čárky vlevo nahoře → settings) změnit server
     na meet.vpsfree.cz.'
   reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: 1a93d5f67dcb358f
+- id: 69bc7eacba533edd
   language: cs
   page: navody:notifikace
-  paragraph: 11
-  text: Seskupování na routě sbírá související události do jednoho souhrnu; rozepsané
-    i minulé souhrny ukazuje seznam skupin notifikací. Opakovaně použitelný rozvrh
-    vytvoříte v **Notifikace → Časové intervaly** a k routě jej připojíte jako aktivní
-    nebo ztlumující přes nastavení časových intervalů routy.
-  paths:
-  - notifications.route-grouping-form.open
-  - notifications.groups.open
-  - notifications.time-intervals.open
-  - notifications.route-time-intervals.open
-- id: 60435ef3664d3252
-  language: cs
-  page: navody:notifikace
-  paragraph: 12
+  paragraph: 13
   text: Skutečně připravená doručení a odpovídající routy najdete v **Notifikace →
     Historie doručování → detail události**.
   paths:
@@ -516,6 +503,32 @@ discoveries:
   text: 'V **Notifikace → Routy** zvolte **Přidat routu**:'
   paths:
   - notifications.routes.open
+- id: 027e220206b19bd6
+  language: cs
+  page: navody:notifikace:routovani
+  paragraph: 20
+  text: 'Nastavení se nachází na uložené routě v **Notifikace → Routy → upravit routu
+    → Seskupování notifikací**:'
+  paths:
+  - notifications.route-grouping-form.open
+- id: 1d68e24f7a37ac27
+  language: cs
+  page: navody:notifikace:routovani
+  paragraph: 27
+  text: Časový interval je opakovaně použitelný rozvrh s vlastním časovým pásmem.
+    Může omezit doručování například na pracovní dobu nebo servisní okno, ztlumit
+    upozornění mimo pracovní dobu nebo rozdělit pracovní a pohotovostní doručení mezi
+    samostatné routy. Intervaly se vytvářejí v **Notifikace → Časové intervaly**.
+  paths:
+  - notifications.time-intervals.open
+- id: 2d87d322ca5d7c71
+  language: cs
+  page: navody:notifikace:routovani
+  paragraph: 31
+  text: 'U uložené routy se interval připojí v **Notifikace → Routy → upravit routu
+    → Časové intervaly** v jednom ze dvou režimů:'
+  paths:
+  - notifications.route-time-intervals.open
 - id: 5d492e068782635f
   language: cs
   page: navody:notifikace:routovani
@@ -525,16 +538,25 @@ discoveries:
     **Pokračovat**. Routy spravujete v **Notifikace → Routy**."
   paths:
   - notifications.routes.open
-- id: 816d768d1a33c1f5
+- id: 6fe75322e450fc1a
   language: cs
   page: navody:notifikace:routovani
-  paragraph: 17
+  paragraph: 36
   text: V **Notifikace → Testovací notifikace** vyberte typ a zadejte JSON s jeho
     poli. Test používá skutečné routování a skutečné cíle; může proto opravdu odeslat
     e-mail, SMS, Telegram nebo webhook. Neprovádí však skutečnou provozní akci, například
     nepozastaví VPS.
   paths:
   - notifications.test-notification.open
+- id: 925a1ac082f36d3d
+  language: cs
+  page: navody:notifikace:routovani
+  paragraph: 25
+  text: "**Notifikace → Skupiny notifikací** ukazují otevřené, zpožděné, neaktivní
+    i historické skupiny. Detail skupiny obsahuje routu, příjemce, hodnoty použité
+    k seskupení, časování, čekající události a doručení."
+  paths:
+  - notifications.groups.open
 - id: fb6449d20b7b1e1c
   language: cs
   page: navody:notifikace:routovani
@@ -617,14 +639,16 @@ discoveries:
     a vraťte se do vpsAdminu. Cíl musí mít stav **spárováno**. Párovací odkaz je tajný
     a neposílejte jej dalším lidem.
   reason: External Telegram pairing action, not a vpsAdmin navigation path.
-- id: d44e6ef8e611cbdc
+- id: 69cdb3886e40af39
   language: cs
   page: navody:notifikace:udalosti
   paragraph: 14
   text: "**Notifikace → Historie doručování → detail události** není úplný auditní
     protokol. Kandidát se uloží pouze tehdy, když routování připraví alespoň jedno
-    skutečné doručení. Událost ztlumená bez jiného doručení, událost mimo aktivní
-    interval nebo událost bez odpovídající routy se v historii neobjeví."
+    skutečné doručení. Pokud všechny odpovídající routy pouze ztlumí událost nebo
+    přeskočí svůj příjemce kvůli aktivnímu či ztlumujícímu intervalu a žádná jiná
+    routa ani podrouta nevytvoří doručení, událost se v historii neobjeví. Neobjeví
+    se ani událost bez odpovídající routy."
   paths:
   - notifications.event-route-matches.open
 - id: d78f0c28e0447061
@@ -1535,27 +1559,14 @@ discoveries:
     is the VPS ID) and mount it to ''/persistent''."
   paths:
   - datasets.mount.open
-- id: 06272d12b0fb9d72
+- id: 6fdfb383f6082e86
   language: en
   page: manuals:notifications
-  paragraph: 12
+  paragraph: 13
   text: Inspect prepared deliveries and matched routes at **Notifications → Delivery
     history → event detail**.
   paths:
   - notifications.event-route-matches.open
-- id: 9f9d5f29fe7e0a60
-  language: en
-  page: manuals:notifications
-  paragraph: 11
-  text: Grouping on a route collects related events into one summary; the notification-group
-    list shows pending and historical summaries. Create a reusable schedule under
-    **Notifications → Time intervals**, then attach it as an active or mute interval
-    in the route's time interval settings.
-  paths:
-  - notifications.route-grouping-form.open
-  - notifications.groups.open
-  - notifications.time-intervals.open
-  - notifications.route-time-intervals.open
 - id: aaedb1d4c4bb8a43
   language: en
   page: manuals:notifications
@@ -1610,14 +1621,16 @@ discoveries:
     real deliveries, so both verified addresses should receive the message.
   paths:
   - notifications.event-route-matches.open
-- id: 5835e7ee2f15bc7a
+- id: 6506aa1589c59a41
   language: en
   page: manuals:notifications:events
   paragraph: 14
   text: "**Notifications → Delivery history → event detail** is not a complete audit
     log. A candidate is stored only when routing prepares at least one real delivery.
-    An event muted without another delivery, outside its active interval, or without
-    a matching route does not appear in history."
+    If every matching route only mutes the event or skips its receiver because of
+    an active or mute interval, and no other route or subroute produces a delivery,
+    the event does not appear in history. An event without a matching route does not
+    appear either."
   paths:
   - notifications.event-route-matches.open
 - id: 9154497f42209045
@@ -1644,6 +1657,16 @@ discoveries:
   text: 'At **Notifications → Routes**, select **Add route** and set:'
   paths:
   - notifications.routes.open
+- id: 11d094149af153af
+  language: en
+  page: manuals:notifications:routing
+  paragraph: 27
+  text: A time interval is a reusable schedule with its own time zone. It can limit
+    delivery to working hours or a maintenance window, mute alerts outside working
+    hours, or divide work-hours and on-call delivery between separate routes. Create
+    intervals at **Notifications → Time intervals**.
+  paths:
+  - notifications.time-intervals.open
 - id: 3e8b8ba861fd9038
   language: en
   page: manuals:notifications:routing
@@ -1654,16 +1677,14 @@ discoveries:
     Routes**.
   paths:
   - notifications.routes.open
-- id: 5cb9ce9ec0363bd9
+- id: 6af9c28747aa676e
   language: en
   page: manuals:notifications:routing
-  paragraph: 17
-  text: At **Notifications → Test notification**, choose a type and enter JSON values
-    for its fields. A test uses real routing and real targets, so it can actually
-    send e-mail, SMS, Telegram, or a webhook. It does not perform an underlying operational
-    action such as suspending a VPS.
+  paragraph: 31
+  text: 'Attach an interval to a saved route at **Notifications → Routes → edit route
+    → Time intervals** in one of two modes:'
   paths:
-  - notifications.test-notification.open
+  - notifications.route-time-intervals.open
 - id: 72b6e6165d504996
   language: en
   page: manuals:notifications:routing
@@ -1673,6 +1694,33 @@ discoveries:
     matcher**.
   paths:
   - notifications.matcher-form.open
+- id: b2c53c290eb85c0d
+  language: en
+  page: manuals:notifications:routing
+  paragraph: 36
+  text: At **Notifications → Test notification**, choose a type and enter JSON values
+    for its fields. A test uses real routing and real targets, so it can actually
+    send e-mail, SMS, Telegram, or a webhook. It does not perform an underlying operational
+    action such as suspending a VPS.
+  paths:
+  - notifications.test-notification.open
+- id: e7d9e09d46ad6418
+  language: en
+  page: manuals:notifications:routing
+  paragraph: 25
+  text: "**Notifications → Notification groups** shows open, overdue, idle, and historical
+    groups. A group detail contains its route, receiver, grouping values, timing,
+    pending events, and deliveries."
+  paths:
+  - notifications.groups.open
+- id: e916ccbfaa0ca296
+  language: en
+  page: manuals:notifications:routing
+  paragraph: 20
+  text: 'Configure grouping on a saved route at **Notifications → Routes → edit route
+    → Notification grouping**:'
+  paths:
+  - notifications.route-grouping-form.open
 - id: 2affb5c006ec1096
   language: en
   page: manuals:notifications:sms

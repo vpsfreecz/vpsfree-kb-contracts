@@ -23,23 +23,7 @@ bindings:
   count: 1
 - language: cs
   page: navody:notifikace
-  path: notifications.groups.open
-  count: 1
-- language: cs
-  page: navody:notifikace
   path: notifications.open
-  count: 1
-- language: cs
-  page: navody:notifikace
-  path: notifications.route-grouping-form.open
-  count: 1
-- language: cs
-  page: navody:notifikace
-  path: notifications.route-time-intervals.open
-  count: 1
-- language: cs
-  page: navody:notifikace
-  path: notifications.time-intervals.open
   count: 1
 - language: cs
   page: navody:notifikace:cile_a_prijemci
@@ -75,7 +59,19 @@ bindings:
   count: 1
 - language: cs
   page: navody:notifikace:routovani
+  path: notifications.groups.open
+  count: 1
+- language: cs
+  page: navody:notifikace:routovani
   path: notifications.matcher-form.open
+  count: 1
+- language: cs
+  page: navody:notifikace:routovani
+  path: notifications.route-grouping-form.open
+  count: 1
+- language: cs
+  page: navody:notifikace:routovani
+  path: notifications.route-time-intervals.open
   count: 1
 - language: cs
   page: navody:notifikace:routovani
@@ -84,6 +80,10 @@ bindings:
 - language: cs
   page: navody:notifikace:routovani
   path: notifications.test-notification.open
+  count: 1
+- language: cs
+  page: navody:notifikace:routovani
+  path: notifications.time-intervals.open
   count: 1
 - language: cs
   page: navody:notifikace:sms
@@ -291,23 +291,7 @@ bindings:
   count: 1
 - language: en
   page: manuals:notifications
-  path: notifications.groups.open
-  count: 1
-- language: en
-  page: manuals:notifications
   path: notifications.open
-  count: 1
-- language: en
-  page: manuals:notifications
-  path: notifications.route-grouping-form.open
-  count: 1
-- language: en
-  page: manuals:notifications
-  path: notifications.route-time-intervals.open
-  count: 1
-- language: en
-  page: manuals:notifications
-  path: notifications.time-intervals.open
   count: 1
 - language: en
   page: manuals:notifications:event_roles
@@ -343,7 +327,19 @@ bindings:
   count: 1
 - language: en
   page: manuals:notifications:routing
+  path: notifications.groups.open
+  count: 1
+- language: en
+  page: manuals:notifications:routing
   path: notifications.matcher-form.open
+  count: 1
+- language: en
+  page: manuals:notifications:routing
+  path: notifications.route-grouping-form.open
+  count: 1
+- language: en
+  page: manuals:notifications:routing
+  path: notifications.route-time-intervals.open
   count: 1
 - language: en
   page: manuals:notifications:routing
@@ -352,6 +348,10 @@ bindings:
 - language: en
   page: manuals:notifications:routing
   path: notifications.test-notification.open
+  count: 1
+- language: en
+  page: manuals:notifications:routing
+  path: notifications.time-intervals.open
   count: 1
 - language: en
   page: manuals:notifications:sms

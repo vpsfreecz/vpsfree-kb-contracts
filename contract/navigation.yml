@@ -954,8 +954,8 @@ paths:
   - id: notifications.groups.open
     steps: [notifications.menu, notifications.groups]
     pages:
-      cs: [navody:notifikace]
-      en: [manuals:notifications]
+      cs: [navody:notifikace:routovani]
+      en: [manuals:notifications:routing]
 
   - id: notifications.receivers.open
     steps: [notifications.menu, notifications.receivers]
@@ -1018,20 +1018,20 @@ paths:
   - id: notifications.time-intervals.open
     steps: [notifications.menu, notifications.time-intervals, notifications.time-interval-form]
     pages:
-      cs: [navody:notifikace]
-      en: [manuals:notifications]
+      cs: [navody:notifikace:routovani]
+      en: [manuals:notifications:routing]
 
   - id: notifications.route-grouping-form.open
     steps: [notifications.menu, notifications.routes, notifications.route-grouping-form]
     pages:
-      cs: [navody:notifikace]
-      en: [manuals:notifications]
+      cs: [navody:notifikace:routovani]
+      en: [manuals:notifications:routing]
 
   - id: notifications.route-time-intervals.open
     steps: [notifications.menu, notifications.routes, notifications.route-time-intervals]
     pages:
-      cs: [navody:notifikace]
-      en: [manuals:notifications]
+      cs: [navody:notifikace:routovani]
+      en: [manuals:notifications:routing]
 
   - id: notifications.event-route-matches.open
     steps: [notifications.menu, notifications.events, notifications.event-route-matches]
