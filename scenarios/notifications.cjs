@@ -16,6 +16,34 @@ function receiverTables(page, documentationId) {
   ];
 }
 
+function matcherTables(page, documentationId) {
+  if (documentationId !== 'notifications.matcher-form') {
+    throw new Error(`Unexpected matcher form documentation ID: ${documentationId}`);
+  }
+  const matcher = documentationTable(page, documentationId);
+  return [matcher, matcher.locator('xpath=following::table[1]')];
+}
+
+function documentedEventType(page, documentationId, selector) {
+  return page.locator(`[data-vpsadmin-doc-id="${documentationId}"]`).locator(selector);
+}
+
+async function keepBasicRoutes(page, documentationId) {
+  if (documentationId !== 'notifications.routes') {
+    throw new Error(`Unexpected route list documentation ID: ${documentationId}`);
+  }
+  const table = documentationTable(page, documentationId);
+  await table.locator('tr').evaluateAll((rows) => {
+    const labels = ['Documentation alerts', 'Default route', 'Default admin route'];
+    rows.slice(1).forEach((row) => {
+      if (!labels.some((label) => row.textContent.includes(label))) {
+        row.style.display = 'none';
+      }
+    });
+  });
+  return table;
+}
+
 async function routeTables(page, documentationId, matcherField) {
   const heading = page.locator(
     `[data-vpsadmin-doc-id="${documentationId}"]`,
@@ -136,15 +164,55 @@ async function run({ page, session }) {
   await session.locator(
     page,
     'notifications/routes',
-    documentationTable(page, 'notifications.routes'),
+    await keepBasicRoutes(page, 'notifications.routes'),
+  );
+
+  await goto(page, '/?page=notifications&action=event_types');
+  await session.locator(
+    page,
+    'notifications/event-types',
+    page.locator('[data-vpsadmin-doc-id="notifications.event-types"]'),
+  );
+
+  await goto(page, '/?page=notifications&action=event_types#event-type-vps-oom_report');
+  const oomEventType = page.locator('#event-type-vps-oom_report');
+  await oomEventType.locator('xpath=ancestor::details[1]').evaluate((details) => {
+    details.open = true;
+  });
+  await session.locator(
+    page,
+    'notifications/event-type-vps-oom-report',
+    documentedEventType(page, 'notifications.event-types', '#event-type-vps-oom_report'),
+  );
+
+  await goto(page, '/?page=notifications&action=routes');
+  await goto(page, await editUrlForRow(page, 'Mute selected OOM reports', 'route_edit'));
+  await page.locator('a[href*="action=matcher_new"]').first().click();
+  const matcherForm = page.locator(
+    'form[action*="page=notifications"][action*="action=matcher_new"]',
+  );
+  await matcherForm.locator('select[name="field"]').selectOption('cgroup');
+  await matcherForm.locator('select[name="operator"]').selectOption('=*');
+  await matcherForm.locator('input[name="value"]').fill('/user.slice/**/*.scope');
+  await session.shot(
+    page,
+    'notifications/matcher-form',
+    matcherTables(page, 'notifications.matcher-form'),
+  );
+
+  await goto(page, '/?page=notifications&action=targets');
+  await session.locator(
+    page,
+    'notifications/targets',
+    documentationTable(page, 'notifications.targets'),
   );
 
   await goto(page, '/?page=notifications&action=receivers');
   await goto(page, await editUrlForRow(page, 'Documentation e-mail', 'receiver_edit'));
-  await session.locator(
+  await session.shot(
     page,
     'notifications/receiver',
-    documentationTable(page, 'notifications.receiver-form'),
+    receiverTables(page, 'notifications.receiver-form'),
   );
 
   await goto(page, '/?page=notifications&action=time_intervals');

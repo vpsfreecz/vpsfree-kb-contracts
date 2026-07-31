@@ -219,6 +219,16 @@ controls:
     captures:
       - notifications/routes
 
+  - id: notifications.event-types
+    label: { en: Event types, cs: Typy událostí }
+    source:
+      path: webui/forms/notifications.forms.php
+      contains: "'notifications.event-types'"
+      fingerprint: 6a7b0c822d9b9882ec8944992d69c11464d3ea08316376f65a2d1a1b4871d550
+    captures:
+      - notifications/event-types
+      - notifications/event-type-vps-oom-report
+
   - id: notifications.route-form
     label: { en: Update route, cs: Upravit routu }
     source:
@@ -245,12 +255,30 @@ controls:
     captures:
       - notifications/grouping-route
 
+  - id: notifications.matcher-form
+    label: { en: Add matcher, cs: Přidat matcher }
+    source:
+      path: webui/forms/notifications.forms.php
+      contains: "'notifications.matcher-form'"
+      fingerprint: 118d0ab6e5f7bb84a4a5e90ecad801d4501fc796328af610e267ca2904522ae1
+    captures:
+      - notifications/matcher-form
+
   - id: notifications.receivers
     label: { en: Receivers, cs: Příjemci }
     source:
       path: webui/forms/notifications.forms.php
       contains: "'notifications.receivers'"
       fingerprint: 8c03718bfbe881d8e03432ced85cb5d6e612637126cef935f551e1423fc6ab91
+
+  - id: notifications.targets
+    label: { en: Targets, cs: Cíle }
+    source:
+      path: webui/forms/notifications.forms.php
+      contains: "'notifications.targets'"
+      fingerprint: 2b5af6f3fe3558f73c430896ac79462ece0aaa9c417453f2fea033a093a5e6ef
+    captures:
+      - notifications/targets
 
   - id: notifications.receiver-form
     label: { en: Update receiver, cs: Upravit příjemce }
@@ -269,11 +297,8 @@ controls:
     label: { en: Update target, cs: Upravit cíl }
     source:
       path: webui/forms/notifications.forms.php
-      contains: "function notifications_target_edit("
-      related:
-        - path: webui/forms/notifications.forms.php
-          contains: "function notifications_target_edit("
-      fingerprint: 6775d704a1dec46f89bbc75ece262adee07f7be14c78a479ff7f8c8b0b5a22be
+      contains: "'notifications.target-form'"
+      fingerprint: 54913cf29550143c5afa7a6ec1aabc22bbdc8672f862fe157dd069fba62e36a9
     captures:
       - notifications/example-telegram-target
       - notifications/example-sms-verification
@@ -315,6 +340,13 @@ controls:
       - notifications/example-telegram-result
       - notifications/example-sms-result
       - notifications/example-webhook-result
+
+  - id: notifications.test-notification
+    label: { en: Test notification, cs: Testovací notifikace }
+    source:
+      path: webui/forms/notifications.forms.php
+      contains: "'notifications.test-notification'"
+      fingerprint: 922462012737bb935a4d683c118898cb493a85324e32b0926a1aebf9a2917084
 
   - id: networking.menu
     label: { en: Networking, cs: Sítě }
@@ -518,7 +550,51 @@ semantic_selectors:
         await session.locator(
           page,
           'notifications/routes',
-          documentationTable(page, 'notifications.routes'),
+          await keepBasicRoutes(page, 'notifications.routes'),
+        );
+
+  - capture: notifications/event-types
+    control: notifications.event-types
+    source:
+      path: scenarios/notifications.cjs
+      declaration: |
+        await session.locator(
+          page,
+          'notifications/event-types',
+          page.locator('[data-vpsadmin-doc-id="notifications.event-types"]'),
+        );
+
+  - capture: notifications/event-type-vps-oom-report
+    control: notifications.event-types
+    source:
+      path: scenarios/notifications.cjs
+      declaration: |
+        await session.locator(
+          page,
+          'notifications/event-type-vps-oom-report',
+          documentedEventType(page, 'notifications.event-types', '#event-type-vps-oom_report'),
+        );
+
+  - capture: notifications/matcher-form
+    control: notifications.matcher-form
+    source:
+      path: scenarios/notifications.cjs
+      declaration: |
+        await session.shot(
+          page,
+          'notifications/matcher-form',
+          matcherTables(page, 'notifications.matcher-form'),
+        );
+
+  - capture: notifications/targets
+    control: notifications.targets
+    source:
+      path: scenarios/notifications.cjs
+      declaration: |
+        await session.locator(
+          page,
+          'notifications/targets',
+          documentationTable(page, 'notifications.targets'),
         );
 
   - capture: notifications/example-role-routing
@@ -636,10 +712,10 @@ semantic_selectors:
     source:
       path: scenarios/notifications.cjs
       declaration: |
-        await session.locator(
+        await session.shot(
           page,
           'notifications/receiver',
-          documentationTable(page, 'notifications.receiver-form'),
+          receiverTables(page, 'notifications.receiver-form'),
         );
 
   - capture: notifications/example-telegram
@@ -853,21 +929,27 @@ paths:
     steps: [notifications.menu, notifications.routes]
     pages:
       cs:
-        - navody:notifikace
         - navody:notifikace:role_udalosti
         - navody:notifikace:ztlumeni_oom
         - navody:notifikace:ztlumeni_incidentu
         - navody:notifikace:telegram
         - navody:notifikace:sms
         - navody:notifikace:webhook
+        - navody:notifikace:routovani
       en:
-        - manuals:notifications
         - manuals:notifications:event_roles
         - manuals:notifications:mute_oom
         - manuals:notifications:mute_incidents
         - manuals:notifications:telegram
         - manuals:notifications:sms
         - manuals:notifications:webhook
+        - manuals:notifications:routing
+
+  - id: notifications.event-types.open
+    steps: [notifications.menu, notifications.event-types]
+    pages:
+      cs: [navody:notifikace:udalosti]
+      en: [manuals:notifications:events]
 
   - id: notifications.groups.open
     steps: [notifications.menu, notifications.groups]
@@ -876,36 +958,62 @@ paths:
       en: [manuals:notifications]
 
   - id: notifications.receivers.open
+    steps: [notifications.menu, notifications.receivers]
+    pages:
+      cs:
+        - navody:notifikace:cile_a_prijemci
+      en:
+        - manuals:notifications:targets_and_receivers
+
+  - id: notifications.receiver-form.open
     steps: [notifications.menu, notifications.receivers, notifications.receiver-form]
     pages:
       cs:
-        - navody:notifikace
+        - navody:notifikace:cile_a_prijemci
         - navody:notifikace:role_udalosti
         - navody:notifikace:telegram
         - navody:notifikace:sms
         - navody:notifikace:webhook
       en:
-        - manuals:notifications
+        - manuals:notifications:targets_and_receivers
         - manuals:notifications:event_roles
         - manuals:notifications:telegram
         - manuals:notifications:sms
         - manuals:notifications:webhook
 
+  - id: notifications.targets.open
+    steps: [notifications.menu, notifications.targets]
+    pages:
+      cs: [navody:notifikace:cile_a_prijemci]
+      en: [manuals:notifications:targets_and_receivers]
+
   - id: notifications.target-form.open
-    steps: [notifications.menu, notifications.target-form]
+    steps: [notifications.menu, notifications.targets, notifications.target-form]
     pages:
       cs:
-        - navody:notifikace
+        - navody:notifikace:cile_a_prijemci
         - navody:notifikace:role_udalosti
         - navody:notifikace:telegram
         - navody:notifikace:sms
         - navody:notifikace:webhook
       en:
-        - manuals:notifications
+        - manuals:notifications:targets_and_receivers
         - manuals:notifications:event_roles
         - manuals:notifications:telegram
         - manuals:notifications:sms
         - manuals:notifications:webhook
+
+  - id: notifications.matcher-form.open
+    steps: [notifications.menu, notifications.routes, notifications.matcher-form]
+    pages:
+      cs: [navody:notifikace:routovani]
+      en: [manuals:notifications:routing]
+
+  - id: notifications.test-notification.open
+    steps: [notifications.menu, notifications.test-notification]
+    pages:
+      cs: [navody:notifikace:routovani]
+      en: [manuals:notifications:routing]
 
   - id: notifications.time-intervals.open
     steps: [notifications.menu, notifications.time-intervals, notifications.time-interval-form]
@@ -930,12 +1038,14 @@ paths:
     pages:
       cs:
         - navody:notifikace
+        - navody:notifikace:udalosti
         - navody:notifikace:role_udalosti
         - navody:notifikace:telegram
         - navody:notifikace:sms
         - navody:notifikace:webhook
       en:
         - manuals:notifications
+        - manuals:notifications:events
         - manuals:notifications:event_roles
         - manuals:notifications:telegram
         - manuals:notifications:sms
