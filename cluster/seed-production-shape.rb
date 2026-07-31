@@ -408,12 +408,16 @@ def upsert_capture_event!(user:, event_type:, subject:, payload:)
     event_type,
     user:,
     subject:,
-    payload:,
-    persist: :always
+    payload:
   )
 end
 
 def upsert_capture_notifications!(user:)
+  # The database setup service runs seed files before its final built-in
+  # notification-template installation step. The fixtures below emit routed
+  # events, so their delivery plans need templates while this seed is running.
+  VpsAdmin::API::NotificationTemplates.install_defaults!
+
   target_value = 'documentation@example.test'
   target = NotificationTarget.find_or_initialize_by(
     user:,
@@ -532,23 +536,11 @@ def upsert_capture_notifications!(user:)
   assignment.mode = :active
   assignment.save!
 
-  scheduled_events = Event.where(
+  Event.where(
     user:,
     event_type: 'user.test_notification',
     subject: 'Scheduled-out documentation event'
-  ).order(:id)
-  event = scheduled_events.first
-  scheduled_events.where.not(id: event.id).destroy_all if event
-  event ||= VpsAdmin::API::Events.emit!(
-    'user.test_notification',
-    user:,
-    subject: 'Scheduled-out documentation event',
-    payload: { note: 'This delivery is outside its active interval.' }
-  )
-  unless event.suppressed_routing_state? &&
-         event.event_route_matches.sole.time_interval_state == 'inactive'
-    raise "scheduled capture event was not suppressed: event=#{event.id} state=#{event.routing_state}"
-  end
+  ).destroy_all
 
   %i[telegram sms].each do |delivery_method|
     user.set_notification_delivery_method!(delivery_method, true)
@@ -636,7 +628,7 @@ def upsert_capture_notifications!(user:)
 
   mute_receiver = NotificationReceiver.ensure_default_mute_receiver_for!(user)
 
-  oom_mute_route = upsert_capture_event_route!(
+  upsert_capture_event_route!(
     user:,
     receiver: mute_receiver,
     label: 'Mute selected OOM reports',
@@ -648,7 +640,7 @@ def upsert_capture_notifications!(user:)
       { field: 'cgroup', operator: '=*', value: '/user.slice/**/*.scope' }
     ]
   )
-  incident_mute_route = upsert_capture_event_route!(
+  upsert_capture_event_route!(
     user:,
     receiver: mute_receiver,
     label: 'Mute incident feed for VPS',
@@ -760,33 +752,16 @@ def upsert_capture_notifications!(user:)
       note: 'Synthetic event used only for role-routing screenshots.'
     }
   )
-  incident_event = upsert_capture_event!(
+  Event.where(
     user:,
     event_type: 'vps.incident_report',
-    subject: 'Muted incident documentation event',
-    payload: {
-      subject: 'Documentation incident',
-      text: 'Synthetic incident used only for notification screenshots.',
-      codename: 'abuse-feed',
-      vps_id: 123
-    }
-  )
-  oom_event = upsert_capture_event!(
+    subject: 'Muted incident documentation event'
+  ).destroy_all
+  Event.where(
     user:,
     event_type: 'vps.oom_report',
-    subject: 'Muted OOM documentation event',
-    payload: {
-      vps_id: 123,
-      vps_hostname: 'example-vps',
-      cgroup: '/user.slice/user-1000.slice/session-2.scope',
-      cgroups: ['/user.slice/user-1000.slice/session-2.scope'],
-      count: 1,
-      killed_name: 'python3',
-      report_count: 1,
-      selected_report_count: 1,
-      selected_oom_count: 1
-    }
-  )
+    subject: 'Muted OOM documentation event'
+  ).destroy_all
   telegram_event = upsert_capture_event!(
     user:,
     event_type: 'user.test_notification',
@@ -832,14 +807,6 @@ def upsert_capture_notifications!(user:)
          role_route_ids.include?(admin_role_route.id)
     raise "role capture event did not match both role routes: #{role_route_ids.inspect}"
   end
-  unless incident_event.suppressed_routing_state? &&
-         incident_event.event_route_matches.first.event_route_id == incident_mute_route.id
-    raise "incident capture event did not stop at the mute route: event=#{incident_event.id}"
-  end
-  unless oom_event.suppressed_routing_state? &&
-         oom_event.event_route_matches.first.event_route_id == oom_mute_route.id
-    raise "OOM capture event did not stop at the mute route: event=#{oom_event.id}"
-  end
   unless telegram_event.event_route_matches.sole.event_route_id == telegram_test_route.id
     raise "Telegram capture event did not stop at its test route: event=#{telegram_event.id}"
   end
@@ -851,10 +818,7 @@ def upsert_capture_notifications!(user:)
   end
 
   fixture_events = [
-    event,
     role_event,
-    incident_event,
-    oom_event,
     telegram_event,
     sms_event,
     webhook_event
@@ -869,10 +833,7 @@ def upsert_capture_notifications!(user:)
   end
 
   {
-    scheduled: event,
     role: role_event,
-    incident: incident_event,
-    oom: oom_event,
     telegram: telegram_event,
     sms: sms_event,
     webhook: webhook_event

@@ -47,6 +47,12 @@ page_ids:
   - navody:distribuce:nixos:zaciname
   - navody:meet
   - navody:notifikace
+  - navody:notifikace:role_udalosti
+  - navody:notifikace:sms
+  - navody:notifikace:telegram
+  - navody:notifikace:webhook
+  - navody:notifikace:ztlumeni_incidentu
+  - navody:notifikace:ztlumeni_oom
   - navody:server:drupal
   - navody:server:firewall
   - navody:server:glusterfs
@@ -147,6 +153,12 @@ page_ids:
   - manuals:distributions:nixos
   - manuals:distributions:nixos:impermanence
   - manuals:notifications
+  - manuals:notifications:event_roles
+  - manuals:notifications:mute_incidents
+  - manuals:notifications:mute_oom
+  - manuals:notifications:sms
+  - manuals:notifications:telegram
+  - manuals:notifications:webhook
   - manuals:server:mailserver-nixos
   - manuals:server:postfix
   - manuals:server:primary_dns
@@ -372,167 +384,249 @@ discoveries:
     Play]]. Doporučujeme v nastavení (tři čárky vlevo nahoře → settings) změnit server
     na meet.vpsfree.cz.'
   reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: 056f9111fe54ae0c
+- id: 1d5061baf51a6704
   language: cs
   page: navody:notifikace
-  paragraph: 8
-  text: "- V části **Cíle** přidejte dva e-mailové cíle. Zadejte popisný název, e-mailovou
-    adresu a každý cíl ověřte odkazem z ověřovací zprávy. - V části **Příjemci** vytvořte
-    příjemce **Kontakt účtu**. Otevřete jej, vyberte první ověřený e-mailový cíl a
-    klikněte na **Přidat cíl**. Stejným způsobem vytvořte příjemce **Kontakt správce**
-    pro druhou adresu."
-  paths:
-  - notifications.target-form.open
-  - notifications.receivers.open
-- id: '088148b2a970f35d'
-  language: cs
-  page: navody:notifikace
-  paragraph: 79
-  text: Opakovaně použitelné intervaly se definují v Notifikace → Časové intervaly.
-    Každý má časové pásmo IANA a jednu či více specifikací. Pole jedné specifikace
-    se spojují logickým **a**; více rozsahů nebo specifikací představuje alternativy.
-  paths:
-  - notifications.time-intervals.open
-- id: 1dbbf8262f29db76
-  language: cs
-  page: navody:notifikace
-  paragraph: 10
-  text: "- V části **Routy** klikněte na **Přidat routu** a nastavte: * **Název:**
-    ''Události role account'', * **Typ události** i **Vzor typu události:** ponechte
-    prázdné, * **Příjemce:** Kontakt účtu, * **Povoleno:** ano, * **Pokračovat:**
-    ano. - Po uložení routy klikněte na **Přidat matcher**. V nabídce typu zvolte
-    **Libovolný typ události**, pole ''roles'', operátor **obsahuje položku seznamu**
-    a hodnotu ''account''."
+  paragraph: 9
+  text: Routy se spravují v **Notifikace → Routy**. Routy na stejné úrovni se vyhodnocují
+    shora dolů. Všechny podmínky jedné routy musí platit.
   paths:
   - notifications.routes.open
-- id: 2f120469f6d7aaf9
+- id: 0b32baa603db1790
   language: cs
   page: navody:notifikace
-  paragraph: 84
-  text: Výsledek najdete v Notifikace → Události → detail události. Detail ukazuje
-    odpovídající routy, stav časových intervalů, vytvořená doručení a snímek vyhodnocení
-    v čase události. ''inactive'' znamená, že neodpovídal aktivní interval; ''muted''
-    znamená shodu ztlumujícího intervalu.
+  paragraph: 32
+  text: Uložená doručení lze zkontrolovat v **Notifikace → Historie doručování → detail
+    události**. Detail ukazuje odpovídající routy, doručení a snímek vyhodnocení v
+    okamžiku události. Kandidát zastavený pouze ztlumením, neaktivním intervalem nebo
+    bez odpovídající routy se neukládá, proto se v historii nezobrazí.
   paths:
   - notifications.event-route-matches.open
-- id: 3925f3d35b2dd5d3
+- id: '029d0c22eb5232b2'
+  language: cs
+  page: navody:notifikace
+  paragraph: 29
+  text: Interval se přiřazuje v **Notifikace → Routy → upravit routu** jako **Aktivní
+    interval** nebo **Ztlumující interval**. Bez aktivního intervalu není doba routy
+    omezena. Shoda libovolného ztlumujícího intervalu danou routu potlačí.
+  paths:
+  - notifications.route-time-intervals.open
+- id: 5a83ef1a3c42af94
+  language: cs
+  page: navody:notifikace
+  paragraph: 14
+  text: Příjemci se spravují v **Notifikace → Příjemci**. Příjemce může obsahovat
+    několik cílů. Routa odkazuje na příjemce, nikoli přímo na adresu. Vestavěný příjemce
+    **Ztlumit** nemá doručovací cíl a odpovídající události potlačí.
+  paths:
+  - notifications.receivers.open
+- id: 55cf02ff768d0e6f
+  language: cs
+  page: navody:notifikace
+  paragraph: 25
+  text: 'Opakovaně použitelné intervaly se definují v **Notifikace → Časové intervaly**.
+    Hodí se například pro:'
+  paths:
+  - notifications.time-intervals.open
+- id: 50344fa20027e665
+  language: cs
+  page: navody:notifikace
+  paragraph: 13
+  text: Konkrétní adresy se spravují v **Notifikace → Cíle**. Vlastní e-mail a SMS
+    musí být ověřeny a Telegram musí být spárován.
+  paths:
+  - notifications.target-form.open
+- id: 1e2892b9e7d369cb
+  language: cs
+  page: navody:notifikace
+  paragraph: 23
+  text: V **Notifikace → Skupiny notifikací** lze prohlížet otevřené, zpožděné, neaktivní
+    i historické skupiny. Detail ukazuje routu, příjemce, seskupovací hodnoty, časování,
+    čekající události a doručení. Jednotlivá doručení zůstávají viditelná v detailu
+    události.
+  paths:
+  - notifications.groups.open
+- id: 486ba6bdf900dee2
+  language: cs
+  page: navody:notifikace
+  paragraph: 18
+  text: 'Seskupování se nastavuje samostatně na existující routě v **Notifikace →
+    Routy → upravit routu → Seskupování notifikací**:'
+  paths:
+  - notifications.route-grouping-form.open
+- id: c71c8a4ea986470f
   language: cs
   page: navody:notifikace
   paragraph: 1
-  text: Notifikační systém vpsAdminu zpracovává události a podle rout je předává příjemcům.
-    Nastavení najdete v hlavní nabídce Notifikace.
+  text: Notifikační systém vpsAdminu převádí události na e-mailová, SMS, telegramová
+    nebo webhooková doručení. Najdete jej v hlavní nabídce **Notifikace**.
   paths:
   - notifications.open
-- id: 63fd9de7155699c4
-  language: cs
-  page: navody:notifikace
-  paragraph: 66
-  text: "- Po vytvoření testu server obdrží ''POST'' s ''Content-Type: application/json'',
-    ''User-Agent: vpsAdmin notification dispatcher'' a hlavičkami ''X-VpsAdmin-Event'',
-    ''X-VpsAdmin-Delivery'' a ''X-VpsAdmin-Signature-256''. V detailu události musí
-    být webhooková routa jedinou odpovídající routou. Potom u ní znovu zapněte **Pokračovat**,
-    aby skutečné změny prostředků nadále vyvolaly i běžný e-mail."
-  paths:
-  - notifications.event-route-matches.open
-- id: 6b856582444eb878
-  language: cs
-  page: navody:notifikace
-  paragraph: 41
-  text: "- Obě routy přesuňte před výchozí e-mailové routy. Bezpečný test spojení
-    provedete dočasnou routou pro přesný typ ''user.test_notification'', příjemce
-    **Provozní Telegram** a **Pokračovat: ne**. Vytvořte testovací událost tohoto
-    typu, zkontrolujte zprávu v Telegramu a dočasnou routu smažte. - Incidentní a
-    monitoringovou routu ověřte po příští skutečné události v jejím detailu nebo pomocí
-    počítadla zásahů. Syntetický incident nemá navázaný reálný incidentní záznam a
-    některé konkrétní monitoringové typy rovněž vyžadují zdrojový objekt, proto pro
-    ně obecný test nemusí vytvořit doručení."
-  paths:
-  - notifications.routes.open
-  - notifications.event-route-matches.open
-- id: 76afc45ab2b49788
-  language: cs
-  page: navody:notifikace
-  paragraph: 76
-  text: Příjemci se spravují v Notifikace → Příjemci. Výchozí e-mailový cíl sleduje
-    primární adresu účtu. Vlastní e-mail, SMS a Telegram musí být před doručováním
-    ověřeny nebo spárovány.
-  paths:
-  - notifications.receivers.open
-- id: 77e9f17cf14c6b1e
-  language: cs
-  page: navody:notifikace
-  paragraph: 33
-  text: "- V části **Cíle** přidejte cíl typu **Telegram** s názvem **Provozní Telegram**.
-    - Otevřete zobrazený párovací odkaz v soukromém chatu s botem, stiskněte Start
-    a vraťte se do vpsAdminu. Stav cíle se musí změnit na **spárováno**. Párovací
-    odkaz nikomu neposílejte."
-  paths:
-  - notifications.target-form.open
-- id: 782959e15ecfcc3b
-  language: cs
-  page: navody:notifikace
-  paragraph: 53
-  text: '- Routy umístěte před výchozí e-mailové routy. ''''user.suspended'''' se
-    vztahuje na celý účet, zatímco ''''vps.suspended'''' na jednu VPS. - Volitelně
-    vytvořte testovací událost ''''user.suspended'''' s payloadem ''''{"state":"suspended","reason":"Routing
-    test"}''''. Test účet nepozastaví, ale odešle skutečnou SMS, která může být zpoplatněna
-    jako běžná SMS. - Routa ''''vps.suspended'''' se ověří při příští skutečné události
-    v detailu nebo počítadlem zásahů. Obecná testovací událost není spojena s reálnou
-    VPS, kterou šablona této zprávy potřebuje.'
-  paths:
-  - notifications.event-route-matches.open
-- id: 7856f7de964465cc
-  language: cs
-  page: navody:notifikace
-  paragraph: 59
-  text: "- V části **Cíle** přidejte cíl typu **Webhook**. Zadejte veřejnou URL, například
-    ''https://events.example.net/vpsadmin'', a vygenerované tajemství. Privátní, lokální
-    a link-local adresy vpsAdmin odmítá."
-  paths:
-  - notifications.target-form.open
-- id: 81dfa06663e72390
-  language: cs
-  page: navody:notifikace
-  paragraph: 75
-  text: Cíle se spravují v nabídce Notifikace → Cíle. Cíl obsahuje konkrétní adresu
-    nebo účet a svůj ověřovací stav. Příjemce sdružuje jeden či více cílů; jeden příjemce
-    tak může například odeslat e-mail i zavolat webhook.
-  paths:
-  - notifications.target-form.open
-- id: acb68156138769f4
-  language: cs
-  page: navody:notifikace
-  paragraph: 15
-  text: "- Po vytvoření testu otevřete jeho detail v **Událostech**. V tabulce odpovídajících
-    rout musí být obě routy. Testovací událost skutečně odešle zprávy nakonfigurovaným
-    cílům."
-  paths:
-  - notifications.event-route-matches.open
-- id: c7f6130a8d3a9712
-  language: cs
-  page: navody:notifikace
-  paragraph: 72
-  text: Routy se spravují v Notifikace → Routy. Při vytvoření se nejdříve uloží základní
-    routa; podmínky se přidávají až na její editační stránce. Všechny podmínky jedné
-    routy musí platit současně. Typ události je přesná hodnota, zatímco vzor typu
-    může použít glob, například ''monitoring.*''.
-  paths:
-  - notifications.routes.open
-- id: c99d5c8dd6e2b4ad
-  language: cs
-  page: navody:notifikace
-  paragraph: 81
-  text: Interval se přiřazuje v Notifikace → Routy → upravit routu jako **Aktivní
-    interval** nebo **Ztlumující interval**. Bez aktivního intervalu není doba routy
-    omezena; shoda kteréhokoli ztlumujícího intervalu potlačí doručení dané routy.
-  paths:
-  - notifications.route-time-intervals.open
 - id: f068df932817a3fb
   language: cs
   page: navody:notifikace
   paragraph: 2
   text: 'Základní tok je **událost → routa → příjemce → cíl**:'
-  reason: Conceptual event flow is not a WebUI navigation instruction.
+  reason: Conceptual notification flow, not a WebUI navigation instruction.
+- id: b6ca94cb6e109363
+  language: cs
+  page: navody:notifikace:role_udalosti
+  paragraph: 23
+  text: Vytvořenou událost otevřete v **Notifikace → Historie doručování → detail
+    události**. V tabulce odpovídajících rout musí být obě nové routy. Test provádí
+    skutečná doručení, takže zprávu mají dostat obě ověřené adresy.
+  paths:
+  - notifications.event-route-matches.open
+- id: 5fc0fbe363fe4134
+  language: cs
+  page: navody:notifikace:role_udalosti
+  paragraph: 13
+  text: 'Routu uložte. V jejím detailu zvolte **Přidat podmínku**:'
+  reason: Action on the route already opened in the preceding annotated step, not
+    a separate navigation path.
+- id: 7069bafd88f8a3eb
+  language: cs
+  page: navody:notifikace:role_udalosti
+  paragraph: 7
+  text: V **Notifikace → Příjemci** vytvořte **Kontakt účtu**. Otevřete jej a přidejte
+    ověřený cíl **E-mail účtu**.
+  paths:
+  - notifications.receivers.open
+- id: fa819180bf34a73a
+  language: cs
+  page: navody:notifikace:role_udalosti
+  paragraph: 11
+  text: 'V **Notifikace → Routy** zvolte **Přidat routu**:'
+  paths:
+  - notifications.routes.open
+- id: 9d65617ac7746fd9
+  language: cs
+  page: navody:notifikace:role_udalosti
+  paragraph: 5
+  text: V **Notifikace → Cíle** přidejte dva e-mailové cíle, například **E-mail účtu**
+    a **E-mail správce**. Než budete pokračovat, otevřete odkaz v každé ověřovací
+    zprávě.
+  paths:
+  - notifications.target-form.open
+- id: 561ba33dbd7a1c90
+  language: cs
+  page: navody:notifikace:sms
+  paragraph: 4
+  text: V **Notifikace → Cíle** přidejte cíl typu **SMS**. Číslo zadejte v mezinárodním
+    formátu E.164, například ''+420123456789'', a uložte jej.
+  paths:
+  - notifications.target-form.open
+- id: 57dddec74b23c000
+  language: cs
+  page: navody:notifikace:sms
+  paragraph: 8
+  text: V **Notifikace → Příjemci** vytvořte **SMS pozastavení**. Otevřete jej a připojte
+    ověřený SMS cíl.
+  paths:
+  - notifications.receivers.open
+- id: 8eb17fb3721adb8f
+  language: cs
+  page: navody:notifikace:sms
+  paragraph: 23
+  text: Výsledek zkontrolujte v **Notifikace → Historie doručování → detail události**.
+    Routa VPS se ověří při příštím skutečném pozastavení, protože obecný test není
+    spojen s reálnou VPS potřebnou šablonou zprávy.
+  paths:
+  - notifications.event-route-matches.open
+- id: 784a178f53f2cc20
+  language: cs
+  page: navody:notifikace:sms
+  paragraph: 11
+  text: 'V **Notifikace → Routy** přidejte:'
+  paths:
+  - notifications.routes.open
+- id: 2e8721503e902cb5
+  language: cs
+  page: navody:notifikace:telegram
+  paragraph: 8
+  text: V **Notifikace → Příjemci** vytvořte **Provozní Telegram**. Otevřete jej a
+    připojte spárovaný cíl stejného názvu.
+  paths:
+  - notifications.receivers.open
+- id: 6693ebf464a0e486
+  language: cs
+  page: navody:notifikace:telegram
+  paragraph: 4
+  text: V **Notifikace → Cíle** přidejte cíl typu **Telegram** s názvem **Provozní
+    Telegram**.
+  paths:
+  - notifications.target-form.open
+- id: a7c05840a19ab6d1
+  language: cs
+  page: navody:notifikace:telegram
+  paragraph: 11
+  text: 'V **Notifikace → Routy** přidejte:'
+  paths:
+  - notifications.routes.open
+- id: 79a5fef6d4a35f08
+  language: cs
+  page: navody:notifikace:telegram
+  paragraph: 22
+  text: Příští skutečný monitoring nebo incident zkontrolujte v **Notifikace → Historie
+    doručování → detail události**. Obecná syntetická událost nemusí mít reálný monitoringový
+    nebo incidentní objekt, který potřebuje šablona; spojení proto testujte dočasnou
+    routou.
+  paths:
+  - notifications.event-route-matches.open
+- id: e8aa293a173034a7
+  language: cs
+  page: navody:notifikace:telegram
+  paragraph: 5
+  text: Zobrazený párovací odkaz otevřete v soukromém chatu s botem, stiskněte **Start**
+    a vraťte se do vpsAdminu. Cíl musí mít stav **spárováno**. Párovací odkaz je tajný
+    a neposílejte jej dalším lidem.
+  reason: External Telegram pairing action, not a vpsAdmin navigation path.
+- id: 19077af52aff3750
+  language: cs
+  page: navody:notifikace:webhook
+  paragraph: 11
+  text: V **Notifikace → Příjemci** vytvořte **Webhook změn prostředků** a připojte
+    k němu nový webhookový cíl.
+  paths:
+  - notifications.receivers.open
+- id: 369a3e2ff4a7dde3
+  language: cs
+  page: navody:notifikace:webhook
+  paragraph: 8
+  text: V **Notifikace → Cíle** přidejte typ **Webhook**. Zadejte veřejnou URL, například
+    ''https://events.example.net/vpsadmin'', a stejné tajemství. vpsAdmin odmítá privátní,
+    lokální, link-local a jiné nebezpečné cílové adresy.
+  paths:
+  - notifications.target-form.open
+- id: 558ec8aa77ec8767
+  language: cs
+  page: navody:notifikace:webhook
+  paragraph: 14
+  text: 'V **Notifikace → Routy** přidejte:'
+  paths:
+  - notifications.routes.open
+- id: 90a9fbcbfaed9939
+  language: cs
+  page: navody:notifikace:webhook
+  paragraph: 20
+  text: Odpovídající routu zkontrolujte v **Notifikace → Historie doručování → detail
+    události** a poté znovu zapněte **Pokračovat**.
+  paths:
+  - notifications.event-route-matches.open
+- id: ec0a73e02c8ec436
+  language: cs
+  page: navody:notifikace:ztlumeni_incidentu
+  paragraph: 6
+  text: 'V **Notifikace → Routy** zvolte **Přidat routu**:'
+  paths:
+  - notifications.routes.open
+- id: 012d9091e1f3e2a5
+  language: cs
+  page: navody:notifikace:ztlumeni_oom
+  paragraph: 6
+  text: 'V **Notifikace → Routy** zvolte **Přidat routu**:'
+  paths:
+  - notifications.routes.open
 - id: 17cdb2d1b37afe4a
   language: cs
   page: navody:server:firewall
@@ -1386,122 +1480,251 @@ discoveries:
     is the VPS ID) and mount it to ''/persistent''."
   paths:
   - datasets.mount.open
-- id: 33c2b4e24cba05ba
+- id: 212fa949f2f13f0b
   language: en
   page: manuals:notifications
-  paragraph: 79
-  text: Define reusable intervals under Notifications → Time intervals. Each has an
-    IANA time zone and one or more specifications. Fields within one specification
-    use logical **AND**; multiple ranges or specifications are alternatives.
+  paragraph: 18
+  text: 'Grouping is configured separately on an existing route at **Notifications
+    → Routes → edit route → Notification grouping**:'
   paths:
-  - notifications.time-intervals.open
-- id: 4c11a38cac29c2e6
+  - notifications.route-grouping-form.open
+- id: af7ec82f89660f09
   language: en
   page: manuals:notifications
-  paragraph: 1
-  text: The vpsAdmin notification system processes events and passes them to receivers
-    according to routes. Open it from the main Notifications menu.
-  paths:
-  - notifications.open
-- id: 70cce630235a3324
-  language: en
-  page: manuals:notifications
-  paragraph: 53
-  text: '- Place both routes before the default e-mail routes. ''''user.suspended''''
-    applies to the whole account, while ''''vps.suspended'''' applies to one VPS.
-    - Optionally create a ''''user.suspended'''' test event with payload ''''{"state":"suspended","reason":"Routing
-    test"}''''. The test suspends nothing, but it sends a real SMS and may incur the
-    normal SMS charge. - Verify the ''''vps.suspended'''' route after the next real
-    event in its detail or from the route hit count. A generic test event is not attached
-    to the real VPS required by this message template.'
-  paths:
-  - notifications.event-route-matches.open
-- id: 718b0e1c2ff8ba77
-  language: en
-  page: manuals:notifications
-  paragraph: 81
-  text: Assign an interval under Notifications → Routes → edit route as an **Active
-    interval** or **Mute interval**. With no active interval, the route's time is
-    unrestricted. A matching mute interval suppresses that route's delivery.
+  paragraph: 29
+  text: Assign an interval at **Notifications → Routes → edit route** as an **Active
+    interval** or **Mute interval**. With no active interval, the route has no active-time
+    restriction. A matching mute interval suppresses that route.
   paths:
   - notifications.route-time-intervals.open
-- id: 9d4960d87db802c5
+- id: 130af0674a7e0ab7
   language: en
   page: manuals:notifications
-  paragraph: 84
-  text: Inspect the result at Notifications → Event log → event detail. The detail
-    shows matched routes, time-interval state, created deliveries, and the evaluation
-    snapshot at the event timestamp. ''inactive'' means no active interval matched;
-    ''muted'' means a mute interval matched.
-  paths:
-  - notifications.event-route-matches.open
-- id: a4d7d5cb584dc590
-  language: en
-  page: manuals:notifications
-  paragraph: 76
-  text: Manage receivers under Notifications → Receivers. The default e-mail target
-    follows the account's primary address. Custom e-mail, SMS, and Telegram targets
-    must be verified or paired before delivery.
-  paths:
-  - notifications.receivers.open
-- id: a4e1f9ee58009015
-  language: en
-  page: manuals:notifications
-  paragraph: 8
-  text: "- Under **Targets**, add two e-mail targets. Give each a descriptive label
-    and e-mail address, then verify each target using the link from its verification
-    message. - Under **Receivers**, create an **Account contact** receiver. Open it,
-    select the first verified e-mail target and click **Add target**. Repeat this
-    for an **Administrator contact** receiver and the second address."
+  paragraph: 13
+  text: Manage concrete destinations at **Notifications → Targets**. Custom e-mail
+    and SMS targets must be verified and Telegram targets must be paired before they
+    can receive notifications.
   paths:
   - notifications.target-form.open
+- id: 8a28de8e1057b3c7
+  language: en
+  page: manuals:notifications
+  paragraph: 14
+  text: Manage receivers under **Notifications → Receivers**. A receiver can contain
+    several targets. A route points to the receiver, not directly to an address. The
+    built-in **Mute** receiver has no delivery target and suppresses matching events.
+  paths:
   - notifications.receivers.open
+- id: 3df566ddbd108909
+  language: en
+  page: manuals:notifications
+  paragraph: 32
+  text: Inspect stored deliveries at **Notifications → Delivery history → event detail**.
+    The detail shows matched routes, deliveries, and the routing snapshot captured
+    when the event occurred. A candidate stopped only by a mute, an inactive interval,
+    or the absence of a matching route is not stored and does not appear here.
+  paths:
+  - notifications.event-route-matches.open
 - id: aaedb1d4c4bb8a43
   language: en
   page: manuals:notifications
   paragraph: 2
   text: 'The basic flow is **event → route → receiver → target**:'
-  reason: Conceptual event flow is not a WebUI navigation instruction.
-- id: bb309ccccfcb83b9
+  reason: Conceptual notification flow, not a WebUI navigation instruction.
+- id: c1cacc46e6612d27
   language: en
   page: manuals:notifications
-  paragraph: 75
-  text: Manage targets from Notifications → Targets. A target contains a concrete
-    address or account and its verification state. A receiver groups one or more targets,
-    so one receiver can send an e-mail and call a webhook.
+  paragraph: 1
+  text: The vpsAdmin notification system turns events into e-mail, SMS, Telegram,
+    or webhook deliveries. Open it from the main **Notifications** menu.
   paths:
-  - notifications.target-form.open
-- id: cc7dcdc1f65d2ec3
+  - notifications.open
+- id: 52a58d0264bea5b5
   language: en
   page: manuals:notifications
-  paragraph: 72
-  text: Manage routes at Notifications → Routes. Creating a route first saves its
-    basic settings; matchers are added on its edit page afterwards. Every matcher
-    on one route has to match. Event type is an exact value, while Event type pattern
-    accepts a glob such as ''monitoring.*''.
+  paragraph: 25
+  text: 'Define reusable intervals under **Notifications → Time intervals**. A time
+    interval is useful for:'
+  paths:
+  - notifications.time-intervals.open
+- id: 575f73edfacf4cc9
+  language: en
+  page: manuals:notifications
+  paragraph: 9
+  text: Manage routes at **Notifications → Routes**. Routes at the same level are
+    evaluated from top to bottom. Every matcher on one route must match.
   paths:
   - notifications.routes.open
-- id: eb20bef54a0e50fe
+- id: fa0fd8e14a4cbb3e
   language: en
   page: manuals:notifications
-  paragraph: 66
-  text: "- The server receives a ''POST'' with ''Content-Type: application/json'',
-    ''User-Agent: vpsAdmin notification dispatcher'', and the ''X-VpsAdmin-Event'',
-    ''X-VpsAdmin-Delivery'', and ''X-VpsAdmin-Signature-256'' headers. The webhook
-    route must be the only matched route in the event detail. Re-enable **Continue**
-    afterwards so real resource changes continue to produce the normal e-mail as well."
+  paragraph: 23
+  text: Open **Notifications → Notification groups** to inspect open, overdue, idle,
+    and historical groups. A group detail shows its route, receiver, grouping labels,
+    timing, pending events, and deliveries. Individual deliveries remain visible in
+    the event detail.
   paths:
-  - notifications.event-route-matches.open
-- id: fc56a2ef94fd00db
+  - notifications.groups.open
+- id: c52ae095cc2804c4
   language: en
-  page: manuals:notifications
-  paragraph: 33
-  text: "- Under **Targets**, add a **Telegram** target named **Operations Telegram**.
-    - Open the displayed pairing link in a private chat with the bot, press Start,
-    and return to vpsAdmin. The target status must change to **paired**. Do not share
-    the pairing link."
+  page: manuals:notifications:event_roles
+  paragraph: 11
+  text: 'At **Notifications → Routes**, select **Add route** and set:'
+  paths:
+  - notifications.routes.open
+- id: 6ae9af0b390fe924
+  language: en
+  page: manuals:notifications:event_roles
+  paragraph: 7
+  text: At **Notifications → Receivers**, create **Account contact**. Open it and
+    add the verified **Account e-mail** target.
+  paths:
+  - notifications.receivers.open
+- id: 49635223dd178aa2
+  language: en
+  page: manuals:notifications:event_roles
+  paragraph: 5
+  text: At **Notifications → Targets**, add two e-mail targets. Give them descriptive
+    labels, for example **Account e-mail** and **Administrator e-mail**. Open the
+    link in each verification message before continuing.
   paths:
   - notifications.target-form.open
+- id: 8fe4a5f663f68059
+  language: en
+  page: manuals:notifications:event_roles
+  paragraph: 13
+  text: 'Save the route. On its detail, select **Add matcher** and set:'
+  reason: Action on the route already opened in the preceding annotated step, not
+    a separate navigation path.
+- id: d0b1d16417c55d6d
+  language: en
+  page: manuals:notifications:event_roles
+  paragraph: 23
+  text: Open the created event at **Notifications → Delivery history → event detail**.
+    Both new routes must appear in its matched-routes table. Test notifications perform
+    real deliveries, so both verified addresses should receive the message.
+  paths:
+  - notifications.event-route-matches.open
+- id: 95066e5a1e9d677c
+  language: en
+  page: manuals:notifications:mute_incidents
+  paragraph: 6
+  text: 'At **Notifications → Routes**, select **Add route** and set:'
+  paths:
+  - notifications.routes.open
+- id: 4ca8b6f3d98e7959
+  language: en
+  page: manuals:notifications:mute_oom
+  paragraph: 6
+  text: 'At **Notifications → Routes**, select **Add route** and set:'
+  paths:
+  - notifications.routes.open
+- id: 2affb5c006ec1096
+  language: en
+  page: manuals:notifications:sms
+  paragraph: 8
+  text: At **Notifications → Receivers**, create **Suspension SMS**. Open it and attach
+    the verified SMS target.
+  paths:
+  - notifications.receivers.open
+- id: 2c1c552ac7458230
+  language: en
+  page: manuals:notifications:sms
+  paragraph: 11
+  text: 'At **Notifications → Routes**, add:'
+  paths:
+  - notifications.routes.open
+- id: 46d980dbf8c992ee
+  language: en
+  page: manuals:notifications:sms
+  paragraph: 23
+  text: Inspect the result at **Notifications → Delivery history → event detail**.
+    Verify the VPS route on the next real VPS suspension because a generic test is
+    not attached to the real VPS required by its message template.
+  paths:
+  - notifications.event-route-matches.open
+- id: eaa23249e079337f
+  language: en
+  page: manuals:notifications:sms
+  paragraph: 4
+  text: At **Notifications → Targets**, add an **SMS** target. Enter the telephone
+    number in international E.164 format, for example ''+420123456789'', and save
+    it.
+  paths:
+  - notifications.target-form.open
+- id: 0b4f8ab79f83f12b
+  language: en
+  page: manuals:notifications:telegram
+  paragraph: 11
+  text: 'At **Notifications → Routes**, add:'
+  paths:
+  - notifications.routes.open
+- id: 751628e91807623c
+  language: en
+  page: manuals:notifications:telegram
+  paragraph: 22
+  text: Inspect the next real monitoring or incident event at **Notifications → Delivery
+    history → event detail**. A generic synthetic event may lack the real monitoring
+    or incident object required by its message template, so use the temporary test
+    route to test the connection itself.
+  paths:
+  - notifications.event-route-matches.open
+- id: 92255b5cf2a7cdb4
+  language: en
+  page: manuals:notifications:telegram
+  paragraph: 8
+  text: At **Notifications → Receivers**, create **Operations Telegram**. Open it
+    and attach the paired target with the same name.
+  paths:
+  - notifications.receivers.open
+- id: bdd1399c28525272
+  language: en
+  page: manuals:notifications:telegram
+  paragraph: 5
+  text: Open the displayed pairing link in a private chat with the bot, press **Start**,
+    and return to vpsAdmin. The target must show **paired**. Treat the pairing link
+    as a secret and do not share it.
+  reason: External Telegram pairing action, not a vpsAdmin navigation path.
+- id: fe6578cb3b9475e6
+  language: en
+  page: manuals:notifications:telegram
+  paragraph: 4
+  text: At **Notifications → Targets**, add a **Telegram** target named **Operations
+    Telegram**.
+  paths:
+  - notifications.target-form.open
+- id: e989eb0ec3ab6a3b
+  language: en
+  page: manuals:notifications:webhook
+  paragraph: 20
+  text: Inspect the matched route at **Notifications → Delivery history → event detail**,
+    then re-enable **Continue**.
+  paths:
+  - notifications.event-route-matches.open
+- id: c31b29aa4b8ab9b7
+  language: en
+  page: manuals:notifications:webhook
+  paragraph: 14
+  text: 'At **Notifications → Routes**, add:'
+  paths:
+  - notifications.routes.open
+- id: d542f5f24ffaca3e
+  language: en
+  page: manuals:notifications:webhook
+  paragraph: 8
+  text: At **Notifications → Targets**, add a **Webhook** target. Enter a public URL
+    such as ''https://events.example.net/vpsadmin'' and the same secret. vpsAdmin
+    rejects private, local, link-local, and otherwise unsafe destination addresses.
+  paths:
+  - notifications.target-form.open
+- id: fa08d128b98f1ea5
+  language: en
+  page: manuals:notifications:webhook
+  paragraph: 11
+  text: At **Notifications → Receivers**, create **Resource-change webhook** and attach
+    the new webhook target.
+  paths:
+  - notifications.receivers.open
 - id: 0a3fe5d179529430
   language: en
   page: manuals:server:primary_dns
