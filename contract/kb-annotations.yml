@@ -184,7 +184,11 @@ bindings:
 - language: cs
   page: navody:notifikace
   path: notifications.event-route-matches.open
-  count: 5
+  count: 1
+- language: cs
+  page: navody:notifikace
+  path: notifications.groups.open
+  count: 1
 - language: cs
   page: navody:notifikace
   path: notifications.open
@@ -192,7 +196,11 @@ bindings:
 - language: cs
   page: navody:notifikace
   path: notifications.receivers.open
-  count: 2
+  count: 1
+- language: cs
+  page: navody:notifikace
+  path: notifications.route-grouping-form.open
+  count: 1
 - language: cs
   page: navody:notifikace
   path: notifications.route-time-intervals.open
@@ -200,14 +208,86 @@ bindings:
 - language: cs
   page: navody:notifikace
   path: notifications.routes.open
-  count: 3
+  count: 1
 - language: cs
   page: navody:notifikace
   path: notifications.target-form.open
-  count: 4
+  count: 1
 - language: cs
   page: navody:notifikace
   path: notifications.time-intervals.open
+  count: 1
+- language: cs
+  page: navody:notifikace:role_udalosti
+  path: notifications.event-route-matches.open
+  count: 1
+- language: cs
+  page: navody:notifikace:role_udalosti
+  path: notifications.receivers.open
+  count: 1
+- language: cs
+  page: navody:notifikace:role_udalosti
+  path: notifications.routes.open
+  count: 1
+- language: cs
+  page: navody:notifikace:role_udalosti
+  path: notifications.target-form.open
+  count: 1
+- language: cs
+  page: navody:notifikace:ztlumeni_oom
+  path: notifications.routes.open
+  count: 1
+- language: cs
+  page: navody:notifikace:ztlumeni_incidentu
+  path: notifications.routes.open
+  count: 1
+- language: cs
+  page: navody:notifikace:telegram
+  path: notifications.event-route-matches.open
+  count: 1
+- language: cs
+  page: navody:notifikace:telegram
+  path: notifications.receivers.open
+  count: 1
+- language: cs
+  page: navody:notifikace:telegram
+  path: notifications.routes.open
+  count: 1
+- language: cs
+  page: navody:notifikace:telegram
+  path: notifications.target-form.open
+  count: 1
+- language: cs
+  page: navody:notifikace:sms
+  path: notifications.event-route-matches.open
+  count: 1
+- language: cs
+  page: navody:notifikace:sms
+  path: notifications.receivers.open
+  count: 1
+- language: cs
+  page: navody:notifikace:sms
+  path: notifications.routes.open
+  count: 1
+- language: cs
+  page: navody:notifikace:sms
+  path: notifications.target-form.open
+  count: 1
+- language: cs
+  page: navody:notifikace:webhook
+  path: notifications.event-route-matches.open
+  count: 1
+- language: cs
+  page: navody:notifikace:webhook
+  path: notifications.receivers.open
+  count: 1
+- language: cs
+  page: navody:notifikace:webhook
+  path: notifications.routes.open
+  count: 1
+- language: cs
+  page: navody:notifikace:webhook
+  path: notifications.target-form.open
   count: 1
 - language: cs
   page: navody:vps:vpsadminos:oprava
@@ -388,7 +468,11 @@ bindings:
 - language: en
   page: manuals:notifications
   path: notifications.event-route-matches.open
-  count: 3
+  count: 1
+- language: en
+  page: manuals:notifications
+  path: notifications.groups.open
+  count: 1
 - language: en
   page: manuals:notifications
   path: notifications.open
@@ -396,7 +480,11 @@ bindings:
 - language: en
   page: manuals:notifications
   path: notifications.receivers.open
-  count: 2
+  count: 1
+- language: en
+  page: manuals:notifications
+  path: notifications.route-grouping-form.open
+  count: 1
 - language: en
   page: manuals:notifications
   path: notifications.route-time-intervals.open
@@ -408,10 +496,82 @@ bindings:
 - language: en
   page: manuals:notifications
   path: notifications.target-form.open
-  count: 3
+  count: 1
 - language: en
   page: manuals:notifications
   path: notifications.time-intervals.open
+  count: 1
+- language: en
+  page: manuals:notifications:event_roles
+  path: notifications.event-route-matches.open
+  count: 1
+- language: en
+  page: manuals:notifications:event_roles
+  path: notifications.receivers.open
+  count: 1
+- language: en
+  page: manuals:notifications:event_roles
+  path: notifications.routes.open
+  count: 1
+- language: en
+  page: manuals:notifications:event_roles
+  path: notifications.target-form.open
+  count: 1
+- language: en
+  page: manuals:notifications:mute_oom
+  path: notifications.routes.open
+  count: 1
+- language: en
+  page: manuals:notifications:mute_incidents
+  path: notifications.routes.open
+  count: 1
+- language: en
+  page: manuals:notifications:telegram
+  path: notifications.event-route-matches.open
+  count: 1
+- language: en
+  page: manuals:notifications:telegram
+  path: notifications.receivers.open
+  count: 1
+- language: en
+  page: manuals:notifications:telegram
+  path: notifications.routes.open
+  count: 1
+- language: en
+  page: manuals:notifications:telegram
+  path: notifications.target-form.open
+  count: 1
+- language: en
+  page: manuals:notifications:sms
+  path: notifications.event-route-matches.open
+  count: 1
+- language: en
+  page: manuals:notifications:sms
+  path: notifications.receivers.open
+  count: 1
+- language: en
+  page: manuals:notifications:sms
+  path: notifications.routes.open
+  count: 1
+- language: en
+  page: manuals:notifications:sms
+  path: notifications.target-form.open
+  count: 1
+- language: en
+  page: manuals:notifications:webhook
+  path: notifications.event-route-matches.open
+  count: 1
+- language: en
+  page: manuals:notifications:webhook
+  path: notifications.receivers.open
+  count: 1
+- language: en
+  page: manuals:notifications:webhook
+  path: notifications.routes.open
+  count: 1
+- language: en
+  page: manuals:notifications:webhook
+  path: notifications.target-form.open
   count: 1
 - language: en
   page: manuals:vps:vpsadminos:recovery
