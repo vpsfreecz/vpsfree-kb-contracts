@@ -548,13 +548,13 @@ discoveries:
     nepozastaví VPS.
   paths:
   - notifications.test-notification.open
-- id: 925a1ac082f36d3d
+- id: bf7792d2a5447712
   language: cs
   page: navody:notifikace:routovani
   paragraph: 25
-  text: "**Notifikace → Skupiny notifikací** ukazují otevřené, zpožděné, neaktivní
-    i historické skupiny. Detail skupiny obsahuje routu, příjemce, hodnoty použité
-    k seskupení, časování, čekající události a doručení."
+  text: "**Notifikace → Skupiny notifikací** nabízejí filtry **Otevřené (čekající
+    a po termínu)**, **Po termínu**, **Nečinné** a **Vše**. Detail skupiny obsahuje
+    routu, příjemce, hodnoty použité k seskupení, časování, čekající události a doručení."
   paths:
   - notifications.groups.open
 - id: fb6449d20b7b1e1c
@@ -1704,15 +1704,6 @@ discoveries:
     action such as suspending a VPS.
   paths:
   - notifications.test-notification.open
-- id: e7d9e09d46ad6418
-  language: en
-  page: manuals:notifications:routing
-  paragraph: 25
-  text: "**Notifications → Notification groups** shows open, overdue, idle, and historical
-    groups. A group detail contains its route, receiver, grouping values, timing,
-    pending events, and deliveries."
-  paths:
-  - notifications.groups.open
 - id: e916ccbfaa0ca296
   language: en
   page: manuals:notifications:routing
@@ -1721,6 +1712,15 @@ discoveries:
     → Notification grouping**:'
   paths:
   - notifications.route-grouping-form.open
+- id: f008518cae6a5698
+  language: en
+  page: manuals:notifications:routing
+  paragraph: 25
+  text: "**Notifications → Notification groups** provides **Open (waiting and overdue)**,
+    **Overdue**, **Idle**, and **All** filters. A group detail contains its route,
+    receiver, grouping values, timing, pending events, and deliveries."
+  paths:
+  - notifications.groups.open
 - id: 2affb5c006ec1096
   language: en
   page: manuals:notifications:sms
