@@ -4306,9 +4306,8 @@
       "scenario": "notifications",
       "checkpoint": "notifications/routes",
       "driver": "webui",
-      "retired": true,
       "fixtures": [],
-      "description": "Notification routes with deterministic documentation examples",
+      "description": "Basic route list with one custom route and the generated defaults",
       "viewport": {
         "width": 1440,
         "height": 1100,
@@ -4318,16 +4317,18 @@
         "cs": {
           "legacy_aliases": [],
           "wiki": {
-            "source_pages": [],
+            "source_pages": [
+              "navody:notifikace:routovani"
+            ],
             "media_id": "cs:screenshots:vpsadmin:notifications:routes.png"
           },
           "output": "screenshots/cs/notifications/routes.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 884,
-            "height": 922
+            "width": 821,
+            "height": 237
           },
-          "sha256": "1a6eaceecd87ea6b22bafea466ca1da8cd6e8ee4beb16608c1befffda5bc1a28",
+          "sha256": "ec408459f4d3b1a9271e06f5312a5b81ce5d93e2282ddb52a43d185d71ff540e",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=routes",
@@ -4337,19 +4338,253 @@
         "en": {
           "legacy_aliases": [],
           "wiki": {
-            "source_pages": [],
+            "source_pages": [
+              "manuals:notifications:routing"
+            ],
             "media_id": "en:screenshots:vpsadmin:notifications:routes.png"
           },
           "output": "screenshots/en/notifications/routes.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 826,
-            "height": 903
+            "width": 821,
+            "height": 237
           },
-          "sha256": "310470b0e605a6c23c7ac239eb2fae9ef887b1dadda84aab6ca20478fa213c4c",
+          "sha256": "122f6b8cc519be5644e5304df471632333c4c608ddd73d7510c19f62ed79b960",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=routes",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/event-types",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/event-types",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Collapsed Event Types category overview",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace:udalosti"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:event-types.png"
+          },
+          "output": "screenshots/cs/notifications/event-types.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 882
+          },
+          "sha256": "9c14f9a0dd378a9c26934a946c9bf9a3cf4e6b23c76b1cee735acc9c28ae5ac7",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=event_types",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications:events"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:event-types.png"
+          },
+          "output": "screenshots/en/notifications/event-types.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 882
+          },
+          "sha256": "fc2ddbe5f02b9538517b5d31aa03fd4c3b19b118b33c24a8d17076d54d540174",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=event_types",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/event-type-vps-oom-report",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/event-type-vps-oom-report",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Expanded vps.oom_report Event Type details and matchable fields",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace:udalosti"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:event-type-vps-oom-report.png"
+          },
+          "output": "screenshots/cs/notifications/event-type-vps-oom-report.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 657
+          },
+          "sha256": "f2b2a22af650dc7d398e4c124217d59df037e64c5aa98cd8611d7b50c7bbcad1",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=event_types",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications:events"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:event-type-vps-oom-report.png"
+          },
+          "output": "screenshots/en/notifications/event-type-vps-oom-report.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 657
+          },
+          "sha256": "b940c866425da3f2d273429f217a74722662881a909e8c727e9763dd7c9d562c",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=event_types",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/matcher-form",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/matcher-form",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "OOM cgroup matcher form with the operator reference",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace:routovani"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:matcher-form.png"
+          },
+          "output": "screenshots/cs/notifications/matcher-form.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 782,
+            "height": 537
+          },
+          "sha256": "eb95f1a8dd79f8cb914ff300796cbb27b476175ec5905e58f1768bee5f828b19",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=matcher_new&route=10",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications:routing"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:matcher-form.png"
+          },
+          "output": "screenshots/en/notifications/matcher-form.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 748,
+            "height": 479
+          },
+          "sha256": "ce7e6d08ff685d7c903b9a71f14d46c25f4d6cb827c10b562e65fba1cba289bf",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=matcher_new&route=10",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        }
+      }
+    },
+    {
+      "id": "notifications/targets",
+      "topic": "notifications",
+      "scenario": "notifications",
+      "checkpoint": "notifications/targets",
+      "driver": "webui",
+      "fixtures": [],
+      "description": "Notification target list with multiple delivery methods",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "navody:notifikace:cile_a_prijemci"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:notifications:targets.png"
+          },
+          "output": "screenshots/cs/notifications/targets.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 436
+          },
+          "sha256": "6671e90b8ffe676bb752a51079b46fd023c01995ab659ed72a92f69305d386db",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=targets",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "legacy_aliases": [],
+          "wiki": {
+            "source_pages": [
+              "manuals:notifications:targets_and_receivers"
+            ],
+            "media_id": "en:screenshots:vpsadmin:notifications:targets.png"
+          },
+          "output": "screenshots/en/notifications/targets.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 821,
+            "height": 436
+          },
+          "sha256": "27da32369d7bf499953147b71c79457382c08bc19334431cb477a12ed37ed7b4",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=notifications&action=targets",
             "runner": "vpsadmin-kb-captures/schema-5"
           }
         }
@@ -4373,17 +4608,17 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "navody:notifikace"
+              "navody:notifikace:cile_a_prijemci"
             ],
             "media_id": "cs:screenshots:vpsadmin:notifications:receiver.png"
           },
           "output": "screenshots/cs/notifications/receiver.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 610,
-            "height": 311
+            "width": 736,
+            "height": 453
           },
-          "sha256": "7161a9b1f6c08a3f6a1a327e2fd1bbfa32b2254c1b12534b38b4e9e27acf21ce",
+          "sha256": "70eb123986ce4c488e8f262d8a9ef372474eb72b228b15d9dabd74b3878f0d59",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=receiver_edit&id=8",
@@ -4394,17 +4629,17 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:notifications"
+              "manuals:notifications:targets_and_receivers"
             ],
             "media_id": "en:screenshots:vpsadmin:notifications:receiver.png"
           },
           "output": "screenshots/en/notifications/receiver.png",
           "review_status": "pending",
           "dimensions": {
-            "width": 621,
-            "height": 311
+            "width": 741,
+            "height": 453
           },
-          "sha256": "9909b554a00c7efab9c996f84c02e5f772b278e3df03adbea49a5859bb1772aa",
+          "sha256": "17d96c17b37e2b76a6a805dc6c0dc60408ef95cbd0dbc7acaaaaddee540c5bba",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=receiver_edit&id=8",
@@ -4441,7 +4676,7 @@
             "width": 821,
             "height": 943
           },
-          "sha256": "82277ac2c5ef3cb1ce8e2fad7165ab75e7c38c096f73d6460160d8f015c8e558",
+          "sha256": "ce74f8496357928381d400a25cac7fb714661919dc34b77092babcf6f59c4d56",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=time_interval_edit&id=1",
@@ -4462,7 +4697,7 @@
             "width": 821,
             "height": 943
           },
-          "sha256": "57b09b3a779a5e96ed10f2d156484b04cd1b86455a9242b9b3c47c23f1082a20",
+          "sha256": "e15c5dd7ff9527fbb02afc0cee61d6f58b614eb746a18106b6873a2fcdf2b7c1",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=time_interval_edit&id=1",
@@ -4615,7 +4850,7 @@
             "width": 821,
             "height": 680
           },
-          "sha256": "9003406a6814490cae83169402c6917a093a08ce2a74db68c44f7d114f104104",
+          "sha256": "817dc1476580c3a5d58dbcd396fdc3c480f80beb53b25779e40660eeeb5a50d8",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=13",
@@ -4673,7 +4908,7 @@
             "width": 821,
             "height": 680
           },
-          "sha256": "026b9f0aeab8f915b29d394744710dd0df0344c364516cad0bb7a2f1e5c7cf95",
+          "sha256": "67d0c4ccda12bae36c647f36dd4980fbaeb676b47d0a269a73afcc63d25d9235",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=14",
@@ -4789,7 +5024,7 @@
             "width": 821,
             "height": 708
           },
-          "sha256": "d5d660a3e0a0635f34ff987a5e43d82483d80203a1b22fdfe138715c5537723b",
+          "sha256": "b55000cff81f053aaa2203a9415d9a78b290ce8a60c4d2a7057390c8d0781d58",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=10",
@@ -4810,7 +5045,7 @@
             "width": 821,
             "height": 651
           },
-          "sha256": "8e85073d9597d0d2ba7f2b9bcee9457abdfa9d9536ed1b0ee78c796d79f66808",
+          "sha256": "8df92c01f158ff61c43f334b7e98f55d6cf2d53a39f01508e751c4b657da9a67",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=10",
@@ -4847,7 +5082,7 @@
             "width": 821,
             "height": 377
           },
-          "sha256": "8fd5a77b21ef9729b801cc832b15316c952241d04a8413fa74e1278a72c7e239",
+          "sha256": "88282e6998a43948bd8006f74e9dd9c246faa5e0ce7ebdcf2fadc17d6e3e1882",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=20",
@@ -4868,7 +5103,7 @@
             "width": 821,
             "height": 389
           },
-          "sha256": "3ff3641f1374770ceb6f8e14dbee2d0adc6841e5d089fa92566c84a841636134",
+          "sha256": "0c90e9e62fbf78d8284df221af2d1768c78456907449f7047703e2472c11860e",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=20",
@@ -4905,7 +5140,7 @@
             "width": 821,
             "height": 708
           },
-          "sha256": "0f9b7c3589bd3470df7fd746637847347aa6c4246e06f3c9db5328572a3718f4",
+          "sha256": "09cc0c816a9d811597fd711baf6c7f9a3eb1679f66f308e910d933e2bf3fa681",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=11",
@@ -4926,7 +5161,7 @@
             "width": 821,
             "height": 651
           },
-          "sha256": "422ceb236781e6b1f7af07b01993e718049914863cb8a42974e7e0a7a803329b",
+          "sha256": "876e5e7fe251810d7a7577622d964c218807cf16a28833ad372b85645c54feb5",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=11",
@@ -5079,7 +5314,7 @@
             "width": 821,
             "height": 513
           },
-          "sha256": "c5cbb7a70f5e85e5bd34dca954be357660d79133cb738dcda3295adb731a8272",
+          "sha256": "671efc67f4e1af839aeb9cdf749cccedc7e25b603cf4e70476cf21830a8dfe1f",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=15",
@@ -5137,7 +5372,7 @@
             "width": 821,
             "height": 513
           },
-          "sha256": "e4245682366d61ba2cfb9fc8f3d97a3ace7abd72cb66751f22b8f075ca55114b",
+          "sha256": "10c483660eaa9244c4443429abbf8bc82fe05c7da39f1a02d25a54c5ca7d41f8",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=16",
@@ -5158,7 +5393,7 @@
             "width": 821,
             "height": 455
           },
-          "sha256": "fab131b725e61223129d73cb0da2fc3dc5325d854b53bbe2e1a1d1794c786a4a",
+          "sha256": "2bfd453a8d190c0235f015df1bb9fa529234b0fc7ea39805b80b7f09ad40d470",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=16",
@@ -5369,7 +5604,7 @@
             "width": 821,
             "height": 513
           },
-          "sha256": "71f9aee319eaa47cb6989e8b62388b3b948ab86a0266cde3e86e1c04dfd6a077",
+          "sha256": "1183730bbc3b085d94792ddc208b3808f321b11562554daca96106ae27be8f91",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=17",
@@ -5427,7 +5662,7 @@
             "width": 821,
             "height": 513
           },
-          "sha256": "e3a7370a09eadb6f35627c9add145f56534b09ee43f5241f4a8a3921678ff1c5",
+          "sha256": "6f628f40322b39a3c7e94bfe7e6257c5e29fd443ad6c7f036d7ff65f78dcb26f",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=18",
@@ -5659,7 +5894,7 @@
             "width": 821,
             "height": 513
           },
-          "sha256": "ce206e9ddd89e55a3ab9d4c19d600fe4d9774f8b9e6ef5b4499a0f9366d87559",
+          "sha256": "3d427bd9344a858a6ccc4826307c644337c08354128bac5c271eeb1acbf4d80c",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=19",
@@ -5680,7 +5915,7 @@
             "width": 821,
             "height": 455
           },
-          "sha256": "b8a0c8e217fcad6d7e3019200e30ad016c248e3a1229715e8f3139583db7b247",
+          "sha256": "01253fe398264d514886543276125f2240df989805a9df2e1123e4c290ebdf42",
           "capture": {
             "driver": "webui",
             "page": "/?page=notifications&action=route_edit&id=19",
