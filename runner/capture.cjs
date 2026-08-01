@@ -48,7 +48,9 @@ async function main() {
   const capture = await launchBrowser(cluster, options.viewport, options.language);
   const page = await capture.context.newPage();
   try {
+    process.stdout.write('Logging into the capture WebUI\n');
     await login(page, cluster, options.language);
+    process.stdout.write('Capture WebUI login completed\n');
     const required = [...new Set(session.assets.flatMap((asset) => asset.fixtures))];
     const fixtures = required.length === 0
       ? {}

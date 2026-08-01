@@ -143,11 +143,19 @@ bindings:
   count: 1
 - language: cs
   page: navody:notifikace:ztlumeni_incidentu
+  path: incidents.mute-similar.open
+  count: 1
+- language: cs
+  page: navody:notifikace:ztlumeni_incidentu
   path: notifications.routes.open
   count: 1
 - language: cs
   page: navody:notifikace:ztlumeni_oom
   path: notifications.routes.open
+  count: 1
+- language: cs
+  page: navody:notifikace:ztlumeni_oom
+  path: oom-reports.mute-similar.open
   count: 1
 - language: cs
   page: navody:server:primarni_dns
@@ -319,11 +327,19 @@ bindings:
   count: 1
 - language: en
   page: manuals:notifications:mute_incidents
+  path: incidents.mute-similar.open
+  count: 1
+- language: en
+  page: manuals:notifications:mute_incidents
   path: notifications.routes.open
   count: 1
 - language: en
   page: manuals:notifications:mute_oom
   path: notifications.routes.open
+  count: 1
+- language: en
+  page: manuals:notifications:mute_oom
+  path: oom-reports.mute-similar.open
   count: 1
 - language: en
   page: manuals:notifications:routing
