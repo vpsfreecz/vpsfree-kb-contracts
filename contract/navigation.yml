@@ -288,6 +288,30 @@ controls:
     captures:
       - notifications/matcher-form
 
+  - id: notifications.mute-similar-form
+    label: { en: Review mute route, cs: Kontrola ztišovací routy }
+    source:
+      path: webui/forms/notifications.forms.php
+      contains: "'notifications.mute-similar-form'"
+      fingerprint: cea8985c03926dd0deda8a49f80e286a82952aeaa4247f6f458ae52ebfafc89f
+    captures:
+      - notifications/mute-oom-composer
+      - notifications/mute-incident-composer
+
+  - id: oom-reports.mute-similar
+    label: { en: Mute similar OOM reports, cs: Ztlumit podobná hlášení OOM }
+    source:
+      path: webui/forms/oom_reports.forms.php
+      contains: "'oom-reports.mute-similar'"
+      fingerprint: 1b8edf170a8dd9b6bc3b8a85ca1bfe8b0771a3b8b455a37136d71995376ad243
+
+  - id: incidents.mute-similar
+    label: { en: Mute similar incident reports, cs: Ztlumit podobná hlášení incidentů }
+    source:
+      path: webui/forms/incidents.forms.php
+      contains: "'incidents.mute-similar'"
+      fingerprint: 7df7ef1888188cb1e5a9c2ac853e663720f977211f0a70e2093472413ba87845
+
   - id: notifications.receivers
     label: { en: Receivers, cs: Příjemci }
     source:
@@ -619,6 +643,28 @@ semantic_selectors:
           page,
           'notifications/matcher-form',
           matcherTables(page, 'notifications.matcher-form'),
+        );
+
+  - capture: notifications/mute-oom-composer
+    control: notifications.mute-similar-form
+    source:
+      path: scenarios/notifications.cjs
+      declaration: |
+        await session.shot(
+          page,
+          'notifications/mute-oom-composer',
+          muteComposer(page, 'notifications.mute-similar-form'),
+        );
+
+  - capture: notifications/mute-incident-composer
+    control: notifications.mute-similar-form
+    source:
+      path: scenarios/notifications.cjs
+      declaration: |
+        await session.shot(
+          page,
+          'notifications/mute-incident-composer',
+          muteComposer(page, 'notifications.mute-similar-form'),
         );
 
   - capture: notifications/targets
@@ -1061,6 +1107,18 @@ paths:
     pages:
       cs: [navody:notifikace:routovani]
       en: [manuals:notifications:routing]
+
+  - id: oom-reports.mute-similar.open
+    steps: [oom-reports.mute-similar, notifications.mute-similar-form]
+    pages:
+      cs: [navody:notifikace:ztlumeni_oom]
+      en: [manuals:notifications:mute_oom]
+
+  - id: incidents.mute-similar.open
+    steps: [incidents.mute-similar, notifications.mute-similar-form]
+    pages:
+      cs: [navody:notifikace:ztlumeni_incidentu]
+      en: [manuals:notifications:mute_incidents]
 
   - id: notifications.test-notification.open
     steps: [notifications.menu, notifications.test-notification]

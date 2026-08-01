@@ -470,14 +470,122 @@ function networkInterface(cluster, node, vpsId) {
   return interfaces[0];
 }
 
+function ensureReportFixtures(cluster, vpsId) {
+  const seed = `
+require 'json'
+
+vps = Vps.find(${vpsId})
+user = vps.user
+admin = User.find_by!(login: 'test-admin')
+assignment = nil
+60.times do
+  assignment = IpAddressAssignment.where(vps: vps).order(:id).last
+  break if assignment
+
+  sleep 2
+end
+raise "fixture VPS #{vps.id} has no IP address assignment" unless assignment
+
+mailbox = Mailbox.find_or_initialize_by(label: 'Documentation incident mailbox')
+mailbox.assign_attributes(
+  server: 'mail.example.test',
+  port: 993,
+  enable_ssl: true,
+  user: 'documentation',
+  password: 'documentation-only-password'
+)
+mailbox.save! if mailbox.changed? || mailbox.new_record?
+
+incident = IncidentReport.find_or_initialize_by(
+  user: user,
+  vps: vps,
+  subject: 'Documentation incident report'
+)
+incident.assign_attributes(
+  filed_by: admin,
+  ip_address_assignment: assignment,
+  mailbox: mailbox,
+  codename: 'abuse-feed',
+  text: 'Deterministic incident used only for documentation captures.',
+  detected_at: Time.utc(2026, 7, 15, 11, 55),
+  reported_at: Time.utc(2026, 7, 15, 12, 0),
+  vps_action: :none
+)
+incident.save! if incident.changed? || incident.new_record?
+
+oom = OomReport.unscoped.find_or_initialize_by(
+  vps: vps,
+  invoked_by_pid: 4242,
+  cgroup: '/user.slice/user-1000.slice/session-42.scope'
+)
+oom.assign_attributes(
+  processed: true,
+  ignored: false,
+  invoked_by_name: 'ruby',
+  killed_name: 'worker',
+  killed_pid: 4243,
+  count: 1,
+  created_at: Time.utc(2026, 7, 15, 12, 5)
+)
+oom.save! if oom.changed? || oom.new_record?
+
+puts "VPSADMIN_KB_REPORT_FIXTURES=#{JSON.dump(
+  incidentReportId: incident.id,
+  oomReportId: oom.id
+)}"
+`;
+  const command = [
+    'set -euo pipefail',
+    'exec_start=$(systemctl show vpsadmin-api --property=ExecStart --value)',
+    'bundle=$(printf \'%s\\n\' "$exec_start" | sed -n \'s/^{ path=\\([^ ;]*\\).*/\\1/p\')',
+    'test -x "$bundle"',
+    'workdir=$(systemctl show vpsadmin-api --property=WorkingDirectory --value)',
+    'seed_file=$(mktemp --suffix=.rb /tmp/vpsadmin-kb-report-fixtures.XXXXXX)',
+    'trap \'rm -f "$seed_file"\' EXIT',
+    'tee "$seed_file" >/dev/null',
+    'chmod 0644 "$seed_file"',
+    'cd "$workdir"',
+    'runuser -u vpsadmin-api -- env RACK_ENV=production VPSADMIN_PLUGINS=none ' +
+      'SCHEMA=/var/lib/vpsadmin/api/cache/schema.rb "$bundle" exec rake ' +
+      'db:seed:file SEED_FILE="$seed_file"',
+  ].join('; ');
+  const output = execFileSync(
+    cluster.commandPath,
+    cluster.sshArgs('services', ['bash', '-lc', command]),
+    { input: seed, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] },
+  );
+  const match = output.match(/^VPSADMIN_KB_REPORT_FIXTURES=(.+)$/m);
+  if (!match) {
+    throw new Error(`Unable to read report fixture IDs: ${output.trim()}`);
+  }
+  return JSON.parse(match[1]);
+}
+
 async function prepareFixtures({ cluster, language, page, required, repoRoot }) {
   const requiredSet = new Set(required);
   const fixtureLabels = fixturesFor(language);
+  const reportOnly = requiredSet.size === 1 && requiredSet.has('report-fixtures');
+  if (reportOnly) process.stdout.write('Preparing report fixtures: resolving account and VPS\n');
   const userId = await findUserId(page, 'test-user1');
   const fixtures = {};
   let datasetId;
   let node;
   let vpsId;
+
+  if (reportOnly) {
+    vpsId = await findOwnedVps(page, 'vps')
+      || await createVpsIn(page, userId, 'vps', false, 'Production', 'Praha');
+    process.stdout.write(`Preparing report fixtures for VPS #${vpsId}\n`);
+    Object.assign(fixtures, { vpsId, hostname: 'vps' });
+    fixtures.reports = ensureReportFixtures(cluster, vpsId);
+    process.stdout.write('Prepared incident and OOM report fixtures\n');
+
+    const target = path.join(repoRoot, 'tmp/fixtures.json');
+    fs.mkdirSync(path.dirname(target), { recursive: true });
+    fs.writeFileSync(target, `${JSON.stringify(fixtures, null, 2)}\n`);
+    return fixtures;
+  }
+
   const needsBaseVps = [
     'base-vps',
     'nixos-generations',
@@ -545,6 +653,9 @@ async function prepareFixtures({ cluster, language, page, required, repoRoot }) 
   }
   if (requiredSet.has('traffic-samples')) {
     generateTrafficSamples(cluster, node, vpsId);
+  }
+  if (requiredSet.has('report-fixtures')) {
+    fixtures.reports = ensureReportFixtures(cluster, vpsId);
   }
 
   const target = path.join(repoRoot, 'tmp/fixtures.json');
