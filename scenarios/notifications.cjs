@@ -91,6 +91,13 @@ function routeForm(page, documentationId) {
   ];
 }
 
+function muteComposer(page, documentationId) {
+  if (documentationId !== 'notifications.mute-similar-form') {
+    throw new Error(`Unexpected mute composer documentation ID: ${documentationId}`);
+  }
+  return routeForm(page, documentationId);
+}
+
 function targetForms(page, documentationId) {
   if (documentationId !== 'notifications.target-form') {
     throw new Error(`Unexpected target form documentation ID: ${documentationId}`);
@@ -158,7 +165,7 @@ async function assertRouteListLayout(page) {
   }
 }
 
-async function run({ page, session }) {
+async function run({ fixtures, page, session }) {
   await goto(page, '/?page=notifications&action=routes');
   await assertRouteListLayout(page);
   await session.locator(
@@ -255,7 +262,7 @@ async function run({ page, session }) {
     await routeTables(page, 'notifications.route-form', 'roles'),
   );
 
-  await goto(page, '/?page=notifications&action=events');
+  await goto(page, '/?page=notifications&action=events&limit=100');
   await goto(page, await editUrlForRow(
     page,
     'Role-routing documentation event',
@@ -276,6 +283,14 @@ async function run({ page, session }) {
     await routeTables(page, 'notifications.route-form', 'cgroup'),
   );
 
+  await goto(page, `/?page=oom_reports&action=show&id=${fixtures.reports.oomReportId}`);
+  await page.locator('[data-vpsadmin-doc-id="oom-reports.mute-similar"]').click();
+  await session.shot(
+    page,
+    'notifications/mute-oom-composer',
+    muteComposer(page, 'notifications.mute-similar-form'),
+  );
+
   await goto(page, '/?page=notifications&action=routes');
   await goto(page, await editUrlForRow(page, 'Grouped OOM notifications', 'route_edit'));
   await session.shot(
@@ -290,6 +305,17 @@ async function run({ page, session }) {
     page,
     'notifications/example-mute-incident-route',
     await routeTables(page, 'notifications.route-form', 'codename'),
+  );
+
+  await goto(
+    page,
+    `/?page=incidents&action=show&id=${fixtures.reports.incidentReportId}`,
+  );
+  await page.locator('[data-vpsadmin-doc-id="incidents.mute-similar"]').click();
+  await session.shot(
+    page,
+    'notifications/mute-incident-composer',
+    muteComposer(page, 'notifications.mute-similar-form'),
   );
 
   await goto(page, '/?page=notifications&action=targets');
@@ -324,7 +350,7 @@ async function run({ page, session }) {
     routeForm(page, 'notifications.route-form'),
   );
 
-  await goto(page, '/?page=notifications&action=events');
+  await goto(page, '/?page=notifications&action=events&limit=100');
   await goto(page, await editUrlForRow(
     page,
     'Telegram delivery documentation event',
@@ -379,7 +405,7 @@ async function run({ page, session }) {
     routeForm(page, 'notifications.route-form'),
   );
 
-  await goto(page, '/?page=notifications&action=events');
+  await goto(page, '/?page=notifications&action=events&limit=100');
   await goto(page, await editUrlForRow(
     page,
     'SMS suspension documentation event',
@@ -416,7 +442,7 @@ async function run({ page, session }) {
     routeForm(page, 'notifications.route-form'),
   );
 
-  await goto(page, '/?page=notifications&action=events');
+  await goto(page, '/?page=notifications&action=events&limit=100');
   await goto(page, await editUrlForRow(
     page,
     'Webhook delivery documentation event',

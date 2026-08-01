@@ -19,16 +19,16 @@ languages = %w[cs en]
 errors << "expected schema 5, found #{manifest['schema'].inspect}" unless manifest['schema'] == 5
 errors << "invalid top-level vpsAdmin commit" \
   unless manifest.fetch('vpsadmin_commit', '').match?(/\A[0-9a-f]{40}\z/)
-errors << "expected 89 concepts, found #{assets.length}" unless assets.length == 89
+errors << "expected 91 concepts, found #{assets.length}" unless assets.length == 91
 variant_count = assets.sum { |asset| asset.fetch('variants').length }
-errors << "expected 178 variants, found #{variant_count}" unless variant_count == 178
+errors << "expected 182 variants, found #{variant_count}" unless variant_count == 182
 references = languages.to_h do |language|
   [language, assets.sum { |asset| asset.dig('variants', language, 'wiki', 'source_pages')&.length.to_i }]
 end
-errors << "expected 93 Czech page references, found #{references.fetch('cs')}" \
-  unless references.fetch('cs') == 93
-errors << "expected 88 English page references, found #{references.fetch('en')}" \
-  unless references.fetch('en') == 88
+errors << "expected 95 Czech page references, found #{references.fetch('cs')}" \
+  unless references.fetch('cs') == 95
+errors << "expected 90 English page references, found #{references.fetch('en')}" \
+  unless references.fetch('en') == 90
 
 %w[id checkpoint].each do |field|
   duplicates = assets.group_by { |asset| asset.fetch(field) }
@@ -38,7 +38,7 @@ end
 
 allowed_fixtures = %w[
   account base-vps kvm-storage nixos-generations public-key second-vps snapshot
-  ssh-host-key traffic-samples
+  report-fixtures ssh-host-key traffic-samples
 ]
 allowed_statuses = %w[pending reviewed uploaded]
 actual = {}
