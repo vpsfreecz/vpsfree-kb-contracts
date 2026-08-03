@@ -692,20 +692,44 @@ discoveries:
   text: 'V **Notifikace → Routy** přidejte:'
   paths:
   - notifications.routes.open
-- id: ec0a73e02c8ec436
+- id: 07abc8556734f01e
   language: cs
   page: navody:notifikace:ztlumeni_incidentu
-  paragraph: 6
-  text: 'V **Notifikace → Routy** zvolte **Přidat routu**:'
+  paragraph: 10
+  text: Tlačítko **Vytvořit ztišovací routu** atomicky vytvoří prepended routu i matchery
+    a otevře běžný editor v **Notifikace → Routy**. **Pokračovat** nechte vypnuté,
+    aby se odpovídající incident dále nesměroval.
   paths:
   - notifications.routes.open
-- id: 012d9091e1f3e2a5
+- id: 8cfccd0d43401e1d
+  language: cs
+  page: navody:notifikace:ztlumeni_incidentu
+  paragraph: 4
+  text: V detailu incidentu zvolte **Ztlumit podobná hlášení incidentů**. Stejný odkaz
+    je v e-mailové a telegramové notifikaci. Odkaz sám nic nemění; pouze otevře kontrolní
+    formulář.
+  paths:
+  - incidents.mute-similar.open
+- id: 3c8d1820fc5dc4d2
   language: cs
   page: navody:notifikace:ztlumeni_oom
-  paragraph: 6
-  text: 'V **Notifikace → Routy** zvolte **Přidat routu**:'
+  paragraph: 10
+  text: Tlačítko **Vytvořit ztišovací routu** atomicky vytvoří routu i všechny matchery
+    a vloží ji před stávající routy. Potom se otevře běžný editor v **Notifikace →
+    Routy**, kde lze upravit název, podmínky nebo dobu platnosti. **Pokračovat** nechte
+    vypnuté, jinak by report mohly odeslat další routy.
   paths:
   - notifications.routes.open
+- id: 9f30a02dc7f2bd82
+  language: cs
+  page: navody:notifikace:ztlumeni_oom
+  paragraph: 4
+  text: V detailu OOM reportu zvolte **Ztlumit podobná hlášení OOM**. Stejný odkaz
+    je v e-mailové a telegramové notifikaci. Odkaz sám nic nemění; pouze otevře kontrolní
+    formulář. U seskupené OOM notifikace vyberte jeden ze zobrazených reportů jako
+    zdroj hodnot.
+  paths:
+  - oom-reports.mute-similar.open
 - id: 17cdb2d1b37afe4a
   language: cs
   page: navody:server:firewall
@@ -1643,20 +1667,44 @@ discoveries:
     Event types**.
   paths:
   - notifications.event-types.open
-- id: 95066e5a1e9d677c
+- id: 511cc2800d46a5e4
   language: en
   page: manuals:notifications:mute_incidents
-  paragraph: 6
-  text: 'At **Notifications → Routes**, select **Add route** and set:'
+  paragraph: 4
+  text: On the incident detail, select **Mute similar incident reports**. The same
+    link is included in e-mail and Telegram notifications. Opening it does not change
+    state; it only displays the review form.
+  paths:
+  - incidents.mute-similar.open
+- id: b92f412cb98b2656
+  language: en
+  page: manuals:notifications:mute_incidents
+  paragraph: 10
+  text: "**Create mute route** atomically creates the prepended route and matchers,
+    then opens the ordinary editor at **Notifications → Routes**. Keep **Continue**
+    disabled so the matching incident is not routed further."
   paths:
   - notifications.routes.open
-- id: 4ca8b6f3d98e7959
+- id: 21c7d4bd4f511f87
   language: en
   page: manuals:notifications:mute_oom
-  paragraph: 6
-  text: 'At **Notifications → Routes**, select **Add route** and set:'
+  paragraph: 10
+  text: "**Create mute route** atomically creates the route and all matchers, prepends
+    it to the existing routes, and opens the ordinary editor at **Notifications →
+    Routes**. You can then change the label, matchers, or expiry. Keep **Continue**
+    disabled, otherwise another route could still send the report."
   paths:
   - notifications.routes.open
+- id: aa8c13a8d6e52f55
+  language: en
+  page: manuals:notifications:mute_oom
+  paragraph: 4
+  text: On an OOM report detail, select **Mute similar OOM reports**. The same link
+    is included in e-mail and Telegram notifications. Opening it does not change state;
+    it only displays the review form. For a grouped OOM notification, select one of
+    the displayed reports as the source of matcher values.
+  paths:
+  - oom-reports.mute-similar.open
 - id: 11d094149af153af
   language: en
   page: manuals:notifications:routing
