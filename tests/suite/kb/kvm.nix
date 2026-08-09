@@ -89,6 +89,44 @@ import ../../make-test.nix (
           timeout: 600
         )
         vps_id = result.fetch('vps').fetch('id')
+        chain_id = result.fetch('_meta').fetch('action_state_id')
+
+        chain = services.api_ruby_json(code: <<~RUBY, timeout: 900)
+          chain = TransactionChain.find(#{Integer(chain_id)})
+          deadline = Time.now + 840
+          terminal_states = %w[done failed fatal resolved]
+          timed_out = false
+
+          until terminal_states.include?(chain.reload.state)
+            if Time.now >= deadline
+              timed_out = true
+              break
+            end
+
+            sleep 1
+          end
+
+          transactions = chain.transactions.order(:id).map do |transaction|
+            transaction_class = Transaction.for_type(transaction.handle)
+            output = transaction.output.to_s
+            {
+              id: transaction.id,
+              handle: transaction_class&.t_name || transaction.handle,
+              node_id: transaction.node_id,
+              queue: transaction.queue,
+              done: transaction.done,
+              status: transaction.status,
+              output: output.length > 2000 ? output[-2000..] : output
+            }
+          end
+          puts JSON.generate(
+            id: chain.id,
+            state: chain.state,
+            timed_out: timed_out,
+            transactions: transactions
+          )
+        RUBY
+        expect(chain.fetch('state')).to eq('done'), JSON.pretty_generate(chain)
 
         node.wait_until_succeeds(
           "osctl ct exec #{Integer(vps_id)} -- true",
