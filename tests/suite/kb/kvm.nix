@@ -19,11 +19,25 @@ import ../../make-test.nix (
       require 'json'
       require 'shellwords'
 
-      CHECK_PLATFORM = ${builtins.toJSON checkPlatform}
-      CREATE_IMAGES = ${builtins.toJSON createImages}
-      INSTALL_LIBVIRT = ${builtins.toJSON installLibvirt}
-      LIBVIRT_SMOKE_VM = ${builtins.toJSON libvirtSmokeVm}
-      MOUNT_READONLY_ISO = ${builtins.toJSON mountReadonlyIso}
+      def check_platform_script
+        ${builtins.toJSON checkPlatform}
+      end
+
+      def create_images_script
+        ${builtins.toJSON createImages}
+      end
+
+      def install_libvirt_script
+        ${builtins.toJSON installLibvirt}
+      end
+
+      def libvirt_smoke_vm_script
+        ${builtins.toJSON libvirtSmokeVm}
+      end
+
+      def mount_readonly_iso_script
+        ${builtins.toJSON mountReadonlyIso}
+      end
 
       configure_examples do |config|
         config.default_order = :defined
@@ -138,7 +152,7 @@ import ../../make-test.nix (
             end
 
             it 'exposes the documented character devices' do
-              _, output = run_in_vps(node1, @vps_id, CHECK_PLATFORM)
+              _, output = run_in_vps(node1, @vps_id, check_platform_script)
               expect(output).to include('KVM and TUN/TAP devices are available.')
             end
 
@@ -165,13 +179,13 @@ import ../../make-test.nix (
         ''
           describe 'the documented Debian libvirt setup' do
             it 'installs and reaches the system libvirt connection' do
-              run_in_vps(node1, @vps_id, CHECK_PLATFORM)
-              _, output = run_in_vps(node1, @vps_id, INSTALL_LIBVIRT)
+              run_in_vps(node1, @vps_id, check_platform_script)
+              _, output = run_in_vps(node1, @vps_id, install_libvirt_script)
               expect(output).to include('Using API: QEMU')
             end
 
             it 'starts a KVM domain with no guest network' do
-              _, output = run_in_vps(node1, @vps_id, LIBVIRT_SMOKE_VM)
+              _, output = run_in_vps(node1, @vps_id, libvirt_smoke_vm_script)
               expect(output).to match(/running/i)
 
               _, xml = run_command_in_vps(
@@ -208,7 +222,7 @@ import ../../make-test.nix (
               run_in_vps(
                 node1,
                 @vps_id,
-                CREATE_IMAGES,
+                create_images_script,
                 environment: {
                   'IMAGE_DIR' => '/root/kb-images',
                   'IMAGE_SIZE' => '256M'
@@ -282,7 +296,7 @@ import ../../make-test.nix (
               _, output = run_in_vps(
                 node1,
                 @vps_id,
-                MOUNT_READONLY_ISO,
+                mount_readonly_iso_script,
                 environment: {
                   'NFS_SERVER' => '172.16.106.53',
                   'NFS_EXPORT' => '/srv/kb-installer',
