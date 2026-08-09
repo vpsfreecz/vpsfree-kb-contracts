@@ -134,6 +134,32 @@ import ../../make-test.nix (
         chain
       end
 
+      def ensure_runtime_pool(services)
+        pool = services.api_ruby_json(code: <<~RUBY)
+          pool = Pool.find_by(node_id: 101, filesystem: 'tank/ct')
+          puts JSON.generate(pool && { id: pool.id, label: pool.label })
+        RUBY
+        return pool if pool
+
+        result = services.vpsadminctl.succeeds(
+          args: %w[pool create],
+          parameters: {
+            node: 101,
+            label: 'tank',
+            filesystem: 'tank/ct',
+            role: 'hypervisor',
+            is_open: true,
+            max_datasets: 1024,
+            refquota_check: true
+          },
+          timeout: 600
+        )
+        wait_for_transaction_chain(
+          services,
+          result.fetch('_meta').fetch('action_state_id')
+        )
+      end
+
       def create_documentation_vps(services, node, hostname)
         template = services.api_ruby_json(code: <<~RUBY)
           template = OsTemplate.find(1)
@@ -177,6 +203,7 @@ import ../../make-test.nix (
         services.wait_for_vpsadmin_api(timeout: 600)
         node1.wait_for_service('nodectld')
         node1.wait_until_succeeds('nodectl status | grep -F "State: running"', timeout: 300)
+        ensure_runtime_pool(services)
         wait_until_block_succeeds(name: 'node 101 ready in API') do
           current = services.vpsadminctl.succeeds(args: %w[node show 101])
           api_node = current.fetch('node')
@@ -507,6 +534,7 @@ import ../../make-test.nix (
     telegramEnable = "0";
     telegramSecretsSourcePath = "";
     generateCertificates = true;
+    seedPools = false;
     testName = "kb-kvm";
     testDescription = ''
       Validate the vpsFree nested-KVM documentation against a vpsAdmin-provisioned
