@@ -63,6 +63,77 @@ import ../../make-test.nix (
         )
       end
 
+      def wait_for_transaction_chain(services, chain_id)
+        chain = services.api_ruby_json(code: <<~RUBY, timeout: 900)
+          def bounded_diagnostic_value(value, limit: 2000)
+            return value unless value.is_a?(String) && value.length > limit
+
+            half = limit / 2
+            value[0, half] + ' ... truncated ... ' + value[-half, half]
+          end
+
+          def summarize_transaction_output(output)
+            parsed = JSON.parse(output)
+            return bounded_diagnostic_value(output) unless parsed.is_a?(Hash)
+
+            parsed.to_h do |direction, phase|
+              unless phase.is_a?(Hash)
+                next [direction, bounded_diagnostic_value(phase)]
+              end
+
+              summary = phase.to_h do |key, value|
+                if key == 'backtrace'
+                  lines = Array(value).first(8).map do |line|
+                    bounded_diagnostic_value(line, limit: 500)
+                  end
+                  [key, lines]
+                else
+                  [key, bounded_diagnostic_value(value)]
+                end
+              end
+              [direction, summary]
+            end
+          rescue JSON::ParserError
+            bounded_diagnostic_value(output)
+          end
+
+          chain = TransactionChain.find(#{Integer(chain_id)})
+          deadline = Time.now + 840
+          terminal_states = %w[done failed fatal resolved]
+          timed_out = false
+
+          until terminal_states.include?(chain.reload.state)
+            if Time.now >= deadline
+              timed_out = true
+              break
+            end
+
+            sleep 1
+          end
+
+          transactions = chain.transactions.order(:id).map do |transaction|
+            transaction_class = Transaction.for_type(transaction.handle)
+            {
+              id: transaction.id,
+              handle: transaction_class&.t_name || transaction.handle,
+              node_id: transaction.node_id,
+              queue: transaction.queue,
+              done: transaction.done,
+              status: transaction.status,
+              output: summarize_transaction_output(transaction.output.to_s)
+            }
+          end
+          puts JSON.generate(
+            id: chain.id,
+            state: chain.state,
+            timed_out: timed_out,
+            transactions: transactions
+          )
+        RUBY
+        expect(chain.fetch('state')).to eq('done'), JSON.pretty_generate(chain)
+        chain
+      end
+
       def create_documentation_vps(services, node, hostname)
         template = services.api_ruby_json(code: <<~RUBY)
           template = OsTemplate.find(1)
@@ -89,44 +160,10 @@ import ../../make-test.nix (
           timeout: 600
         )
         vps_id = result.fetch('vps').fetch('id')
-        chain_id = result.fetch('_meta').fetch('action_state_id')
-
-        chain = services.api_ruby_json(code: <<~RUBY, timeout: 900)
-          chain = TransactionChain.find(#{Integer(chain_id)})
-          deadline = Time.now + 840
-          terminal_states = %w[done failed fatal resolved]
-          timed_out = false
-
-          until terminal_states.include?(chain.reload.state)
-            if Time.now >= deadline
-              timed_out = true
-              break
-            end
-
-            sleep 1
-          end
-
-          transactions = chain.transactions.order(:id).map do |transaction|
-            transaction_class = Transaction.for_type(transaction.handle)
-            output = transaction.output.to_s
-            {
-              id: transaction.id,
-              handle: transaction_class&.t_name || transaction.handle,
-              node_id: transaction.node_id,
-              queue: transaction.queue,
-              done: transaction.done,
-              status: transaction.status,
-              output: output.length > 2000 ? output[-2000..] : output
-            }
-          end
-          puts JSON.generate(
-            id: chain.id,
-            state: chain.state,
-            timed_out: timed_out,
-            transactions: transactions
-          )
-        RUBY
-        expect(chain.fetch('state')).to eq('done'), JSON.pretty_generate(chain)
+        wait_for_transaction_chain(
+          services,
+          result.fetch('_meta').fetch('action_state_id')
+        )
 
         node.wait_until_succeeds(
           "osctl ct exec #{Integer(vps_id)} -- true",
