@@ -160,6 +160,67 @@ import ../../make-test.nix (
         )
       end
 
+      def machine_probe(machine, command, timeout:, output_limit: 8000)
+        status, output = machine.execute(command, timeout:)
+        bounded_output = output.to_s
+        if bounded_output.length > output_limit
+          bounded_output = bounded_output[-output_limit, output_limit]
+        end
+        { command:, status:, output: bounded_output }
+      rescue StandardError => e
+        bounded_error = e.message.to_s
+        if bounded_error.length > output_limit
+          bounded_error = bounded_error[-output_limit, output_limit]
+        end
+        {
+          command:,
+          exception: e.class.name,
+          error: bounded_error
+        }
+      end
+
+      def wait_for_documentation_vps(services, node, vps_id, timeout: 180)
+        deadline = Time.now + timeout
+        last_exec = nil
+
+        loop do
+          last_exec = machine_probe(
+            node,
+            "osctl ct exec #{Integer(vps_id)} -- true",
+            timeout: 30
+          )
+          return true if last_exec[:status] == 0
+
+          break if Time.now >= deadline
+
+          sleep 2
+        end
+
+        osctl_show = machine_probe(
+          node,
+          "osctl ct show #{Integer(vps_id)}",
+          timeout: 30
+        )
+        container_log = machine_probe(
+          node,
+          "osctl ct log cat #{Integer(vps_id)} | tail -n 200",
+          timeout: 30
+        )
+        api_state = machine_probe(
+          services,
+          "vpsadminctl --raw vps show #{Integer(vps_id)}",
+          timeout: 60
+        )
+        diagnostic = {
+          vps_id: Integer(vps_id),
+          last_exec:,
+          api_state:,
+          osctl_show:,
+          container_log:
+        }
+        expect(last_exec[:status]).to eq(0), JSON.pretty_generate(diagnostic)
+      end
+
       def create_documentation_vps(services, node, hostname)
         template = services.api_ruby_json(code: <<~RUBY)
           template = OsTemplate.find(1)
@@ -191,10 +252,7 @@ import ../../make-test.nix (
           result.fetch('_meta').fetch('action_state_id')
         )
 
-        node.wait_until_succeeds(
-          "osctl ct exec #{Integer(vps_id)} -- true",
-          timeout: 900
-        )
+        wait_for_documentation_vps(services, node, vps_id)
         vps_id
       end
 
