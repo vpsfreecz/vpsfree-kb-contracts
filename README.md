@@ -155,8 +155,8 @@ List or run the maintained tests from the repository root:
 
 ```sh
 ./test-runner.sh ls --filter 'tag=kb-runtime'
-./test-runner.sh test 'kb/kvm#platform-defaults'
-./test-runner.sh test --jobs 1 --filter 'tag=kb-runtime'
+./test-runner.sh test --fresh 'kb/kvm#platform-defaults'
+./test-runner.sh test --fresh --jobs 1 --filter 'tag=kb-runtime'
 ```
 
 The flake exports `tests`, `testsMeta`, `lib.testFramework`, and a named

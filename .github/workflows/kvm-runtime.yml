@@ -51,6 +51,7 @@ jobs:
           set -o pipefail
           ./test-runner.sh test \
             --state-dir "$TEST_RUNNER_STATE_DIR" \
+            --fresh \
             --jobs 1 \
             --filter 'tag=kb-runtime' \
             | tee "$TEST_RUNNER_STATE_DIR/test.log"
