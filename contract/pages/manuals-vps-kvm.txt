@@ -1,0 +1,174 @@
+<page>navody:vps:kvm</page>
+
+====== KVM and libvirt inside a VPS ======
+
+A VPS can host additional virtual machines. Nested virtualization adds
+overhead and performance depends on load on the physical node, so it is not a
+replacement for a dedicated server. This guide uses the current **Debian
+(latest)** template, libvirt and the ''qemu:///system'' system connection.
+
+===== KVM availability =====
+
+<vpsadmin-nav id="vps.features.open">
+The **KVM** and **TUN/TAP** features are enabled by default for new VPSes. You
+do not need to change ZFS or VPS settings. Verify the devices after logging in:
+</vpsadmin-nav>
+
+<code bash>
+#!/usr/bin/env bash
+set -euo pipefail
+
+test -c /dev/kvm
+test -r /dev/kvm
+test -w /dev/kvm
+test -c /dev/net/tun
+
+printf 'KVM and TUN/TAP devices are available.\n'
+</code>
+
+If the check fails, restart an older VPS after changing its features and check
+its details in vpsAdmin again. For a new VPS, contact support; do not create
+replacement device nodes manually.
+
+{{:en:screenshots:vpsadmin:vps-details:feature-settings.png?direct|Default VPS features}}
+
+===== Installing libvirt =====
+
+Install QEMU, libvirt and ''virt-install'' from Debian:
+
+<code bash>
+#!/usr/bin/env bash
+set -euo pipefail
+
+export DEBIAN_FRONTEND=noninteractive
+apt-get update
+apt-get install --yes \
+  libvirt-clients \
+  libvirt-daemon-system \
+  qemu-system-x86 \
+  qemu-utils \
+  virtinst
+
+systemctl enable --now libvirtd.service
+virsh --connect qemu:///system version
+</code>
+
+Use the ''qemu:///system'' system connection. For remote administration, use
+libvirt over SSH, for example ''qemu+ssh://root@HOST/system'', and protect SSH
+with a key. Do not expose an unencrypted libvirt TCP socket to the Internet.
+
+The following isolated domain without a disk or network only verifies that
+libvirt can start QEMU with KVM. It does not install an operating system:
+
+<code bash>
+#!/usr/bin/env bash
+set -euo pipefail
+
+domain=${DOMAIN_NAME:-kb-kvm-smoke}
+xml=$(mktemp)
+trap 'rm -f "$xml"' EXIT
+
+cat >"$xml" <<EOF
+<domain type='kvm'>
+  <name>${domain}</name>
+  <memory unit='MiB'>256</memory>
+  <vcpu>1</vcpu>
+  <os>
+    <type arch='x86_64' machine='pc'>hvm</type>
+    <boot dev='hd'/>
+  </os>
+  <devices>
+    <emulator>/usr/bin/qemu-system-x86_64</emulator>
+  </devices>
+</domain>
+EOF
+
+virsh --connect qemu:///system create --validate "$xml"
+virsh --connect qemu:///system domstate "$domain"
+virsh --connect qemu:///system destroy "$domain"
+</code>
+
+For a real installation, create a domain with ''virt-install'' or
+''virt-manager'', add an installer ISO and a disk, and keep ''--network none''
+for now.
+
+==== Nested guest networking ====
+
+Nested-guest networking is outside the scope of this guide. The host VPS
+usually receives a routed public IPv4 ''/32'', a private IPv4 ''/32'' with NAT
+on the vpsFree.cz routers, and an IPv6 ''/64''. Generic Ethernet bridge and DHCP
+tutorials therefore cannot be followed unchanged. A tested routed-network
+procedure will be published separately; this guide deliberately runs no guest
+networking commands.
+
+===== Disk images and ZFS =====
+
+The VPS root dataset is sufficient for disk images. A separate
+[[manuals:vps:datasets|subdataset]] is optional and is useful when you want a
+separate quota, snapshots, backup plan, or a boundary for later workload-based
+tuning. A new subdataset is an independent backup unit, so verify its
+[[manuals:vps:exports|snapshots and backups]].
+
+{{:en:screenshots:vpsadmin:vps-details:datasets.png?direct|VPS datasets}}
+
+Do not change ZFS properties without measurements. Compression remains enabled
+by default and the default ''recordsize'' is 128 KiB. A value of 64 KiB is not
+universally optimal for all virtual machines. Changing ''recordsize'' also
+affects newly written data; it does not rewrite an existing image.
+
+A simple sparse ''raw'' image has the fewest layers and is a good default.
+Choose ''qcow2'' when you need backing files, internal snapshots or its other
+image features and accept another metadata and copy-on-write layer. Both types
+can be created sparsely:
+
+<code bash>
+#!/usr/bin/env bash
+set -euo pipefail
+
+image_dir=${IMAGE_DIR:-/var/lib/libvirt/images}
+image_size=${IMAGE_SIZE:-1G}
+
+install -d -m 0755 "$image_dir"
+truncate -s "$image_size" "$image_dir/guest.raw"
+qemu-img create -q -f qcow2 "$image_dir/guest.qcow2" "$image_size"
+
+qemu-img info --output=json "$image_dir/guest.raw"
+qemu-img info --output=json "$image_dir/guest.qcow2"
+du -h "$image_dir/guest.raw" "$image_dir/guest.qcow2"
+</code>
+
+An image's virtual size is not the same as physically allocated space. Data,
+metadata and snapshots can retain allocation. Discard/TRIM only releases space
+when the complete guest–QEMU–host chain is configured correctly and verified
+for the image. A snapshot of a running disk is normally only crash-consistent;
+pause or quiesce the guest for application consistency.
+
+See [[https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Workload%20Tuning.html|OpenZFS Workload Tuning]] for workload-based tuning and the [[https://www.qemu.org/docs/master/system/images|QEMU documentation]] for image formats.
+
+===== Installer ISO on NFS =====
+
+It is safer to copy an installer ISO to a local dataset first. On an older NFSv3
+export without working network locking, QEMU can fail with an error such as
+''Failed to lock byte 100'' or ''Failed to get ... lock''.
+
+For one client and a read-only installer ISO only, you can use ''nolock'':
+
+<code bash>
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${NFS_SERVER:?set NFS_SERVER to the NAS server address}"
+: "${NFS_EXPORT:?set NFS_EXPORT to the exported dataset path}"
+
+mountpoint=${ISO_MOUNTPOINT:-/mnt/installer-iso}
+install -d -m 0755 "$mountpoint"
+mount -t nfs -o ro,vers=3,nolock \
+  "${NFS_SERVER}:${NFS_EXPORT}" "$mountpoint"
+
+findmnt --noheadings --output FSTYPE,OPTIONS --target "$mountpoint"
+</code>
+
+''nolock'' disables NLM network locking, so other clients do not see local
+locks. Never use it for a writable or shared virtual-machine disk. Locking is
+part of the NFSv4 protocol and this option is not a solution there. See
+[[https://man7.org/linux/man-pages/man5/nfs.5.html|nfs(5)]].

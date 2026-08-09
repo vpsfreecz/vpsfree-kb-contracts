@@ -20,4 +20,6 @@ let
     suitePath = ./suite;
   };
 in
-testLib.makeTests [ ]
+testLib.makeTests [
+  "kb/kvm"
+]

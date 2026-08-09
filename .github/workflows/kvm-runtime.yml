@@ -1,0 +1,96 @@
+name: KVM documentation runtime
+
+on:
+  push:
+    paths:
+      - .github/workflows/kvm-runtime.yml
+      - captures.json
+      - cluster/**
+      - contract/pages/**
+      - contract/runtime.yml
+      - flake.lock
+      - flake.nix
+      - test-runner.sh
+      - tests/**
+      - tools/check-runtime-contract.rb
+      - tools/test-runtime-contract.rb
+  workflow_dispatch:
+  schedule:
+    - cron: "30 3 * * 0"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Run kb-runtime tests
+    runs-on: self-hosted
+    if: github.event_name != 'push' || github.event.deleted != true
+    timeout-minutes: 480
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Check contracts and test discovery
+        run: nix develop --command bin/check --allow-missing
+
+      - name: Preview selected tests
+        run: ./test-runner.sh ls --filter 'tag=kb-runtime'
+
+      - name: Prepare test state
+        id: prepare-tests
+        uses: vpsfreecz/vpsadminos/.github/actions/prepare-test-state@837baf04054c6ee0e71d288b8870ac42a6990c38
+
+      - name: Run tests
+        id: run-tests
+        timeout-minutes: 420
+        run: |
+          set -o pipefail
+          ./test-runner.sh test \
+            --state-dir "$TEST_RUNNER_STATE_DIR" \
+            --jobs 1 \
+            --filter 'tag=kb-runtime' \
+            | tee "$TEST_RUNNER_STATE_DIR/test.log"
+
+      - name: Upload full test logs
+        id: upload-test-logs
+        if: >-
+          (failure() || cancelled()) &&
+          steps.prepare-tests.outcome == 'success' &&
+          steps.run-tests.outcome != 'skipped'
+        uses: vpsfreecz/vpsadminos/.github/actions/upload-test-logs@837baf04054c6ee0e71d288b8870ac42a6990c38
+        with:
+          name: kb-kvm-test-logs-${{ github.run_id }}
+          paths: |
+            ${{ steps.prepare-tests.outputs.state-directory }}/**/*.log
+            ${{ steps.prepare-tests.outputs.state-directory }}/**/*.txt
+
+      - name: Evaluate test results
+        if: >-
+          always() &&
+          steps.prepare-tests.outcome == 'success' &&
+          steps.run-tests.outcome != 'skipped'
+        uses: vpsfreecz/vpsadminos/.github/actions/evaluate-test-results@837baf04054c6ee0e71d288b8870ac42a6990c38
+        with:
+          log-file: ${{ steps.prepare-tests.outputs.state-directory }}/test.log
+
+      - name: Summarise test logs
+        if: >-
+          always() &&
+          steps.prepare-tests.outcome == 'success' &&
+          steps.run-tests.outcome != 'skipped'
+        uses: vpsfreecz/vpsadminos/.github/actions/summarise-test-logs@837baf04054c6ee0e71d288b8870ac42a6990c38
+        with:
+          logs-root: ${{ steps.prepare-tests.outputs.state-directory }}
+
+      - name: Cleanup test state
+        if: always()
+        uses: vpsfreecz/vpsadminos/.github/actions/cleanup-test-state@837baf04054c6ee0e71d288b8870ac42a6990c38
+        with:
+          state-directory: ${{ steps.prepare-tests.outputs.state-directory }}
+          prepare-outcome: ${{ steps.prepare-tests.outcome }}
+          test-outcome: ${{ steps.run-tests.outcome }}
+          upload-outcome: ${{ steps.upload-test-logs.outcome }}

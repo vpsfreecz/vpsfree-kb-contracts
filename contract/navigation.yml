@@ -526,8 +526,8 @@ paths:
   - id: vps.features.open
     steps: [vps.features]
     pages:
-      cs: [navody:vps:sprava, navody:distribuce:nixos:impermanence]
-      en: [manuals:vps:management, manuals:distributions:nixos:impermanence]
+      cs: [navody:vps:sprava, navody:vps:kvm, navody:distribuce:nixos:impermanence]
+      en: [manuals:vps:management, manuals:vps:kvm, manuals:distributions:nixos:impermanence]
 
   - id: vps.boot-rescue.open
     steps: [vps.boot-rescue]

@@ -1539,7 +1539,7 @@
           },
           "wiki": {
             "source_pages": [
-              "navody:vps:kvm-openrc"
+              "navody:vps:kvm"
             ],
             "media_id": "cs:screenshots:vpsadmin:vps-details:feature-settings.png"
           },
@@ -1565,7 +1565,9 @@
           },
           "legacy_aliases": [],
           "wiki": {
-            "source_pages": [],
+            "source_pages": [
+              "manuals:vps:kvm"
+            ],
             "media_id": "en:screenshots:vpsadmin:vps-details:feature-settings.png"
           },
           "output": "screenshots/en/vps-details/feature-settings.png",
@@ -1608,7 +1610,7 @@
           },
           "wiki": {
             "source_pages": [
-              "navody:vps:kvm-openrc"
+              "navody:vps:kvm"
             ],
             "media_id": "cs:screenshots:vpsadmin:vps-details:datasets.png"
           },
@@ -1634,7 +1636,9 @@
           },
           "legacy_aliases": [],
           "wiki": {
-            "source_pages": [],
+            "source_pages": [
+              "manuals:vps:kvm"
+            ],
             "media_id": "en:screenshots:vpsadmin:vps-details:datasets.png"
           },
           "output": "screenshots/en/vps-details/datasets.png",

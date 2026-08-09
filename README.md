@@ -92,7 +92,9 @@ by the WebUI console, so terminal cell measurements do not depend on fonts
 installed on the capture host.
 
 Captures are intentionally operator-run and this repository contains no
-DokuWiki uploader. GitHub Actions runs static contract checks on changes.
+DokuWiki uploader. GitHub Actions runs static contract checks on changes. The
+maintained nested-KVM documentation suite runs on relevant pushes, manually,
+and every week on a self-hosted runner with KVM.
 
 ## Documentation contract
 
@@ -128,3 +130,35 @@ The checker rejects unknown IDs, malformed tags, count drift, partial page
 sets, source paragraphs missed by the discovery heuristic, and newly
 unclassified or stale independently discovered paragraphs.
 Fetching, staging, and publishing DokuWiki pages remain outside this repository.
+
+## Runtime documentation contract
+
+`contract/runtime.yml` binds the Czech `navody:vps:kvm` and English
+`manuals:vps:kvm` sources to pinned vpsAdmin/vpsAdminOS revisions, executable
+shell samples, section fingerprints, screenshot references, and these
+independently runnable test scripts:
+
+```text
+kb/kvm#platform-defaults
+kb/kvm#libvirt
+kb/kvm#storage
+kb/kvm#nfs-locking
+```
+
+The suite provisions the exact `Debian (latest)` template through vpsAdmin
+without feature or ZFS-property overrides. It verifies the runtime devices,
+system libvirt connection and nested KVM, inherited storage defaults and sparse
+images, and the narrowly scoped read-only NFSv3 installer-ISO workaround. It
+does not configure nested-guest networking.
+
+List or run the maintained tests from the repository root:
+
+```sh
+./test-runner.sh ls --filter 'tag=kb-runtime'
+./test-runner.sh test 'kb/kvm#platform-defaults'
+./test-runner.sh test --jobs 1 --filter 'tag=kb-runtime'
+```
+
+The flake exports `tests`, `testsMeta`, `lib.testFramework`, and a named
+`test-runner` app using the pinned vpsAdminOS external-test interface. The
+existing default app remains the operator-run screenshot cluster runner.

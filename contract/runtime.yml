@@ -1,0 +1,138 @@
+---
+schema: 1
+revisions:
+  vpsadmin: 63c2c44f6ca04ab958f3d72f777add389b77b162
+  vpsadminos: 837baf04054c6ee0e71d288b8870ac42a6990c38
+tests:
+  kb/kvm:
+    scripts:
+    - platform-defaults
+    - libvirt
+    - storage
+    - nfs-locking
+samples:
+  check-platform:
+    path: tests/fixtures/kvm/check-platform.sh
+    sha256: 4db12a0d657184873f43fece08cf95f0b7637ae865cd6a27f27a45d4e63df82a
+    tests:
+    - kb/kvm#platform-defaults
+    - kb/kvm#libvirt
+  install-libvirt:
+    path: tests/fixtures/kvm/install-libvirt.sh
+    sha256: ff597715591bbe85c2aedb39651d2479070b5161a7d262d89b7a6534e8341267
+    tests:
+    - kb/kvm#libvirt
+  libvirt-smoke-vm:
+    path: tests/fixtures/kvm/libvirt-smoke-vm.sh
+    sha256: 252cc892284ab5d0d64ca42b1ae88635f58e8cd389946bc4c2a69e530f4d3ce5
+    tests:
+    - kb/kvm#libvirt
+  create-images:
+    path: tests/fixtures/kvm/create-images.sh
+    sha256: 00a67b4ec77433b183aafa4b080ad42507deeca2d2fe6ced423425890e6e8b9f
+    tests:
+    - kb/kvm#storage
+  mount-readonly-iso:
+    path: tests/fixtures/kvm/mount-readonly-iso.sh
+    sha256: 9c85085d0df9f0b2b499218800e247fba3ef38eac6236e467ab21c3a280b87e4
+    tests:
+    - kb/kvm#nfs-locking
+pages:
+- id: navody:vps:kvm
+  language: cs
+  counterpart: manuals:vps:kvm
+  source: contract/pages/navody-vps-kvm.txt
+  sections:
+  - key: availability
+    heading: Dostupnost KVM
+    fingerprint: ef6763a157d921355087da5b56578031bdc0a2d9993fc898158cd0e7201c857a
+    claims:
+    - kvm-and-tun-default-enabled
+    - debian-latest-template
+    tests:
+    - kb/kvm#platform-defaults
+    samples:
+    - check-platform
+  - key: libvirt
+    heading: Instalace libvirt
+    fingerprint: 6ab11a075f401a2a6efe499c663ccba25ca504e65f664fea5297b42518666fad
+    claims:
+    - libvirt-system-connection
+    - nested-kvm-domain-without-network
+    - routed-guest-networking-deferred
+    tests:
+    - kb/kvm#libvirt
+    samples:
+    - install-libvirt
+    - libvirt-smoke-vm
+  - key: storage
+    heading: Diskové obrazy a ZFS
+    fingerprint: 8a5b08eb5d664b197da7bb2687f6c3f3e480bcf3a8f318ec0d01bd368944efea
+    claims:
+    - root-dataset-sufficient
+    - subdataset-optional-boundary
+    - compression-enabled-and-recordsize-128k-defaults
+    - raw-and-qcow2-are-sparse-workload-choices
+    tests:
+    - kb/kvm#storage
+    samples:
+    - create-images
+  - key: nfs-installer-iso
+    heading: Instalační ISO na NFS
+    fingerprint: 74c729c197fd845f2d9882a5d449a7c11e4ae4164b6f765eb0a4dc77549e445e
+    claims:
+    - nfs-lock-error-is-conditional
+    - nolock-only-for-single-client-readonly-nfsv3-iso
+    tests:
+    - kb/kvm#nfs-locking
+    samples:
+    - mount-readonly-iso
+- id: manuals:vps:kvm
+  language: en
+  counterpart: navody:vps:kvm
+  source: contract/pages/manuals-vps-kvm.txt
+  sections:
+  - key: availability
+    heading: KVM availability
+    fingerprint: a7e4ac17ac9155423ee25e56ba69bee9dfdd5fe9c01fe3700a96c28dee73ec53
+    claims:
+    - kvm-and-tun-default-enabled
+    - debian-latest-template
+    tests:
+    - kb/kvm#platform-defaults
+    samples:
+    - check-platform
+  - key: libvirt
+    heading: Installing libvirt
+    fingerprint: 2ce23cf62f12ef8e8ffb3da0ea0058269459eab1f7fda31182d51649377e824b
+    claims:
+    - libvirt-system-connection
+    - nested-kvm-domain-without-network
+    - routed-guest-networking-deferred
+    tests:
+    - kb/kvm#libvirt
+    samples:
+    - install-libvirt
+    - libvirt-smoke-vm
+  - key: storage
+    heading: Disk images and ZFS
+    fingerprint: dc85fc421de4352363e637dba4c1000357b968d340b9c8fcf7e3b325e6d4f18e
+    claims:
+    - root-dataset-sufficient
+    - subdataset-optional-boundary
+    - compression-enabled-and-recordsize-128k-defaults
+    - raw-and-qcow2-are-sparse-workload-choices
+    tests:
+    - kb/kvm#storage
+    samples:
+    - create-images
+  - key: nfs-installer-iso
+    heading: Installer ISO on NFS
+    fingerprint: f35ec4513f0d425ca9bf601faf25eb35393f11187374bbbdbd4a8bcc2c959c5a
+    claims:
+    - nfs-lock-error-is-conditional
+    - nolock-only-for-single-client-readonly-nfsv3-iso
+    tests:
+    - kb/kvm#nfs-locking
+    samples:
+    - mount-readonly-iso
