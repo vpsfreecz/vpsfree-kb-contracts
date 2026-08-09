@@ -1171,11 +1171,17 @@ let
         path = certDir;
         name = "vpsadmin-devcluster-certs";
       };
-  sslVirtualHosts = genAttrs allDomains (_: {
-    addSSL = true;
-    sslCertificate = "${certStoreDir}/vpsadmin-cert.crt";
-    sslCertificateKey = "${certStoreDir}/vpsadmin-cert.key";
-  });
+  sslVirtualHosts = genAttrs allDomains (
+    domain:
+    {
+      addSSL = true;
+      sslCertificate = "${certStoreDir}/vpsadmin-cert.crt";
+      sslCertificateKey = "${certStoreDir}/vpsadmin-cert.key";
+    }
+    // optionalAttrs (domain == domains.api) {
+      serverAliases = [ "api.vpsadmin.test" ];
+    }
+  );
 
   sharedFileSystems = {
     vpsadmin = vpsadminSourcePath;
@@ -1229,7 +1235,8 @@ let
     "${serviceIp}" = [
       "vpsadmin-services"
     ]
-    ++ allDomains;
+    ++ allDomains
+    ++ [ "api.vpsadmin.test" ];
   }
   // listToAttrs (map (node: nameValuePair node.ip (nodeHostNames node)) allNodeList);
   dnsmasqHostRecords = builtins.concatLists (
@@ -1569,6 +1576,10 @@ let
 
         varnish.api = {
           test.domain = lib.mkForce domains.api;
+          kb_test = {
+            domain = "api.vpsadmin.test";
+            backend.path = "/run/haproxy/vpsadmin-api.sock";
+          };
           maintenance = {
             domain = tmpDomains.api;
             backend.path = "/run/haproxy/vpsadmin-api.sock";
