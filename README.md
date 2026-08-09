@@ -91,8 +91,8 @@ used explicitly by synthetic terminals and satisfies the Courier fallback used
 by the WebUI console, so terminal cell measurements do not depend on fonts
 installed on the capture host.
 
-Captures are intentionally operator-run. This repository contains no GitHub
-Actions workflow and no DokuWiki uploader.
+Captures are intentionally operator-run and this repository contains no
+DokuWiki uploader. GitHub Actions runs static contract checks on changes.
 
 ## Documentation contract
 

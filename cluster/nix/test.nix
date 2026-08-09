@@ -20,6 +20,14 @@
   vpsadminGoClientSourcePath,
   telegramEnable,
   telegramSecretsSourcePath,
+  extraModules ? { },
+  generateCertificates ? false,
+  testDescription ? null,
+  testName ? null,
+  testScript ? ''
+    # This config is consumed by devcluster-runner, not by the test runner.
+  '',
+  testScripts ? null,
 }:
 { pkgs, ... }:
 let
@@ -967,16 +975,23 @@ let
       })
     )
 
-    with_devcluster_admin_session(admin) do
-      ensure_capture_nas_dataset!(
-        user: User.find_by!(login: 'test-user1'),
-        pool: Pool.find_by!(
-          role: :primary,
-          node_id: ${toString availableNodes.backuper1.id}
-        ),
-        quota: 256_000
-      )
-    end
+    ${
+      if selectedNodes ? backuper1 then
+        ''
+          with_devcluster_admin_session(admin) do
+            ensure_capture_nas_dataset!(
+              user: User.find_by!(login: 'test-user1'),
+              pool: Pool.find_by!(
+                role: :primary,
+                node_id: ${toString availableNodes.backuper1.id}
+              ),
+              quota: 256_000
+            )
+          end
+        ''
+      else
+        ""
+    }
 
     def legacy_mail_recipients_available?
       defined?(EmailRecipient) &&
@@ -1140,10 +1155,22 @@ let
   '';
 
   allDomains = builtins.attrValues domains ++ builtins.attrValues tmpDomains;
-  certStoreDir = builtins.path {
-    path = certDir;
-    name = "vpsadmin-devcluster-certs";
-  };
+  certStoreDir =
+    if generateCertificates then
+      pkgs.runCommand "vpsadmin-kb-test-certificates" { nativeBuildInputs = [ pkgs.openssl ]; } ''
+        mkdir -p "$out"
+        openssl req -x509 -newkey rsa:2048 -nodes \
+          -keyout "$out/vpsadmin-cert.key" \
+          -out "$out/vpsadmin-cert.crt" \
+          -subj '/CN=vpsadmin-kb-test' \
+          -days 36500
+        cp "$out/vpsadmin-cert.crt" "$out/vpsadmin-ca.crt"
+      ''
+    else
+      builtins.path {
+        path = certDir;
+        name = "vpsadmin-devcluster-certs";
+      };
   sslVirtualHosts = genAttrs allDomains (_: {
     addSSL = true;
     sslCertificate = "${certStoreDir}/vpsadmin-cert.crt";
@@ -1812,6 +1839,7 @@ let
       imports = [
         sshModule
         (vpsadmin.outPath + "/tests/configs/nixos/vpsadmin-dns-server.nix")
+        (extraModules.dnsServers.${dnsServer.machineName} or { })
       ];
 
       networking = {
@@ -1866,6 +1894,7 @@ let
         (vpsadminos.outPath + "/tests/configs/vpsadminos/pool-tank.nix")
         (vpsadmin.outPath + "/tests/configs/vpsadminos/node.nix")
         (nodeModule node)
+        (extraModules.nodes.${machineName} or { })
       ];
 
       boot.qemu.memory = node.memoryMiB;
@@ -1901,15 +1930,20 @@ let
   };
 in
 {
-  name = "vpsadmin-devcluster-${slug}";
+  name = if testName == null then "vpsadmin-devcluster-${slug}" else testName;
 
-  description = ''
-    Branch-selected vpsAdmin development cluster for ${slug}.
-  '';
+  description =
+    if testDescription == null then
+      ''
+        Branch-selected vpsAdmin development cluster for ${slug}.
+      ''
+    else
+      testDescription;
 
   machines = {
     services = {
       spin = "nixos";
+      tags = [ "vpsadmin-services" ];
       memory = serviceMemoryMiB;
       cpus = serviceCpus;
       cores = serviceCpus;
@@ -1920,6 +1954,7 @@ in
         imports = [
           (vpsadmin.outPath + "/tests/configs/nixos/vpsadmin-services.nix")
           servicesModule
+          (extraModules.services or { })
         ];
 
         vpsadmin.test = {
@@ -1942,7 +1977,6 @@ in
   // mapAttrs mkNodeMachine selectedNodes
   // mapAttrs mkDnsMachine dnsServers;
 
-  testScript = ''
-    # This config is consumed by devcluster-runner, not by the test runner.
-  '';
 }
+// optionalAttrs (testScripts == null) { inherit testScript; }
+// optionalAttrs (testScripts != null) { inherit testScripts; }

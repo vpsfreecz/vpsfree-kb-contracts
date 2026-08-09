@@ -114,11 +114,29 @@
 
         exec ${ruby}/bin/ruby ${./cluster/lib/runner.rb} "$@"
       '';
+
+      testSuiteArgs = {
+        inherit
+          lib
+          vpsadmin
+          vpsadminos
+          vpsfStatus
+          ;
+      };
+
+      withTestFrameworkDefaults =
+        args:
+        {
+          pkgsPath = args.pkgsPath or nixpkgs.outPath;
+          suiteArgs = args.suiteArgs or testSuiteArgs;
+        }
+        // args;
     in
     {
       packages.${system} = {
         cluster-config = clusterConfig.json;
         inherit runner;
+        test-runner = vpsadminos.packages.${system}.test-runner;
         default = clusterConfig.json;
       };
 
@@ -127,7 +145,30 @@
           type = "app";
           program = "${runner}/bin/vpsadmin-kb-capture-cluster-runner";
         };
+        test-runner = {
+          type = "app";
+          program = "${vpsadminos.packages.${system}.test-runner}/bin/test-runner";
+        };
         default = self.apps.${system}.runner;
+      };
+
+      tests.${system} = vpsadminos.lib.testFramework.mkTests {
+        inherit system;
+        suiteArgs = testSuiteArgs;
+        testsRoot = ./tests;
+        pkgsPath = nixpkgs.outPath;
+      };
+
+      testsMeta.${system} = vpsadminos.lib.testFramework.mkTestsMeta {
+        inherit system;
+        suiteArgs = testSuiteArgs;
+        testsRoot = ./tests;
+        pkgsPath = nixpkgs.outPath;
+      };
+
+      lib.testFramework = {
+        mkTests = args: vpsadminos.lib.testFramework.mkTests (withTestFrameworkDefaults args);
+        mkTestsMeta = args: vpsadminos.lib.testFramework.mkTestsMeta (withTestFrameworkDefaults args);
       };
 
       devShells.${system}.default = toolPkgs.mkShell {
