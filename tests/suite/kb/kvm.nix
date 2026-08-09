@@ -49,50 +49,32 @@ import ../../make-test.nix (
         )
       end
 
-      def ensure_documentation_vps(services, node, hostname)
+      def create_documentation_vps(services, node, hostname)
         template = services.api_ruby_json(code: <<~RUBY)
           template = OsTemplate.find(1)
           puts JSON.generate(id: template.id, label: template.label)
         RUBY
         expect(template).to eq('id' => 1, 'label' => 'Debian (latest)')
 
-        existing = services.api_ruby_json(code: <<~RUBY)
-          vps = Vps.find_by(hostname: #{hostname.dump})
-          puts JSON.generate(id: vps&.id)
-        RUBY
-
-        vps_id = existing.fetch('id')
-        unless vps_id
-          result = services.vpsadminctl.succeeds(
-            args: %w[vps new],
-            parameters: {
-              user: 1,
-              node: 101,
-              os_template: 1,
-              hostname:,
-              cpu: 2,
-              memory: 2048,
-              swap: 0,
-              diskspace: 8192,
-              ipv4: 1,
-              ipv4_private: 0,
-              ipv6: 0
-            },
-            timeout: 600
-          )
-          vps_id = result.fetch('vps').fetch('id')
-        end
-
-        current = services.vpsadminctl.succeeds(
-          args: ['vps', 'show', vps_id.to_s],
-          timeout: 300
+        result = services.vpsadminctl.succeeds(
+          args: %w[vps new],
+          parameters: {
+            user: 1,
+            node: 101,
+            os_template: 1,
+            hostname:,
+            cpu: 2,
+            memory: 2048,
+            swap: 0,
+            diskspace: 8192,
+            ipv4: 1,
+            ipv4_private: 0,
+            ipv6: 0,
+            start: true
+          },
+          timeout: 600
         )
-        unless current.fetch('vps').fetch('is_running')
-          services.vpsadminctl.succeeds(
-            args: ['vps', 'start', vps_id.to_s],
-            timeout: 600
-          )
-        end
+        vps_id = result.fetch('vps').fetch('id')
 
         node.wait_until_succeeds(
           "osctl ct exec #{Integer(vps_id)} -- true",
@@ -131,7 +113,7 @@ import ../../make-test.nix (
         script = common + ''
           before(:suite) do
             start_cluster
-            @vps_id = ensure_documentation_vps(services, node1, ${builtins.toJSON hostname})
+            @vps_id = create_documentation_vps(services, node1, ${builtins.toJSON hostname})
           end
 
           ${body}
