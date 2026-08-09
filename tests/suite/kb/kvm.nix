@@ -102,6 +102,12 @@ import ../../make-test.nix (
         services.wait_for_vpsadmin_api(timeout: 600)
         node1.wait_for_service('nodectld')
         node1.wait_until_succeeds('nodectl status | grep -F "State: running"', timeout: 300)
+        wait_until_block_succeeds(name: 'node 101 ready in API') do
+          current = services.vpsadminctl.succeeds(args: %w[node show 101])
+          api_node = current.fetch('node')
+
+          api_node.fetch('status') == true && api_node.fetch('pool_status') == true
+        end
       end
 
       def dataset_contract(services, vps_id)
