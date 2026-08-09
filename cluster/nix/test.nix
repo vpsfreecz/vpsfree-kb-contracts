@@ -22,6 +22,7 @@
   telegramSecretsSourcePath,
   extraModules ? { },
   generateCertificates ? false,
+  seedPools ? true,
   testDescription ? null,
   testName ? null,
   testScript ? ''
@@ -665,46 +666,53 @@ let
       end
     end
 
-    pool_config = JSON.parse(${builtins.toJSON (builtins.toJSON devConfig.seed.pools)})
-    node_inventory.each do |attrs|
-      next unless %w[node storage].include?(attrs.fetch('role'))
+    ${
+      if seedPools then
+        ''
+          pool_config = JSON.parse(${builtins.toJSON (builtins.toJSON devConfig.seed.pools)})
+          node_inventory.each do |attrs|
+            next unless %w[node storage].include?(attrs.fetch('role'))
 
-      node = Node.find(attrs.fetch('id'))
-      pool = Pool.find_by(node: node, filesystem: pool_config.fetch('filesystem')) ||
-             Pool.find_by(node: node, label: pool_config.fetch('label')) ||
-             Pool.new(node: node)
-      pool.assign_attributes(
-        label: pool_config.fetch('label'),
-        filesystem: pool_config.fetch('filesystem'),
-        role: attrs.fetch('role') == 'storage' ? 'primary' : pool_config.fetch('role', 'hypervisor'),
-        max_datasets: pool_config.fetch('maxDatasets'),
-        total_space: pool_config.fetch('totalSpaceMiB'),
-        available_space: pool_config.fetch('availableSpaceMiB'),
-        used_space: pool_config.fetch('usedSpaceMiB'),
-        checked_at: Time.now.utc,
-        state: :online,
-        scan: :none,
-        is_open: 1,
-        maintenance_lock: 0,
-        refquota_check: true
-      )
-      pool.save!
+            node = Node.find(attrs.fetch('id'))
+            pool = Pool.find_by(node: node, filesystem: pool_config.fetch('filesystem')) ||
+                   Pool.find_by(node: node, label: pool_config.fetch('label')) ||
+                   Pool.new(node: node)
+            pool.assign_attributes(
+              label: pool_config.fetch('label'),
+              filesystem: pool_config.fetch('filesystem'),
+              role: attrs.fetch('role') == 'storage' ? 'primary' : pool_config.fetch('role', 'hypervisor'),
+              max_datasets: pool_config.fetch('maxDatasets'),
+              total_space: pool_config.fetch('totalSpaceMiB'),
+              available_space: pool_config.fetch('availableSpaceMiB'),
+              used_space: pool_config.fetch('usedSpaceMiB'),
+              checked_at: Time.now.utc,
+              state: :online,
+              scan: :none,
+              is_open: 1,
+              maintenance_lock: 0,
+              refquota_check: true
+            )
+            pool.save!
 
-      VpsAdmin::API::DatasetProperties::Registrator.properties.each do |name, property|
-        pool_property = DatasetProperty.find_or_initialize_by(
-          pool: pool,
-          dataset_in_pool_id: nil,
-          dataset_id: nil,
-          name: name.to_s
-        )
-        pool_property.assign_attributes(
-          value: property.meta[:default],
-          inherited: false,
-          confirmed: DatasetProperty.confirmed(:confirmed)
-        )
-        pool_property.save!
-      end
-    end
+            VpsAdmin::API::DatasetProperties::Registrator.properties.each do |name, property|
+              pool_property = DatasetProperty.find_or_initialize_by(
+                pool: pool,
+                dataset_in_pool_id: nil,
+                dataset_id: nil,
+                name: name.to_s
+              )
+              pool_property.assign_attributes(
+                value: property.meta[:default],
+                inherited: false,
+                confirmed: DatasetProperty.confirmed(:confirmed)
+              )
+              pool_property.save!
+            end
+          end
+        ''
+      else
+        ""
+    }
 
     port_reservations = JSON.parse(${builtins.toJSON (builtins.toJSON portReservationRecords)})
     port_reservations.each do |attrs|
