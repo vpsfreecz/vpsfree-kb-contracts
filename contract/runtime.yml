@@ -29,7 +29,7 @@ samples:
     - kb/kvm#networking
   configure-routed-network:
     path: tests/fixtures/kvm/configure-routed-network.sh
-    sha256: dce7db6b25a1930c88dacf171f470951b084e0b2006a0fa1fb3e1b1298d557eb
+    sha256: 0877a69b8fc875a376b1e0bc4c97275449b216fd89dda5517c05e9573c0cb4d0
     tests:
     - kb/kvm#networking
   mount-readonly-iso:
@@ -72,11 +72,12 @@ pages:
     - configure-storage-pool
   - key: networking
     heading: Síť virtuálních strojů
-    fingerprint: a203d1590a0afeb330d93dcf9178d7d32df022efb8d237bdecbeafc9b70c07d7
+    fingerprint: f0eb5d6af8969a1c21a75c1332f2c218e4ce3cac9c4612d9f59a631e744a70c9
     claims:
     - outer-veth-is-routed-and-must-not-be-bridged
     - default-nat-fixed-lease-and-persistent-port-forwards
     - public-ipv4-routed-via-private-vps-address
+    - ipv4-and-ipv6-forwarding-enabled-persistently
     - open-forwarding-leaves-filtering-to-vps-firewall
     - selected-ipv6-address-routed-without-nat
     - larger-ipv6-prefix-can-delegate-a-dedicated-64
@@ -129,11 +130,12 @@ pages:
     - configure-storage-pool
   - key: networking
     heading: Virtual-machine networking
-    fingerprint: 3dd509e313bfd13311c7e3dfb3e6b0d47263ea9d1ef64b89230c19f107b35f41
+    fingerprint: cca9ba578f6716ba077e6e567b4f59570cf706beda661dd992cf4283d8e48474
     claims:
     - outer-veth-is-routed-and-must-not-be-bridged
     - default-nat-fixed-lease-and-persistent-port-forwards
     - public-ipv4-routed-via-private-vps-address
+    - ipv4-and-ipv6-forwarding-enabled-persistently
     - open-forwarding-leaves-filtering-to-vps-firewall
     - selected-ipv6-address-routed-without-nat
     - larger-ipv6-prefix-can-delegate-a-dedicated-64

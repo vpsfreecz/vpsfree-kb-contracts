@@ -945,6 +945,18 @@ import ../../make-test.nix (
               _, route = node1.succeeds("ip -4 route show #{Shellwords.escape(public_ipv4)}/32")
               expect(route).to include("via #{private_ipv4}")
               expect(route).to include('onlink')
+              _, forwarding = run_command_in_vps(
+                node1,
+                @routed_vps_id,
+                'sysctl -n net.ipv4.ip_forward net.ipv6.conf.all.forwarding; ' \
+                'cat /etc/sysctl.d/90-libvirt-routing.conf'
+              )
+              forwarding_lines = forwarding.lines.map(&:strip)
+              expect(forwarding_lines.count('1')).to eq(2)
+              expect(forwarding_lines).to include(
+                'net.ipv4.ip_forward = 1',
+                'net.ipv6.conf.all.forwarding = 1'
+              )
             end
 
             it 'refuses stale live routes and applies changed inputs when stopped' do

@@ -10,6 +10,7 @@ host_transit_ipv6=${HOST_TRANSIT_IPV6:-fd00:0:0:123::1}
 guest_transit_ipv6=${GUEST_TRANSIT_IPV6:-fd00:0:0:123::2}
 connection=qemu:///system
 network=public-routed
+forwarding_config=/etc/sysctl.d/90-libvirt-routing.conf
 xml=$(mktemp)
 trap 'rm -f "$xml"' EXIT
 
@@ -40,6 +41,13 @@ if virsh --connect "$connection" net-list --name \
   printf 'virsh net-destroy %s, then rerun this script.\n' "$network" >&2
   exit 1
 fi
+
+install -d -m 0755 "$(dirname "$forwarding_config")"
+cat >"$forwarding_config" <<'EOF'
+net.ipv4.ip_forward = 1
+net.ipv6.conf.all.forwarding = 1
+EOF
+sysctl --quiet --load "$forwarding_config"
 
 virsh --connect "$connection" net-define "$xml"
 virsh --connect "$connection" net-autostart "$network"
