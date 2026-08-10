@@ -115,6 +115,13 @@
         exec ${ruby}/bin/ruby ${./cluster/lib/runner.rb} "$@"
       '';
 
+      # Reuse the Git-filtered flake source. Resolving the checkout as a plain
+      # path would also import ignored .devcluster VM disks into the Nix store.
+      testRunner = pkgs.writeShellScriptBin "test-runner" ''
+        export TEST_RUNNER_REPO_ROOT=${lib.escapeShellArg (builtins.toString self)}
+        exec ${vpsadminos.packages.${system}.test-runner}/bin/test-runner "$@"
+      '';
+
       testSuiteArgs = {
         inherit
           lib
@@ -136,7 +143,7 @@
       packages.${system} = {
         cluster-config = clusterConfig.json;
         inherit runner;
-        test-runner = vpsadminos.packages.${system}.test-runner;
+        test-runner = testRunner;
         default = clusterConfig.json;
       };
 
@@ -147,7 +154,7 @@
         };
         test-runner = {
           type = "app";
-          program = "${vpsadminos.packages.${system}.test-runner}/bin/test-runner";
+          program = "${testRunner}/bin/test-runner";
         };
         default = self.apps.${system}.runner;
       };
