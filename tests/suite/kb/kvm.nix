@@ -418,7 +418,6 @@ import ../../make-test.nix (
           )
           if network.new_record?
             network.assign_attributes(
-              user: User.find_by!(login: 'test-admin'),
               primary_location: location,
               label: 'KVM routed IPv6 /64 fixture',
               ip_version: 6,
