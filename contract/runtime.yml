@@ -29,7 +29,7 @@ samples:
     - kb/kvm#networking
   configure-routed-network:
     path: tests/fixtures/kvm/configure-routed-network.sh
-    sha256: 31880c98be7d380e124b5839b978e702b7a070786539af24ba7dfcbadf935c54
+    sha256: 692228fb96d025943316f43c3491c13b9741648e1077b67e4f4cb4aacef92b93
     tests:
     - kb/kvm#networking
   mount-readonly-iso:
@@ -72,7 +72,7 @@ pages:
     - configure-storage-pool
   - key: networking
     heading: Síť virtuálních strojů
-    fingerprint: a06c27726623a9c854dd2676ff35337b4ade95949ae629553b1f70bcd91e79e0
+    fingerprint: ddbfac910500720b78e998e393d11a8ad17253aaa299251dfa43f66b76189a02
     claims:
     - outer-veth-is-routed-and-must-not-be-bridged
     - default-nat-fixed-lease-and-persistent-port-forwards
@@ -128,7 +128,7 @@ pages:
     - configure-storage-pool
   - key: networking
     heading: Virtual-machine networking
-    fingerprint: d9041d4394e69b1841941c354b638b32aed9d97c2b00a132ed2ad2061dac5353
+    fingerprint: 3fc78e761787f81ff9f821dfd2a0e441f7e98eeceb79b464202d21dfcdc459ec
     claims:
     - outer-veth-is-routed-and-must-not-be-bridged
     - default-nat-fixed-lease-and-persistent-port-forwards

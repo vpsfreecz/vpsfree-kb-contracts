@@ -287,9 +287,15 @@ xml=$(mktemp)
 trap 'rm -f "$xml"' EXIT
 
 export LC_ALL=C
+network_uuid=$(virsh --connect "$connection" net-uuid "$network" 2>/dev/null || :)
+uuid_element=
+if [[ -n $network_uuid ]]; then
+  uuid_element="  <uuid>$network_uuid</uuid>"
+fi
 cat >"$xml" <<EOF
 <network>
   <name>$network</name>
+$uuid_element
   <forward mode='route'/>
   <bridge name='virbr-public' stp='on' delay='0'/>
   <ip address='$host_transit_ipv4' prefix='30'/>

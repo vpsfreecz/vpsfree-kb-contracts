@@ -985,6 +985,15 @@ import ../../make-test.nix (
               )
               expect(unchanged_xml).not_to include(changed_ipv4)
               expect(unchanged_xml).not_to include(changed_ipv6)
+              _, original_uuid = run_command_in_vps(
+                node1,
+                @routed_vps_id,
+                'virsh --connect qemu:///system net-uuid public-routed'
+              )
+              original_uuid = original_uuid.strip
+              expect(original_uuid).to match(
+                /\A[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}\z/
+              )
 
               run_command_in_vps(node1, @routed_vps_id, <<~'SH')
                 virsh --connect qemu:///system destroy routed-guest
@@ -1005,6 +1014,12 @@ import ../../make-test.nix (
               expect(active_xml).to include("address='#{changed_ipv6}' prefix='128'")
               expect(active_xml).not_to include(@routed_ipv4.fetch('public_ipv4'))
               expect(active_xml).not_to include(@routed_ipv6.fetch('guest_ipv6'))
+              _, changed_uuid = run_command_in_vps(
+                node1,
+                @routed_vps_id,
+                'virsh --connect qemu:///system net-uuid public-routed'
+              )
+              expect(changed_uuid.strip).to eq(original_uuid)
 
               run_command_in_vps(
                 node1,
@@ -1031,6 +1046,12 @@ import ../../make-test.nix (
               expect(restored_xml).to include(
                 "address='#{@routed_ipv6.fetch('guest_ipv6')}' prefix='128'"
               )
+              _, restored_uuid = run_command_in_vps(
+                node1,
+                @routed_vps_id,
+                'virsh --connect qemu:///system net-uuid public-routed'
+              )
+              expect(restored_uuid.strip).to eq(original_uuid)
               run_command_in_vps(
                 node1,
                 @routed_vps_id,
