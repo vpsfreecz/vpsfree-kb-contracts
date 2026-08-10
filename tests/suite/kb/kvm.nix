@@ -489,6 +489,7 @@ import ../../make-test.nix (
                 mkdir -p /mnt/installer-iso
                 mount -t nfs -o ro,vers=3 172.16.106.53:/srv/kb-installer /mnt/installer-iso
                 pidfile=/tmp/kb-qemu-normal.pid
+                output_file=/tmp/kb-qemu-normal.output
                 cleanup() {
                   local pid=
                   if [[ -s "$pidfile" ]]; then
@@ -508,7 +509,7 @@ import ../../make-test.nix (
                       fi
                     fi
                   fi
-                  rm -f "$pidfile"
+                  rm -f "$pidfile" "$output_file"
                   if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
                     printf 'QEMU process %s survived TERM and KILL\n' "$pid" >&2
                     return 1
@@ -522,14 +523,15 @@ import ../../make-test.nix (
                   exit "$status"
                 }
                 trap finish EXIT
-                rm -f "$pidfile"
+                rm -f "$pidfile" "$output_file"
                 set +e
-                output=$(LC_ALL=C timeout --verbose --kill-after=5 20 qemu-system-x86_64 \
+                LC_ALL=C timeout --verbose --kill-after=5 20 qemu-system-x86_64 \
                   -nodefaults -display none -S -daemonize \
                   -drive file=/mnt/installer-iso/installer.iso,media=cdrom,readonly=on \
-                  -pidfile "$pidfile" 2>&1)
+                  -pidfile "$pidfile" >"$output_file" 2>&1
                 status=$?
                 set -e
+                output=$(<"$output_file")
                 printf '%s\n' "$output"
 
                 case "$status" in
