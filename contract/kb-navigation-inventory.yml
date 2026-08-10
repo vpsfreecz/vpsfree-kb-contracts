@@ -622,6 +622,15 @@ discoveries:
     výchozím nastavení v sekci **Funkce** v detailu VPS ve vpsAdminu.
   paths:
   - vps.features.open
+- id: 5dec30bdb4b783c0
+  language: cs
+  page: navody:vps:kvm
+  paragraph: 24
+  text: V části **Síť → Routované adresy** pak vyberte veřejnou ''/32'' v poli **Adresa**,
+    privátní adresu VPS v poli **Přes** a cílové rozhraní VPS. Veřejná adresa se tím
+    na VPS nepřidá; vpsAdminOS ji k VPS směruje přes privátní adresu.
+  paths:
+  - networking.routable-addresses.open
 - id: 320e2111299a2a09
   language: cs
   page: navody:vps:kvm-openrc
@@ -1418,6 +1427,15 @@ discoveries:
     default for new VPSes in the **Features** section of the VPS detail in vpsAdmin.
   paths:
   - vps.features.open
+- id: abf71aaa3e547cf2
+  language: en
+  page: manuals:vps:kvm
+  paragraph: 24
+  text: Under **Networking → Routable addresses**, select the public ''/32'' in **Address**,
+    the VPS private address in **Via**, and the target VPS interface. The public address
+    is not added to the VPS; vpsAdminOS routes it to the VPS via the private address.
+  paths:
+  - networking.routable-addresses.open
 - id: 210fa22216ec3c44
   language: en
   page: manuals:vps:management
