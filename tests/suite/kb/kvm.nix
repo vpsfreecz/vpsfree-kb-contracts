@@ -1186,6 +1186,11 @@ import ../../make-test.nix (
             prefixLength = 24;
             via = "172.16.106.41";
           }
+          {
+            address = "10.106.0.0";
+            prefixLength = 24;
+            via = "172.16.106.41";
+          }
         ];
         services.dbus.packages = [ pkgs.nfs-ganesha ];
         services.rpcbind.enable = true;
