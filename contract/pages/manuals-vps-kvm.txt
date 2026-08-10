@@ -10,8 +10,9 @@ replacement for a dedicated server. This guide uses the current **Debian
 ===== KVM availability =====
 
 <vpsadmin-nav id="vps.features.open">
-The **KVM** and **TUN/TAP** features are enabled by default for new VPSes. You
-do not need to change ZFS or VPS settings. Verify the devices after logging in:
+In the **Features** section of the VPS detail in vpsAdmin, **KVM** and
+**TUN/TAP** are enabled by default for new VPSes. You do not need to change ZFS
+or VPS settings. Verify the devices after logging in:
 </vpsadmin-nav>
 
 <code bash>

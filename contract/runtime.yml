@@ -45,7 +45,7 @@ pages:
   sections:
   - key: availability
     heading: Dostupnost KVM
-    fingerprint: ef6763a157d921355087da5b56578031bdc0a2d9993fc898158cd0e7201c857a
+    fingerprint: 35497b237e9f444e4ee77532af64d568dfae0539dd8c6cd6fbdfcf084b0c76f4
     claims:
     - kvm-and-tun-default-enabled
     - debian-latest-template
@@ -94,7 +94,7 @@ pages:
   sections:
   - key: availability
     heading: KVM availability
-    fingerprint: a7e4ac17ac9155423ee25e56ba69bee9dfdd5fe9c01fe3700a96c28dee73ec53
+    fingerprint: abb95acf32f7b6ed59f36a0862b7b2dd8d1769c39c1553dfcf059bac8248996d
     claims:
     - kvm-and-tun-default-enabled
     - debian-latest-template

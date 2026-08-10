@@ -10,8 +10,9 @@ libvirt a systémové spojení ''qemu:///system''.
 ===== Dostupnost KVM =====
 
 <vpsadmin-nav id="vps.features.open">
-Funkce **KVM** a **TUN/TAP** jsou u nových VPS zapnuté ve výchozím nastavení.
-Není třeba měnit nastavení ZFS ani VPS. Po přihlášení ověřte zařízení:
+V sekci **Funkce** v detailu VPS ve vpsAdminu jsou **KVM** a **TUN/TAP** u
+nových VPS zapnuté ve výchozím nastavení. Není třeba měnit nastavení ZFS ani
+VPS. Po přihlášení ověřte zařízení:
 </vpsadmin-nav>
 
 <code bash>

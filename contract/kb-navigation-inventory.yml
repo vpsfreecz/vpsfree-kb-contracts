@@ -613,29 +613,24 @@ discoveries:
   text: Při startu nebo restartu VPS se v konzoli objeví [[navody:vps:start_menu|start
     menu]]. ===== Webové rozhraní =====
   reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: 32569d814bf029e0
+- id: 43c82dd296516595
   language: cs
   page: navody:vps:kvm
-  paragraph: 25
-  text: Vytvoření nového virtálu spočívá pouze v přípravě image disku, vytvoření symlinku
-    pro init skript a úpravě jednoduchého konfiguračního skriptu. Nechť se nový virtuál
-    jmenuje třeba „myvirt.“
+  paragraph: 5
+  text: Pokud kontrola selže, restartujte starší VPS, u které jste právě změnili
+    funkce, a znovu zkontrolujte její detail ve vpsAdminu. U nové VPS kontaktujte
+    podporu; nevytvářejte náhradní zařízení ručně.
   reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: 9428dc22a9b17203
+- id: fb322c9e339e4ef5
   language: cs
   page: navody:vps:kvm
-  paragraph: 10
-  text: "(**//562.586.65.25//** > Adresa tvého NFS serveru; **//4562//** > číslo tvého
-    datasetu na NFS serveru)"
-  reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: b185b9b1e31d0c48
-  language: cs
-  page: navody:vps:kvm
-  paragraph: 1
-  text: "===== Konfigurace ===== Nejprve je potřeba ve vpsAdminu v detailu VPS zapnout
-    následující vlastnosti:"
-  reason: Existing WebUI reference outside the localized navigation-label set; inventoried
-    for future semantic binding.
+  paragraph: 4
+  text: >-
+    V sekci **Funkce** v detailu VPS ve vpsAdminu jsou **KVM** a **TUN/TAP**
+    u nových VPS zapnuté ve výchozím nastavení. Není třeba měnit nastavení ZFS ani
+    VPS. Po přihlášení ověřte zařízení:
+  paths:
+  - vps.features.open
 - id: 320e2111299a2a09
   language: cs
   page: navody:vps:kvm-openrc
@@ -1423,20 +1418,24 @@ discoveries:
     and then "Add host addresses".
   reason: Existing WebUI reference outside the localized navigation-label set; inventoried
     for future semantic binding.
-- id: 3a8436e7490d4b23
+- id: 603f35d16e12202c
   language: en
   page: manuals:vps:kvm
-  paragraph: 10
-  text: "(**//562.586.65.25//** > Address of your NFS server; **//4562//** > number
-    of your dataset on NFS server)"
+  paragraph: 4
+  text: >-
+    In the **Features** section of the VPS detail in vpsAdmin, **KVM** and **TUN/TAP**
+    are enabled by default for new VPSes. You do not need to change ZFS or VPS settings.
+    Verify the devices after logging in:
+  paths:
+  - vps.features.open
+- id: ed81bb196615c156
+  language: en
+  page: manuals:vps:kvm
+  paragraph: 5
+  text: If the check fails, restart an older VPS after changing its features and
+    check its details in vpsAdmin again. For a new VPS, contact support; do not
+    create replacement device nodes manually.
   reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: e017ec6be601aa1b
-  language: en
-  page: manuals:vps:kvm
-  paragraph: 2
-  text: 'Go to the details of your VPS in vpsAdmin and turn on the following features:'
-  reason: Existing WebUI reference outside the localized navigation-label set; inventoried
-    for future semantic binding.
 - id: 210fa22216ec3c44
   language: en
   page: manuals:vps:management
