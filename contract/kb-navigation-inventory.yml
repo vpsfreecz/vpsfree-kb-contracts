@@ -613,10 +613,10 @@ discoveries:
   text: Při startu nebo restartu VPS se v konzoli objeví [[navody:vps:start_menu|start
     menu]]. ===== Webové rozhraní =====
   reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: c395ed5ab125998b
+- id: 8cc3b40a7135ff45
   language: cs
   page: navody:vps:kvm
-  paragraph: 5
+  paragraph: 4
   text: Pro virtualizaci je potřeba funkce **KVM**. **TUN/TAP** je potřeba pro síťová
     rozhraní virtuálních strojů typu TAP. Obě funkce jsou u nových VPS zapnuté ve
     výchozím nastavení v sekci **Funkce** v detailu VPS ve vpsAdminu.
@@ -1409,10 +1409,10 @@ discoveries:
     and then "Add host addresses".
   reason: Existing WebUI reference outside the localized navigation-label set; inventoried
     for future semantic binding.
-- id: 1a0c97ae89f33527
+- id: b66c0e56c7b07e7f
   language: en
   page: manuals:vps:kvm
-  paragraph: 5
+  paragraph: 4
   text: The **KVM** feature is required for virtualization. **TUN/TAP** is required
     for TAP-based virtual-machine network interfaces. Both features are enabled by
     default for new VPSes in the **Features** section of the VPS detail in vpsAdmin.
