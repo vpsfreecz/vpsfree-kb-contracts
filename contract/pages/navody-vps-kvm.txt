@@ -2,9 +2,7 @@
 
 ====== KVM a libvirt uvnitř VPS ======
 
-VPS může provozovat virtuální stroje pomocí KVM.
-
-===== Dostupnost KVM =====
+===== Instalace libvirt =====
 
 vpsAdminOS provozuje VPS v kontejnerech, nikoli ve virtuálních strojích. KVM
 uvnitř VPS proto není vnořená virtualizace: virtuální stroje používají
@@ -19,8 +17,6 @@ výchozím nastavení v sekci **Funkce** v detailu VPS ve vpsAdminu.
 </vpsadmin-nav>
 
 {{:cs:screenshots:vpsadmin:vps-details:feature-settings.png?direct|Výchozí funkce VPS}}
-
-===== Instalace libvirt =====
 
 Nainstalujte QEMU, libvirt a ''virt-install'' z Debianu:
 
@@ -75,10 +71,10 @@ Disky pak vytvářejte prostřednictvím libvirt, ''virt-install'' nebo
 ''virt-manager'' v poolu ''vm-images''.
 
 ZFS vlastnosti subdatasetu ponechte na výchozích hodnotách, dokud měření
-neukáže důvod ke změně. Komprese je ve výchozím nastavení zapnutá.
-''recordsize=128K'' není pevná velikost všech bloků, ale jejich výchozí maximální
-velikost; ZFS může pro soubory použít menší bloky. Změna ''recordsize'' platí až
-pro nově vytvořené soubory a existující obrazy nepřepíše.
+neukáže důvod ke změně. Komprese je ve výchozím nastavení zapnutá. Výchozí
+''recordsize=128K'' určuje maximální velikost záznamu souboru; ZFS podle potřeby
+používá i menší záznamy. Změna ''recordsize'' se projeví pouze u nově
+vytvořených souborů.
 
 Pro obrazy na ZFS je vhodnou výchozí volbou formát ''raw'', protože nepřidává
 další copy-on-write vrstvu. ''qcow2'' použijte, pokud potřebujete jeho backing

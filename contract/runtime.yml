@@ -32,30 +32,24 @@ pages:
   counterpart: manuals:vps:kvm
   source: contract/pages/navody-vps-kvm.txt
   sections:
-  - key: availability
-    heading: Dostupnost KVM
-    fingerprint: cc0913bedaac82fd2df347573057ff7801edcb101b3e362f1821f3bfbe0f2d50
+  - key: libvirt
+    heading: Instalace libvirt
+    fingerprint: 34569670f81c3cb6ef3352c3f3ab9684c4a759bcb049b51509dd5842f4b8aa0e
     claims:
     - kvm-is-direct-not-nested
     - kvm-and-tun-default-enabled
     - debian-latest-template
-    tests:
-    - kb/kvm#platform-defaults
-    samples: []
-  - key: libvirt
-    heading: Instalace libvirt
-    fingerprint: a1fa738fac6bacb802d5cf3d5d7a4766c03cd2908825a5d249867c6a39785d68
-    claims:
     - debian-packages-start-libvirt-automatically
     - libvirt-system-connection
     - direct-kvm-capabilities-without-test-domain
     tests:
+    - kb/kvm#platform-defaults
     - kb/kvm#libvirt
     samples:
     - install-libvirt
   - key: storage
     heading: Diskové obrazy a ZFS
-    fingerprint: 4bec9861429b0e7ab042751333a89f222665d6956e34fa7b0d49780ad53e8d36
+    fingerprint: 8acce81dd8355e7d4f193296d4e0327fe0bd28b2c2cecd1dfcd954ebe6f0359f
     claims:
     - subdataset-recommended-property-boundary
     - mounted-subdataset-is-persistent-libvirt-pool
@@ -80,30 +74,24 @@ pages:
   counterpart: navody:vps:kvm
   source: contract/pages/manuals-vps-kvm.txt
   sections:
-  - key: availability
-    heading: KVM availability
-    fingerprint: 561de7b752f6680c34f909978ebe477dda707a8f6794e357b13fd4d6b7301be1
+  - key: libvirt
+    heading: Installing libvirt
+    fingerprint: de1e6584dfdbb0d0527103eb7f37e60d4464839d78a0a9c839b029e4e361dce3
     claims:
     - kvm-is-direct-not-nested
     - kvm-and-tun-default-enabled
     - debian-latest-template
-    tests:
-    - kb/kvm#platform-defaults
-    samples: []
-  - key: libvirt
-    heading: Installing libvirt
-    fingerprint: f81c43eebb59c2be0686023b5362e8a00896ad9b536bc30200079691907b473f
-    claims:
     - debian-packages-start-libvirt-automatically
     - libvirt-system-connection
     - direct-kvm-capabilities-without-test-domain
     tests:
+    - kb/kvm#platform-defaults
     - kb/kvm#libvirt
     samples:
     - install-libvirt
   - key: storage
     heading: Disk images and ZFS
-    fingerprint: d7764783d8b733a987405b2a99c4dfdd613ce848a16c9898ebaaa6f159c33bdd
+    fingerprint: 65575b447ca24ac257cace035ac5533d3ec9d085a0b69c3b551850f9657ffca5
     claims:
     - subdataset-recommended-property-boundary
     - mounted-subdataset-is-persistent-libvirt-pool

@@ -2,9 +2,7 @@
 
 ====== KVM and libvirt inside a VPS ======
 
-A VPS can run virtual machines using KVM.
-
-===== KVM availability =====
+===== Installing libvirt =====
 
 vpsAdminOS runs VPSes as containers, not as virtual machines. KVM inside a VPS
 is therefore not nested virtualization: virtual machines use the physical
@@ -19,8 +17,6 @@ vpsAdmin.
 </vpsadmin-nav>
 
 {{:en:screenshots:vpsadmin:vps-details:feature-settings.png?direct|Default VPS features}}
-
-===== Installing libvirt =====
 
 Install QEMU, libvirt and ''virt-install'' from Debian:
 
@@ -75,10 +71,10 @@ Then create disks through libvirt, ''virt-install'' or ''virt-manager'' in the
 ''vm-images'' pool.
 
 Leave the subdataset's ZFS properties at their defaults unless measurements
-show a reason to change them. Compression is enabled by default.
-''recordsize=128K'' is not a fixed size for every block; it is the default
-maximum, and ZFS can use smaller blocks for files. A ''recordsize'' change only
-applies to newly created files and does not rewrite existing images.
+show a reason to change them. Compression is enabled by default. The default
+''recordsize=128K'' is the maximum record size for files; ZFS uses smaller
+records when appropriate. A ''recordsize'' change applies only to newly created
+files.
 
 For images on ZFS, ''raw'' is a suitable default because it does not add another
 copy-on-write layer. Choose ''qcow2'' when you need backing files, internal
