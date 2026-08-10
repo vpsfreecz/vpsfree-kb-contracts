@@ -546,7 +546,7 @@ import ../../make-test.nix (
         xml = <<~XML
           <domain type='kvm'>
             <name>#{CGI.escapeHTML(name)}</name>
-            <memory unit='MiB'>128</memory>
+              <memory unit='MiB'>256</memory>
             <vcpu>1</vcpu>
             <os>
               <type arch='x86_64'>hvm</type>
