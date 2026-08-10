@@ -1622,9 +1622,9 @@
           },
           "dimensions": {
             "width": 821,
-            "height": 344
+            "height": 361
           },
-          "sha256": "2bb7e5d12c91cc812145ee9f1a50cc20e3f08a2ff08a2c3349637dd5e1562e2a",
+          "sha256": "5addfc72ce42d8a69bc8ce57ae10bb3da5f8089d1759152ecfe0dacf6352eeb1",
           "review_status": "pending"
         },
         "en": {
@@ -1648,10 +1648,10 @@
             "runner": "vpsadmin-kb-captures/schema-5"
           },
           "dimensions": {
-            "width": 786,
+            "width": 813,
             "height": 308
           },
-          "sha256": "5f77a96899cd100f51c75f3d0f1060f0d9a4f4a37fba8528c0cfa2908b6c0c9d",
+          "sha256": "5b319b10e335f91d9bd1fc21500dcea7af56a35d85be682397004c84f4563de2",
           "review_status": "pending"
         }
       }
