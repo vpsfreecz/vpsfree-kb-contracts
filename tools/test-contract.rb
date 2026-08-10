@@ -63,7 +63,10 @@ class ContractCheckerTest < Minitest::Test
 
         refute(status.success?, "#{from} -> #{to} was accepted")
         assert_match(/networking\.routable-addresses: coupled label\/route\/landmark declaration changed/, error)
-        assert_match(/cs=navody:vps:ip_adresy; en=manuals:vps:ip_addresses/, error)
+        assert_match(
+          %r{cs=navody:vps:ip_adresy, navody:vps:kvm; en=manuals:vps:ip_addresses, manuals:vps:kvm},
+          error
+        )
         assert_match(
           %r{networking/interface-addresses, networking/ip-address-list, networking/routed-addresses},
           error

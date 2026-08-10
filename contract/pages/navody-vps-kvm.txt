@@ -27,6 +27,7 @@ set -euo pipefail
 export DEBIAN_FRONTEND=noninteractive
 apt-get update
 apt-get install --yes \
+  iptables \
   libvirt-clients \
   libvirt-daemon-system \
   qemu-system-x86 \
@@ -84,6 +85,257 @@ další copy-on-write vrstvu. ''qcow2'' použijte, pokud potřebujete jeho backi
 files, interní snapshoty nebo jiné funkce obrazového formátu.
 
 Podrobnosti k ladění podle zátěže popisuje [[https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Workload%20Tuning.html|OpenZFS Workload Tuning]], formáty obrazů pak [[https://www.qemu.org/docs/master/system/images|dokumentace QEMU]].
+
+===== Síť virtuálních strojů =====
+
+Síťové rozhraní VPS je k nodu připojené směrovaným spojem na třetí vrstvě.
+Nepřidávejte proto rozhraní VPS do bridge spravovaného libvirt. Virtuálním
+strojům zpřístupněte síť pomocí NAT nebo směrováním adres přes samostatnou síť
+libvirt.
+
+==== Veřejná IPv4 na VPS a NAT v libvirt ====
+
+V nejjednodušším zapojení zůstane veřejná IPv4 ''/32'' na VPS a doména použije
+výchozí síť libvirt ''default'' s NAT. Před spuštěním domény ji připojte k této
+síti. Následující skript jí podle MAC adresy rezervuje
+''192.168.122.10'', zapne automatické spuštění sítě a zveřejní web na portu 80
+a SSH na portu 2222 veřejné adresy VPS. Před spuštěním nastavte ''DOMAIN'' na
+název domény a ''PUBLIC_IPV4'' na veřejnou adresu VPS.
+
+<code bash>
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${DOMAIN:?set DOMAIN to the libvirt domain name}"
+: "${PUBLIC_IPV4:?set PUBLIC_IPV4 to the VPS public IPv4 address}"
+
+guest_ipv4=${GUEST_IPV4:-192.168.122.10}
+connection=qemu:///system
+hook=/etc/libvirt/hooks/network.d/50-port-forwards
+config=/etc/libvirt/port-forwards.conf
+
+export LC_ALL=C
+virsh --connect "$connection" net-autostart default
+if ! virsh --connect "$connection" net-info default | grep -Eq '^Active:[[:space:]]+yes$'; then
+  virsh --connect "$connection" net-start default
+fi
+
+guest_mac=$(virsh --connect "$connection" domiflist "$DOMAIN" \
+  | awk '$3 == "default" { print $5; exit }')
+if [[ ! $guest_mac =~ ^([0-9a-f]{2}:){5}[0-9a-f]{2}$ ]]; then
+  printf 'Unable to find the default-network MAC for %s\n' "$DOMAIN" >&2
+  exit 1
+fi
+
+reservation="<host mac='$guest_mac' name='$DOMAIN' ip='$guest_ipv4'/>"
+if virsh --connect "$connection" net-dumpxml default \
+  | grep -Fq "mac='$guest_mac'"; then
+  virsh --connect "$connection" net-update default modify ip-dhcp-host \
+    "$reservation" --live --config
+else
+  virsh --connect "$connection" net-update default add-last ip-dhcp-host \
+    "$reservation" --live --config
+fi
+
+install -d -m 0755 /etc/libvirt/hooks/network.d
+install -d -m 0755 /etc/libvirt
+touch "$hook"
+chmod 0755 "$hook"
+cat >"$hook" <<'HOOK'
+#!/usr/bin/env bash
+set -euo pipefail
+
+PATH=/usr/sbin:/usr/bin:/sbin:/bin
+network=${1-}
+action=${2-}
+config=/etc/libvirt/port-forwards.conf
+nat_chain=VPSFREE_KVM_DNAT
+filter_chain=VPSFREE_KVM_FWD
+
+[[ $network == default ]] || exit 0
+exec 9>/run/lock/vpsfree-kvm-port-forwards.lock
+flock 9
+
+delete_jumps() {
+  while iptables -w -t nat -C PREROUTING -j "$nat_chain" 2>/dev/null; do
+    iptables -w -t nat -D PREROUTING -j "$nat_chain"
+  done
+  while iptables -w -t filter -C FORWARD -j "$filter_chain" 2>/dev/null; do
+    iptables -w -t filter -D FORWARD -j "$filter_chain"
+  done
+}
+
+delete_chains() {
+  if iptables -w -t nat -S "$nat_chain" >/dev/null 2>&1; then
+    iptables -w -t nat -F "$nat_chain"
+    iptables -w -t nat -X "$nat_chain"
+  fi
+  if iptables -w -t filter -S "$filter_chain" >/dev/null 2>&1; then
+    iptables -w -t filter -F "$filter_chain"
+    iptables -w -t filter -X "$filter_chain"
+  fi
+}
+
+cleanup() {
+  delete_jumps
+  delete_chains
+}
+
+if [[ $action == stopped ]]; then
+  cleanup
+  exit 0
+fi
+[[ $action == started || $action == reconnect ]] || exit 0
+
+valid_ipv4() {
+  local octet
+  local -a octets
+  IFS=. read -r -a octets <<<"$1"
+  ((${#octets[@]} == 4)) || return 1
+  for octet in "${octets[@]}"; do
+    [[ $octet =~ ^[0-9]{1,3}$ ]] && ((10#$octet <= 255)) || return 1
+  done
+}
+
+entries=()
+while read -r protocol public_ip public_port guest_ip guest_port extra; do
+  [[ -n ${protocol:-} && $protocol != \#* ]] || continue
+  [[ $protocol == tcp || $protocol == udp ]] || {
+    printf 'Invalid protocol in %s: %s\n' "$config" "$protocol" >&2
+    exit 1
+  }
+  valid_ipv4 "$public_ip" && valid_ipv4 "$guest_ip" || {
+    printf 'Invalid IPv4 address in %s\n' "$config" >&2
+    exit 1
+  }
+  [[ $public_port =~ ^[0-9]+$ && $guest_port =~ ^[0-9]+$ ]] || {
+    printf 'Invalid port in %s\n' "$config" >&2
+    exit 1
+  }
+  ((public_port >= 1 && public_port <= 65535)) || exit 1
+  ((guest_port >= 1 && guest_port <= 65535)) || exit 1
+  [[ -z ${extra:-} ]] || {
+    printf 'Too many fields in %s\n' "$config" >&2
+    exit 1
+  }
+  entries+=("$protocol|$public_ip|$public_port|$guest_ip|$guest_port")
+done <"$config"
+
+cleanup
+iptables -w -t nat -N "$nat_chain"
+iptables -w -t filter -N "$filter_chain"
+for entry in "${entries[@]}"; do
+  IFS='|' read -r protocol public_ip public_port guest_ip guest_port <<<"$entry"
+  iptables -w -t nat -A "$nat_chain" -p "$protocol" -d "$public_ip" \
+    --dport "$public_port" -j DNAT --to-destination "$guest_ip:$guest_port"
+  iptables -w -t filter -A "$filter_chain" -p "$protocol" -d "$guest_ip" \
+    --dport "$guest_port" -j ACCEPT
+done
+iptables -w -t nat -I PREROUTING 1 -j "$nat_chain"
+iptables -w -t filter -I FORWARD 1 -j "$filter_chain"
+HOOK
+
+cat >"$config" <<EOF
+# PROTOCOL PUBLIC_IP PUBLIC_PORT GUEST_IP GUEST_PORT
+tcp $PUBLIC_IPV4 80 $guest_ipv4 80
+tcp $PUBLIC_IPV4 2222 $guest_ipv4 22
+udp $PUBLIC_IPV4 5353 $guest_ipv4 9000
+EOF
+
+systemctl restart libvirtd.service
+"$hook" default started begin -
+</code>
+
+Další port přidáte jako řádek
+''PROTOKOL VEŘEJNÁ_IP VEŘEJNÝ_PORT IP_DOMÉNY PORT_DOMÉNY'' do
+''/etc/libvirt/port-forwards.conf''. Podporované protokoly jsou ''tcp'' a
+''udp''. Poté pravidla načtěte příkazem
+''/etc/libvirt/hooks/network.d/50-port-forwards default started begin -''.
+Port 2222 byl zvolen proto, aby SSH domény nekolidovalo s SSH samotné VPS.
+
+==== Privátní IPv4 na VPS a veřejné adresy v doméně ====
+
+Pokud má být veřejná ''/32'' přímo ve virtuálním stroji, přidejte VPS běžným
+způsobem privátní IPv4. Privátní adresy fungují ve vnitřní síti vpsFree.cz a na
+internet odcházejí přes NAT na našich routerech.
+
+<vpsadmin-nav id="networking.routable-addresses.open">
+V části **Síť → Routované adresy** pak vyberte veřejnou ''/32'' v poli
+**Adresa**, privátní adresu VPS v poli **Přes** a cílové rozhraní VPS. Veřejná
+adresa se tím na VPS nepřidá; vpsAdminOS ji k VPS směruje přes privátní adresu.
+</vpsadmin-nav>
+
+Následující skript vytvoří směrovanou síť libvirt. Před spuštěním nastavte
+''PUBLIC_IPV4'' na routovanou veřejnou ''/32'' a ''PUBLIC_IPV6'' na nepoužitou
+adresu z IPv6 prefixu VPS.
+
+<code bash>
+#!/usr/bin/env bash
+set -euo pipefail
+
+: "${PUBLIC_IPV4:?set PUBLIC_IPV4 to the routed public IPv4 address}"
+: "${PUBLIC_IPV6:?set PUBLIC_IPV6 to an unused address from the VPS IPv6 prefix}"
+
+host_transit_ipv4=${HOST_TRANSIT_IPV4:-192.168.123.1}
+guest_transit_ipv4=${GUEST_TRANSIT_IPV4:-192.168.123.2}
+host_transit_ipv6=${HOST_TRANSIT_IPV6:-fd00:0:0:123::1}
+guest_transit_ipv6=${GUEST_TRANSIT_IPV6:-fd00:0:0:123::2}
+connection=qemu:///system
+network=public-routed
+xml=$(mktemp)
+trap 'rm -f "$xml"' EXIT
+
+cat >"$xml" <<EOF
+<network>
+  <name>$network</name>
+  <forward mode='route'/>
+  <bridge name='virbr-public' stp='on' delay='0'/>
+  <ip address='$host_transit_ipv4' prefix='30'/>
+  <ip family='ipv6' address='$host_transit_ipv6' prefix='126'/>
+  <route family='ipv4' address='$PUBLIC_IPV4' prefix='32'
+         gateway='$guest_transit_ipv4'/>
+  <route family='ipv6' address='$PUBLIC_IPV6' prefix='128'
+         gateway='$guest_transit_ipv6'/>
+</network>
+EOF
+
+virsh --connect "$connection" net-define "$xml"
+virsh --connect "$connection" net-autostart "$network"
+if ! virsh --connect "$connection" net-info "$network" \
+  | grep -Eq '^Active:[[:space:]]+yes$'; then
+  virsh --connect "$connection" net-start "$network"
+fi
+virsh --connect "$connection" net-dumpxml "$network"
+</code>
+
+Doménu připojte k síti ''public-routed''. V Debianu v doméně pak například
+uložte následující konfiguraci do
+''/etc/network/interfaces.d/public-routed''; ''ens3'', ''PUBLIC_IPV4'' a
+''PUBLIC_IPV6'' nahraďte skutečnými hodnotami:
+
+<code conf>
+auto ens3
+iface ens3 inet static
+    address 192.168.123.2/30
+    up ip address add PUBLIC_IPV4/32 dev ens3
+    up ip route replace default via 192.168.123.1 src PUBLIC_IPV4
+    down ip address del PUBLIC_IPV4/32 dev ens3
+
+iface ens3 inet6 static
+    address fd00:0:0:123::2/126
+    up ip -6 address add PUBLIC_IPV6/128 dev ens3
+    up ip -6 route replace default via fd00:0:0:123::1 src PUBLIC_IPV6
+    down ip -6 address del PUBLIC_IPV6/128 dev ens3
+</code>
+
+Toto zapojení nepoužívá NAT v libvirt. Veřejná IPv4 je nakonfigurovaná pouze
+v doméně a odchozí spojení ji používají jako zdrojovou adresu.
+
+Každá VPS dostává IPv6 ''/64'', ze které lze stejným způsobem směrovat vybranou
+''/128'' do domény. Pokud vám na požádání směrujeme například ''/48'', vyberte
+z ní pro doménu samostatnou ''/64'' a změňte IPv6 ''route'' v XML na adresu
+této sítě s ''prefix=64''. IPv6 zůstává bez NAT. Na VPS i v doméně povolte
+ve firewallu pouze služby, které chcete zveřejnit.
 
 ===== Instalační ISO na NFS =====
 

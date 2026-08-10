@@ -9,11 +9,12 @@ tests:
     - platform-defaults
     - libvirt
     - storage
+    - networking
     - nfs-locking
 samples:
   install-libvirt:
     path: tests/fixtures/kvm/install-libvirt.sh
-    sha256: 09ed2bf1f49a51f085e283baade888df9f85e8e72d525eac62f6ad31174125ee
+    sha256: a6395dfa25324f3e9b666c7680b2b41b0e7a511cf8868857f3d0d1599b283c83
     tests:
     - kb/kvm#libvirt
   configure-storage-pool:
@@ -21,6 +22,16 @@ samples:
     sha256: 084d6aedf300b10ef0275d20949bcebac4a72777201b02fed7d08adb36dba642
     tests:
     - kb/kvm#storage
+  configure-nat-port-forwards:
+    path: tests/fixtures/kvm/configure-nat-port-forwards.sh
+    sha256: e30191d6ec9edb9a43281e80eac152e586ccee3522a45bceb9d39e1212b0a3c0
+    tests:
+    - kb/kvm#networking
+  configure-routed-network:
+    path: tests/fixtures/kvm/configure-routed-network.sh
+    sha256: 446acc8f08981f44c47f1d23572591ac2ef7eb9201d11b72dc004d5534f699e5
+    tests:
+    - kb/kvm#networking
   mount-readonly-iso:
     path: tests/fixtures/kvm/mount-readonly-iso.sh
     sha256: 9c85085d0df9f0b2b499218800e247fba3ef38eac6236e467ab21c3a280b87e4
@@ -34,7 +45,7 @@ pages:
   sections:
   - key: libvirt
     heading: Instalace libvirt
-    fingerprint: 34569670f81c3cb6ef3352c3f3ab9684c4a759bcb049b51509dd5842f4b8aa0e
+    fingerprint: b9eba91b2c7f596194a300c5cbb2bfb3435e8df0c18c870145b0f884e27f7717
     claims:
     - kvm-is-direct-not-nested
     - kvm-and-tun-default-enabled
@@ -59,6 +70,20 @@ pages:
     - kb/kvm#storage
     samples:
     - configure-storage-pool
+  - key: networking
+    heading: Síť virtuálních strojů
+    fingerprint: bb13f89b60fd914613aa082748c86ac1a969691b5510fc6473707bb962adf007
+    claims:
+    - outer-veth-is-routed-and-must-not-be-bridged
+    - default-nat-fixed-lease-and-persistent-port-forwards
+    - public-ipv4-routed-via-private-vps-address
+    - selected-ipv6-address-routed-without-nat
+    - larger-ipv6-prefix-can-delegate-a-dedicated-64
+    tests:
+    - kb/kvm#networking
+    samples:
+    - configure-nat-port-forwards
+    - configure-routed-network
   - key: nfs-installer-iso
     heading: Instalační ISO na NFS
     fingerprint: 99b683c30a358e9f7a31e69cce7b021f1fc11f8d3f1d4d3099fd7d94dc6f5ee3
@@ -76,7 +101,7 @@ pages:
   sections:
   - key: libvirt
     heading: Installing libvirt
-    fingerprint: de1e6584dfdbb0d0527103eb7f37e60d4464839d78a0a9c839b029e4e361dce3
+    fingerprint: 35a21790a9a080b106c9b70a3fa7d2768e554ee17c796f592195bdd1f8a339db
     claims:
     - kvm-is-direct-not-nested
     - kvm-and-tun-default-enabled
@@ -101,6 +126,20 @@ pages:
     - kb/kvm#storage
     samples:
     - configure-storage-pool
+  - key: networking
+    heading: Virtual-machine networking
+    fingerprint: 2c34651b9d597fe7ec30060dfe4a5b7aa91e0bf52d546a122c934e25fb3959df
+    claims:
+    - outer-veth-is-routed-and-must-not-be-bridged
+    - default-nat-fixed-lease-and-persistent-port-forwards
+    - public-ipv4-routed-via-private-vps-address
+    - selected-ipv6-address-routed-without-nat
+    - larger-ipv6-prefix-can-delegate-a-dedicated-64
+    tests:
+    - kb/kvm#networking
+    samples:
+    - configure-nat-port-forwards
+    - configure-routed-network
   - key: nfs-installer-iso
     heading: Installer ISO on NFS
     fingerprint: 0d66dd29e1c70c0e4aef11615d5af3108b506e5632d003deb736b9c11703fc77

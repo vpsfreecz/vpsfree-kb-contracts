@@ -31,10 +31,11 @@ jq empty captures.json cluster/default-config.json fixtures/production-shape.jso
 nix-instantiate --parse cluster/nix/test.nix >/dev/null
 nix-instantiate --parse tests/all-tests.nix >/dev/null
 nix-instantiate --parse tests/make-test.nix >/dev/null
+nix-instantiate --parse tests/suite/kb/kvm-guest.nix >/dev/null
 nix-instantiate --parse tests/suite/kb/kvm.nix >/dev/null
 nix eval .#testsMeta.x86_64-linux --json | jq -e '
   .["kb/kvm"].testScripts
-  | keys == ["libvirt", "nfs-locking", "platform-defaults", "storage"]
+  | keys == ["libvirt", "networking", "nfs-locking", "platform-defaults", "storage"]
     and all(.[]; .tags | index("kb-runtime"))
 ' >/dev/null
 ruby -c bin/validate

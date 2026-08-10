@@ -8,14 +8,31 @@ import ../../make-test.nix (
     ...
   }:
   let
+    configureNatPortForwards = builtins.readFile ../../fixtures/kvm/configure-nat-port-forwards.sh;
+    configureRoutedNetwork = builtins.readFile ../../fixtures/kvm/configure-routed-network.sh;
     configureStoragePool = builtins.readFile ../../fixtures/kvm/configure-storage-pool.sh;
     installLibvirt = builtins.readFile ../../fixtures/kvm/install-libvirt.sh;
     mountReadonlyIso = builtins.readFile ../../fixtures/kvm/mount-readonly-iso.sh;
+    guestAppliance = import ./kvm-guest.nix { inherit pkgs; };
+    guestAssets = pkgs.runCommand "kb-kvm-network-guest-assets" { } ''
+      mkdir -p "$out"
+      cp ${guestAppliance.kernel}/bzImage "$out/kernel"
+      cp ${guestAppliance.initrd}/initrd.gz "$out/initrd.gz"
+    '';
 
     common = ''
       require 'base64'
+      require 'cgi'
       require 'json'
       require 'shellwords'
+
+      def configure_nat_port_forwards_script
+        ${builtins.toJSON configureNatPortForwards}
+      end
+
+      def configure_routed_network_script
+        ${builtins.toJSON configureRoutedNetwork}
+      end
 
       def configure_storage_pool_script
         ${builtins.toJSON configureStoragePool}
@@ -316,7 +333,15 @@ import ../../make-test.nix (
         expect(last_exec[:status]).to eq(0), JSON.pretty_generate(diagnostic)
       end
 
-      def create_documentation_vps(services, node, hostname)
+      def create_documentation_vps(
+        services,
+        node,
+        hostname,
+        ipv4: 1,
+        ipv4_private: 0,
+        ipv6: 0,
+        memory: 2048
+      )
         template = services.api_ruby_json(code: <<~RUBY)
           template = OsTemplate.find(1)
           puts JSON.generate(id: template.id, label: template.label)
@@ -331,12 +356,12 @@ import ../../make-test.nix (
             os_template: 1,
             hostname:,
             cpu: 2,
-            memory: 2048,
+            memory:,
             swap: 0,
             diskspace: 8192,
-            ipv4: 1,
-            ipv4_private: 0,
-            ipv6: 0,
+            ipv4:,
+            ipv4_private:,
+            ipv6:,
             start: true
           },
           timeout: 600
@@ -351,6 +376,141 @@ import ../../make-test.nix (
         vps_id
       end
 
+      def route_public_ipv4_via_private(services, vps_id)
+        result = services.api_ruby_json(code: <<~RUBY)
+          #{api_session_prelude}
+
+          vps = Vps.find(#{Integer(vps_id)})
+          netif = vps.network_interfaces.first!
+          private_ip = netif.ip_addresses
+                            .joins(:network)
+                            .find_by!(networks: { ip_version: 4, role: :private_access })
+          via = private_ip.host_ip_addresses.where.not(order: nil).first!
+          public_ip = IpAddress
+                        .joins(:network)
+                        .where(
+                          network_interface_id: nil,
+                          networks: { ip_version: 4, role: :public_access }
+                        )
+                        .order(:id)
+                        .first!
+          chain = netif.add_route(public_ip, via: via)
+          puts JSON.generate(
+            chain_id: chain.id,
+            private_ipv4: private_ip.ip_addr,
+            public_ipv4: public_ip.ip_addr,
+            route_via_id: via.id
+          )
+        RUBY
+        wait_for_transaction_chain(services, result.fetch('chain_id'))
+        result
+      end
+
+      def route_public_ipv6_prefix(services, vps_id)
+        result = services.api_ruby_json(code: <<~RUBY)
+          #{api_session_prelude}
+
+          vps = Vps.find(#{Integer(vps_id)})
+          location = vps.node.location
+          network = Network.find_or_initialize_by(
+            address: '2001:db8:200::',
+            prefix: 64
+          )
+          if network.new_record?
+            network.assign_attributes(
+              user: User.find_by!(login: 'test-admin'),
+              primary_location: location,
+              label: 'KVM routed IPv6 /64 fixture',
+              ip_version: 6,
+              role: :public_access,
+              managed: true,
+              split_access: :no_access,
+              split_prefix: 64,
+              purpose: :vps
+            )
+            network.save!
+            LocationNetwork.create!(
+              location: location,
+              network: network,
+              primary: true,
+              priority: 10,
+              autopick: false,
+              userpick: false
+            )
+          end
+          prefix = network.ip_addresses.first
+          if prefix.nil?
+            prefix = IpAddress.register(
+              IPAddress.parse('2001:db8:200::/64'),
+              network: network,
+              user: vps.user,
+              location: location,
+              prefix: 64,
+              size: 2**64,
+              allocate: false
+            )
+          end
+          host_address = prefix.host_ip_addresses.first!
+          chain = vps.network_interfaces.first!.add_route(
+            prefix,
+            host_addrs: [host_address]
+          )
+          puts JSON.generate(
+            chain_id: chain.id,
+            prefix: [prefix.ip_addr, prefix.prefix].join('/'),
+            host_ipv6: host_address.ip_addr,
+            guest_ipv6: '2001:db8:200::10'
+          )
+        RUBY
+        wait_for_transaction_chain(services, result.fetch('chain_id'))
+        result
+      end
+
+      def install_guest_appliance(node, vps_id)
+        run_command_in_vps(node, vps_id, <<~'SH', timeout: 1200)
+          set -euo pipefail
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get install --yes curl
+          install -d -m 0755 /var/lib/libvirt/boot
+          curl --fail --show-error --silent \
+            http://172.16.106.53:18080/assets/kernel \
+            --output /var/lib/libvirt/boot/kb-kvm-kernel
+          curl --fail --show-error --silent \
+            http://172.16.106.53:18080/assets/initrd.gz \
+            --output /var/lib/libvirt/boot/kb-kvm-initrd.gz
+        SH
+      end
+
+      def define_network_guest(node, vps_id, name:, network:, mac:, cmdline:)
+        xml = <<~XML
+          <domain type='kvm'>
+            <name>#{CGI.escapeHTML(name)}</name>
+            <memory unit='MiB'>128</memory>
+            <vcpu>1</vcpu>
+            <os>
+              <type arch='x86_64'>hvm</type>
+              <kernel>/var/lib/libvirt/boot/kb-kvm-kernel</kernel>
+              <initrd>/var/lib/libvirt/boot/kb-kvm-initrd.gz</initrd>
+              <cmdline>#{CGI.escapeHTML(cmdline)}</cmdline>
+            </os>
+            <devices>
+              <interface type='network'>
+                <mac address='#{CGI.escapeHTML(mac)}'/>
+                <source network='#{CGI.escapeHTML(network)}'/>
+                <model type='virtio'/>
+              </interface>
+              <console type='pty'/>
+            </devices>
+          </domain>
+        XML
+        run_in_vps(
+          node,
+          vps_id,
+          "printf '%s' #{Shellwords.escape(xml)} > /tmp/#{Shellwords.escape(name)}.xml\n" \
+          "virsh --connect qemu:///system define /tmp/#{Shellwords.escape(name)}.xml"
+        )
+      end
+
       def start_cluster
         [services, node1].each { |machine| machine.start unless machine.running? }
         services.wait_for_vpsadmin_api(timeout: 600)
@@ -363,6 +523,22 @@ import ../../make-test.nix (
 
           api_node.fetch('status') == true && api_node.fetch('pool_status') == true
         end
+      end
+
+      def prepare_network_test_backbone(services, node)
+        services.wait_for_service('nginx')
+        services.succeeds('curl --fail --silent http://127.0.0.1:18080/assets/kernel >/dev/null')
+        services.succeeds(
+          'ip -6 address replace 2001:db8:ffff::53/64 dev eth1 && ' \
+          'ip -6 route replace 2001:db8:200::/64 via 2001:db8:ffff::41 dev eth1'
+        )
+        node.succeeds(
+          'ip -6 address replace 2001:db8:ffff::41/64 dev eth1 && ' \
+          'sysctl -w net.ipv4.ip_forward=1 net.ipv6.conf.all.forwarding=1 && ' \
+          '(iptables -w -t nat -C POSTROUTING -s 10.106.0.0/24 -o eth0 ' \
+          '-j MASQUERADE 2>/dev/null || ' \
+          'iptables -w -t nat -A POSTROUTING -s 10.106.0.0/24 -o eth0 -j MASQUERADE)'
+        )
       end
 
       def dataset_contract(services, dataset_id)
@@ -387,10 +563,17 @@ import ../../make-test.nix (
         inherit description;
         tags = [ "kb-runtime" ];
         script = common + ''
-          before(:suite) do
-            start_cluster
-            @vps_id = create_documentation_vps(services, node1, ${builtins.toJSON hostname})
-          end
+          ${
+            if hostname == null then
+              ""
+            else
+              ''
+                before(:suite) do
+                  start_cluster
+                  @vps_id = create_documentation_vps(services, node1, ${builtins.toJSON hostname})
+                end
+              ''
+          }
 
           ${body}
         '';
@@ -509,6 +692,220 @@ import ../../make-test.nix (
               expect(capacity).to eq(1600 * 1024 * 1024)
               expect(quota - capacity).to be >= quota / 5
               expect(volume.lines.last.strip).to eq('/srv/libvirt/images')
+            end
+          end
+        '';
+
+      networking = mkScript
+        "Verify NAT port forwarding and routed IPv4/IPv6 guests"
+        null
+        ''
+          before(:suite) do
+            start_cluster
+            prepare_network_test_backbone(services, node1)
+
+            @nat_vps_id = create_documentation_vps(
+              services,
+              node1,
+              'kb-kvm-nat',
+              memory: 1024
+            )
+            @nat_public_ipv4 = documentation_vps_public_ipv4(services, @nat_vps_id)
+            run_in_vps(node1, @nat_vps_id, install_libvirt_script)
+            install_guest_appliance(node1, @nat_vps_id)
+            define_network_guest(
+              node1,
+              @nat_vps_id,
+              name: 'nat-guest',
+              network: 'default',
+              mac: '52:54:00:12:20:10',
+              cmdline: [
+                'console=ttyS0',
+                'mode=nat',
+                'ipv4=192.168.122.10',
+                'ipv4_prefix=24',
+                'gateway4=192.168.122.1',
+                'upstream4=172.16.106.53'
+              ].join(' ')
+            )
+            run_in_vps(
+              node1,
+              @nat_vps_id,
+              configure_nat_port_forwards_script,
+              environment: {
+                'DOMAIN' => 'nat-guest',
+                'PUBLIC_IPV4' => @nat_public_ipv4,
+                'GUEST_IPV4' => '192.168.122.10'
+              }
+            )
+            run_command_in_vps(
+              node1,
+              @nat_vps_id,
+              'virsh --connect qemu:///system start nat-guest'
+            )
+
+            @routed_vps_id = create_documentation_vps(
+              services,
+              node1,
+              'kb-kvm-routed',
+              ipv4: 0,
+              ipv4_private: 1,
+              memory: 1024
+            )
+            @routed_ipv4 = route_public_ipv4_via_private(services, @routed_vps_id)
+            @routed_ipv6 = route_public_ipv6_prefix(services, @routed_vps_id)
+            run_in_vps(node1, @routed_vps_id, install_libvirt_script)
+            install_guest_appliance(node1, @routed_vps_id)
+            run_in_vps(
+              node1,
+              @routed_vps_id,
+              configure_routed_network_script,
+              environment: {
+                'PUBLIC_IPV4' => @routed_ipv4.fetch('public_ipv4'),
+                'PUBLIC_IPV6' => @routed_ipv6.fetch('guest_ipv6'),
+                'HOST_TRANSIT_IPV4' => '192.0.2.1',
+                'GUEST_TRANSIT_IPV4' => '192.0.2.2',
+                'HOST_TRANSIT_IPV6' => '2001:db8:ffff:1::1',
+                'GUEST_TRANSIT_IPV6' => '2001:db8:ffff:1::2'
+              }
+            )
+            define_network_guest(
+              node1,
+              @routed_vps_id,
+              name: 'routed-guest',
+              network: 'public-routed',
+              mac: '52:54:00:12:30:10',
+              cmdline: [
+                'console=ttyS0',
+                'mode=routed',
+                'ipv4=192.0.2.2',
+                'ipv4_prefix=30',
+                'gateway4=192.0.2.1',
+                "public4=#{@routed_ipv4.fetch('public_ipv4')}",
+                'ipv6=2001:db8:ffff:1::2',
+                'ipv6_prefix=126',
+                'gateway6=2001:db8:ffff:1::1',
+                "public6=#{@routed_ipv6.fetch('guest_ipv6')}",
+                'upstream4=172.16.106.53',
+                'upstream6=2001:db8:ffff::53'
+              ].join(' ')
+            )
+            run_command_in_vps(
+              node1,
+              @routed_vps_id,
+              'virsh --connect qemu:///system start routed-guest'
+            )
+          end
+
+          describe 'a public VPS address forwarded through libvirt NAT' do
+            it 'exposes HTTP and SSH while preserving outbound access' do
+              services.wait_until_succeeds(
+                "curl --fail --silent http://#{@nat_public_ipv4}/ | grep -Fx nat",
+                timeout: 180
+              )
+              services.succeeds(
+                "ssh-keyscan -T 5 -p 2222 #{@nat_public_ipv4} 2>/dev/null | " \
+                "grep -F '[#{@nat_public_ipv4}]:2222'"
+              )
+              services.wait_until_succeeds(
+                "curl --fail --silent http://#{@nat_public_ipv4}/outbound4 " \
+                "| grep -Fx #{@nat_public_ipv4}",
+                timeout: 180
+              )
+            end
+
+            it 'reconciles additional TCP or UDP forwards idempotently' do
+              services.wait_until_succeeds(
+                "test \"$(printf kb-udp | nc -u -w 2 #{@nat_public_ipv4} 5353)\" = kb-udp",
+                timeout: 60
+              )
+              2.times do
+                run_command_in_vps(
+                  node1,
+                  @nat_vps_id,
+                  '/etc/libvirt/hooks/network.d/50-port-forwards default started begin -'
+                )
+              end
+              run_command_in_vps(node1, @nat_vps_id, <<~'SH')
+                set -euo pipefail
+                test "$(iptables -t nat -S PREROUTING | grep -c -- '-j VPSFREE_KVM_DNAT')" -eq 1
+                test "$(iptables -t filter -S FORWARD | grep -c -- '-j VPSFREE_KVM_FWD')" -eq 1
+                sed -i '/^udp .* 5353 /d' /etc/libvirt/port-forwards.conf
+                /etc/libvirt/hooks/network.d/50-port-forwards default started begin -
+                ! iptables -t nat -S VPSFREE_KVM_DNAT | grep -q -- '--dport 5353'
+              SH
+              services.succeeds(
+                "test -z \"$(printf kb-udp | nc -u -w 2 #{@nat_public_ipv4} 5353)\""
+              )
+            end
+          end
+
+          describe 'public addresses routed to a guest behind a private VPS address' do
+            it 'keeps the public IPv4 route-only on the outer VPS' do
+              public_ipv4 = @routed_ipv4.fetch('public_ipv4')
+              private_ipv4 = @routed_ipv4.fetch('private_ipv4')
+              state = services.api_ruby_json(code: <<~RUBY)
+                ip = IpAddress.find_by!(ip_addr: #{public_ipv4.inspect})
+                puts JSON.generate(
+                  route_via_id: ip.route_via_id,
+                  network_interface_id: ip.network_interface_id
+                )
+              RUBY
+              expect(state.fetch('route_via_id')).to eq(@routed_ipv4.fetch('route_via_id'))
+              expect(state.fetch('network_interface_id')).not_to be_nil
+              run_command_in_vps(
+                node1,
+                @routed_vps_id,
+                "! ip -4 address show | grep -F #{Shellwords.escape(public_ipv4)}"
+              )
+              _, route = node1.succeeds("ip -4 route show #{Shellwords.escape(public_ipv4)}/32")
+              expect(route).to include("via #{private_ipv4}")
+              expect(route).to include('onlink')
+            end
+
+            it 'routes IPv4 HTTP, SSH and the guest source address without NAT' do
+              public_ipv4 = @routed_ipv4.fetch('public_ipv4')
+              services.wait_until_succeeds(
+                "curl --fail --silent http://#{public_ipv4}/ | grep -Fx routed",
+                timeout: 180
+              )
+              services.succeeds(
+                "ssh-keyscan -T 5 #{public_ipv4} 2>/dev/null | grep -F #{public_ipv4}"
+              )
+              services.wait_until_succeeds(
+                "curl --fail --silent http://#{public_ipv4}/outbound4 " \
+                "| grep -Fx #{public_ipv4}",
+                timeout: 180
+              )
+            end
+
+            it 'routes one address from the VPS IPv6 /64 without NAT' do
+              guest_ipv6 = @routed_ipv6.fetch('guest_ipv6')
+              host_ipv6 = @routed_ipv6.fetch('host_ipv6')
+              run_command_in_vps(
+                node1,
+                @routed_vps_id,
+                "ip -6 address show | grep -F #{Shellwords.escape(host_ipv6)} && " \
+                "! ip -6 address show | grep -F #{Shellwords.escape(guest_ipv6)}"
+              )
+              _, route = run_command_in_vps(
+                node1,
+                @routed_vps_id,
+                "ip -6 route show #{Shellwords.escape(guest_ipv6)}/128"
+              )
+              expect(route).to include('via 2001:db8:ffff:1::2')
+              services.wait_until_succeeds(
+                "curl --globoff --fail --silent http://[#{guest_ipv6}]/ | grep -Fx routed",
+                timeout: 180
+              )
+              services.succeeds(
+                "ssh-keyscan -6 -T 5 #{guest_ipv6} 2>/dev/null | grep -F #{guest_ipv6}"
+              )
+              services.wait_until_succeeds(
+                "curl --globoff --fail --silent http://[#{guest_ipv6}]/outbound6 " \
+                "| grep -Fx #{guest_ipv6}",
+                timeout: 180
+              )
             end
           end
         '';
@@ -686,6 +1083,24 @@ import ../../make-test.nix (
         ];
         services.dbus.packages = [ pkgs.nfs-ganesha ];
         services.rpcbind.enable = true;
+        services.nginx.virtualHosts."kb-kvm-upstream" = {
+          default = true;
+          listen = [
+            {
+              addr = "0.0.0.0";
+              port = 18080;
+            }
+            {
+              addr = "[::]";
+              port = 18080;
+            }
+          ];
+          locations."/assets/".alias = "${guestAssets}/";
+          locations."= /source".extraConfig = ''
+            default_type text/plain;
+            return 200 "$remote_addr\n";
+          '';
+        };
         systemd.tmpfiles.rules = [
           "d /srv/kb-installer 0755 root root -"
           "d /var/lib/nfs/ganesha 0755 root root -"
@@ -714,6 +1129,8 @@ import ../../make-test.nix (
           };
         };
         environment.systemPackages = with pkgs; [
+          curl
+          netcat-openbsd
           nfs-utils
           nfs-ganesha
         ];

@@ -454,8 +454,8 @@ paths:
   - id: networking.routable-addresses.open
     steps: [networking.menu, networking.routable-addresses]
     pages:
-      cs: [navody:vps:ip_adresy]
-      en: [manuals:vps:ip_addresses]
+      cs: [navody:vps:ip_adresy, navody:vps:kvm]
+      en: [manuals:vps:ip_addresses, manuals:vps:kvm]
 
   - id: networking.monthly-traffic.open
     steps: [networking.menu, networking.monthly-traffic]
