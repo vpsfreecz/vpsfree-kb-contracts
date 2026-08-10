@@ -62,6 +62,46 @@ import ../../make-test.nix (
         )
       end
 
+      def documentation_vps_public_ipv4(services, vps_id)
+        result = services.api_ruby_json(code: <<~RUBY)
+          ip = Vps.find(#{Integer(vps_id)}).ip_addresses
+                  .joins(:network)
+                  .find_by!(
+                    networks: {
+                      ip_version: 4,
+                      role: Network.roles.fetch('public_access')
+                    }
+                  )
+          puts JSON.generate(ip: ip.ip_addr, prefix: ip.prefix)
+        RUBY
+        expect(result.fetch('prefix')).to eq(32)
+        result.fetch('ip')
+      end
+
+      def run_nfs_command_in_vps(services, node, vps_id, command, timeout: 300)
+        guest = machine_probe(
+          node,
+          "osctl ct exec #{Integer(vps_id)} bash -lc #{Shellwords.escape(command)}",
+          timeout:
+        )
+        return [guest.fetch(:status), guest.fetch(:output)] if guest[:status] == 0
+
+        diagnostic = {
+          guest:,
+          exports: machine_probe(
+            services,
+            'showmount --exports 127.0.0.1',
+            timeout: 30
+          ),
+          ganesha_journal: machine_probe(
+            services,
+            'journalctl --unit nfs-ganesha --no-pager --lines 200',
+            timeout: 30
+          )
+        }
+        expect(guest[:status]).to eq(0), JSON.pretty_generate(diagnostic)
+      end
+
       def wait_for_transaction_chain(services, chain_id)
         chain = services.api_ruby_json(code: <<~RUBY, timeout: 900)
           def bounded_diagnostic_value(value, limit: 2000)
@@ -434,10 +474,17 @@ import ../../make-test.nix (
                 timeout: 1200
               )
               run_command_in_vps(node1, @vps_id, 'ping -c 1 -W 5 172.16.106.53')
+              public_ipv4 = documentation_vps_public_ipv4(services, @vps_id)
+              _, route = run_command_in_vps(
+                node1,
+                @vps_id,
+                'ip -4 route get 172.16.106.53'
+              )
+              expect(route).to include("src #{public_ipv4}")
             end
 
             it 'reports the QEMU lock error on an NFSv3 server without NLM' do
-              _, output = run_command_in_vps(node1, @vps_id, <<~'SH')
+              _, output = run_nfs_command_in_vps(services, node1, @vps_id, <<~'SH')
                 set -euo pipefail
                 mkdir -p /mnt/installer-iso
                 mount -t nfs -o ro,vers=3 172.16.106.53:/srv/kb-installer /mnt/installer-iso
@@ -495,12 +542,14 @@ import ../../make-test.nix (
           NFS_CORE_PARAM {
             Protocols = 3;
             Enable_NLM = false;
+            Mount_Path_Pseudo = true;
             Plugins_Dir = "${pkgs.nfs-ganesha}/lib/ganesha";
           }
 
           EXPORT {
             Export_Id = 1;
             Path = /srv/kb-installer;
+            Pseudo = /srv/kb-installer;
             Protocols = 3;
             Transports = TCP;
             Access_Type = None;
