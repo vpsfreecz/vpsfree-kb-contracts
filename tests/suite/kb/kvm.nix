@@ -394,7 +394,7 @@ import ../../make-test.nix (
                         )
                         .order(:id)
                         .first!
-          chain = netif.add_route(public_ip, via: via)
+          chain, = netif.add_route(public_ip, via: via)
           puts JSON.generate(
             chain_id: chain.id,
             private_ipv4: private_ip.ip_addr,
@@ -451,7 +451,7 @@ import ../../make-test.nix (
             )
           end
           host_address = prefix.host_ip_addresses.first!
-          chain = vps.network_interfaces.first!.add_route(
+          chain, = vps.network_interfaces.first!.add_route(
             prefix,
             host_addrs: [host_address]
           )
