@@ -97,6 +97,20 @@ for argument in $(cat /proc/cmdline); do
   esac
 done
 
+wait_for_ipv6_address() {
+  target_address=$1
+  for _ in $(seq 1 100); do
+    address_state=$(ip -6 address show dev eth0 | grep -F "$target_address" || :)
+    case "$address_state" in
+      *dadfailed*) return 1 ;;
+      *tentative*|"") ;;
+      *) return 0 ;;
+    esac
+    sleep 0.1
+  done
+  return 1
+}
+
 ip link set lo up
 for _ in $(seq 1 100); do
   [ -e /sys/class/net/eth0 ] && break
@@ -120,10 +134,16 @@ fi
 
 if [ -n "$ipv6" ]; then
   echo 0 >/proc/sys/net/ipv6/conf/all/disable_ipv6
-  ip -6 address add "$ipv6/$ipv6_prefix" dev eth0 nodad
+  ip -6 address add "$ipv6/$ipv6_prefix" dev eth0
 fi
 if [ -n "$public6" ]; then
-  ip -6 address add "$public6/128" dev eth0 nodad
+  ip -6 address add "$public6/128" dev eth0
+fi
+if [ -n "$ipv6" ]; then
+  wait_for_ipv6_address "$ipv6/$ipv6_prefix"
+fi
+if [ -n "$public6" ]; then
+  wait_for_ipv6_address "$public6/128"
 fi
 if [ -n "$gateway6" ]; then
   if [ -n "$public6" ]; then
