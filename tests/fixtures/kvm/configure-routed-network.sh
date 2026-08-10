@@ -28,8 +28,8 @@ cat >"$xml" <<EOF
 </network>
 EOF
 
-if virsh --connect "$connection" net-info "$network" 2>/dev/null \
-  | grep -Eq '^Active:[[:space:]]+yes$'; then
+if virsh --connect "$connection" net-list --name \
+  | grep -Fx "$network" >/dev/null; then
   printf '%s is active. Shut down its attached domains, run ' "$network" >&2
   printf 'virsh net-destroy %s, then rerun this script.\n' "$network" >&2
   exit 1

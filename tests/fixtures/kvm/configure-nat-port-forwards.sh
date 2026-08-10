@@ -11,7 +11,8 @@ config=/etc/libvirt/port-forwards.conf
 
 export LC_ALL=C
 virsh --connect "$connection" net-autostart default
-if ! virsh --connect "$connection" net-info default | grep -Eq '^Active:[[:space:]]+yes$'; then
+if ! virsh --connect "$connection" net-list --name \
+  | grep -Fx default >/dev/null; then
   virsh --connect "$connection" net-start default
 fi
 
