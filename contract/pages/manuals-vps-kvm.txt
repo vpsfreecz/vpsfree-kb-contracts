@@ -49,7 +49,7 @@ reference quota by the capacity intended for images, create a ''vm-images''
 subdataset with the freed capacity, and mount it in the VPS at
 ''/srv/libvirt/images''.
 
-The subdataset is [[manuals:vps:exports|snapshotted]] separately from the VPS
+The subdataset is [[manuals:vps:backups|snapshotted]] separately from the VPS
 root dataset.
 
 {{:en:screenshots:vpsadmin:vps-details:datasets.png?direct|VPS datasets}}
