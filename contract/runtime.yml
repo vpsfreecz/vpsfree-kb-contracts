@@ -49,7 +49,7 @@ pages:
     - install-libvirt
   - key: storage
     heading: Diskové obrazy a ZFS
-    fingerprint: f73f3c60ca20012af6de9f56c4626660f73feee68bf232e38c9d50975de1b6ba
+    fingerprint: ce0b68b5669c7f9deb380fee232ba733000e9fbc9ffcf040ca5d5388e8972a1c
     claims:
     - subdataset-recommended-property-boundary
     - mounted-subdataset-is-persistent-libvirt-pool
@@ -91,7 +91,7 @@ pages:
     - install-libvirt
   - key: storage
     heading: Disk images and ZFS
-    fingerprint: 430eaaec5d626094b3a069ce0c9ddaefb0f108e35f9c897831226f72e8d2bbb4
+    fingerprint: b263697385465b79bd9ca4002571620a47affffd116be9ec8b6c1f985e134ca4
     claims:
     - subdataset-recommended-property-boundary
     - mounted-subdataset-is-persistent-libvirt-pool

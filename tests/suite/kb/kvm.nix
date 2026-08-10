@@ -496,13 +496,18 @@ import ../../make-test.nix (
                 node1,
                 @vps_id,
                 'virsh --connect qemu:///system vol-create-as ' \
-                'vm-images kb-volume.raw 256M --allocation 0 --format raw && ' \
+                'vm-images kb-volume.raw 1600M --allocation 0 --format raw && ' \
                 'virsh --connect qemu:///system vol-path ' \
                 '--pool vm-images kb-volume.raw && ' \
+                'stat --format %s /srv/libvirt/images/kb-volume.raw && ' \
                 'findmnt --noheadings --output TARGET ' \
                 '--target /srv/libvirt/images/kb-volume.raw'
               )
               expect(volume).to include('/srv/libvirt/images/kb-volume.raw')
+              capacity = Integer(volume.lines[-2])
+              quota = 2 * 1024 * 1024 * 1024
+              expect(capacity).to eq(1600 * 1024 * 1024)
+              expect(quota - capacity).to be >= quota / 5
               expect(volume.lines.last.strip).to eq('/srv/libvirt/images')
             end
           end

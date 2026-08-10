@@ -47,7 +47,10 @@ It lets you change ZFS properties for this workload later without affecting the
 VPS root dataset. Before creating virtual machines, reduce the root dataset's
 reference quota by the capacity intended for images, create a ''vm-images''
 subdataset with the freed capacity, and mount it in the VPS at
-''/srv/libvirt/images''.
+''/srv/libvirt/images''. For example, from the standard 120 GiB allocation you
+can leave 20 GiB for the root dataset and assign 100 GiB to ''vm-images''. You
+can then give the first virtual-machine disk 80 GiB and leave 20 GiB free for
+growth and snapshots.
 
 The subdataset is [[manuals:vps:backups|snapshotted]] separately from the VPS
 root dataset.

@@ -37,7 +37,7 @@ errors << "expected 56 English page references, found #{references.fetch('en')}"
 end
 
 allowed_fixtures = %w[
-  account base-vps nixos-generations public-key second-vps snapshot
+  account base-vps kvm-storage nixos-generations public-key second-vps snapshot
   traffic-samples
 ]
 allowed_statuses = %w[pending reviewed uploaded]

@@ -26,18 +26,6 @@ async function run({ fixtures, language, page, session }) {
     'vps-details/feature-settings',
     features.locator('xpath=following-sibling::*[1]'),
   );
-  const datasets = page.locator('#content-in h2', {
-    hasText: new RegExp(`^\\s*${label(language, 'datasets')}\\s*$`),
-  }).first();
-  const mounts = page.locator('#content-in h2', {
-    hasText: new RegExp(`^\\s*${label(language, 'mounts')}\\s*$`),
-  }).first();
-  await session.shot(page, 'vps-details/datasets', [
-    datasets,
-    datasets.locator('xpath=following-sibling::*[1]'),
-    mounts,
-    mounts.locator('xpath=following-sibling::*[1]'),
-  ]);
   await session.section(page, 'userns/map', label(language, 'uidGidMapping'));
 }
 

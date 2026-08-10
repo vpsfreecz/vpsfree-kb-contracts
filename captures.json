@@ -1588,13 +1588,13 @@
     {
       "id": "vps-details/datasets",
       "topic": "vps-details",
-      "scenario": "vps-management",
+      "scenario": "kvm-storage",
       "checkpoint": "vps-details/datasets",
       "driver": "webui",
       "fixtures": [
-        "base-vps"
+        "kvm-storage"
       ],
-      "description": "Current localized VPS datasets",
+      "description": "KVM host datasets with image-storage headroom",
       "viewport": {
         "width": 1440,
         "height": 1100,

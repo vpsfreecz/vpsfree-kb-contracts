@@ -173,44 +173,74 @@ async function setDatasetQuota(form, field, value) {
   await form.locator('select[name="quota_unit"]').selectOption('g');
 }
 
-async function ensureChildDataset(page, vpsId, parentId) {
+async function ensureChildDataset(
+  page,
+  vpsId,
+  parentId,
+  { name = 'data', refquotaGiB = '1' } = {},
+) {
   const route = `/?page=adminvps&action=info&veid=${vpsId}`;
   await goto(page, route);
-  const existing = await datasetIdsByName(page, 'data');
+  const existing = await datasetIdsByName(page, name);
   if (existing.length > 1) {
-    throw new Error(`Multiple fixture datasets match data: ${existing.join(', ')}`);
+    throw new Error(`Multiple fixture datasets match ${name}: ${existing.join(', ')}`);
   }
   if (existing.length === 1) return existing[0];
 
   await goto(page, `/?page=dataset&action=new&role=hypervisor&parent=${parentId}`);
   const form = page.locator('form[action*="page=dataset"][action*="action=new"]');
-  await form.locator('input[name="name"]').fill('data');
+  await form.locator('input[name="name"]').fill(name);
   const automount = form.locator('input[name="automount"]');
   if ((await automount.count()) > 0 && await automount.isChecked()) {
     await automount.uncheck();
   }
-  await setDatasetQuota(form, 'refquota', '1');
+  await setDatasetQuota(form, 'refquota', refquotaGiB);
   await submitLast(form);
-  return waitForDataset(page, route, 'data');
+  return waitForDataset(page, route, name);
 }
 
-async function ensureMount(page, vpsId, datasetId) {
+async function ensureDatasetQuota(page, datasetId, refquotaGiB) {
+  const route = `/?page=dataset&action=edit&role=hypervisor&id=${datasetId}`;
+  await goto(page, route);
+  let form = page.locator('form[action*="page=dataset"][action*="action=edit"]');
+  const quota = form.locator('input[name="refquota"]');
+  const unit = form.locator('select[name="quota_unit"]');
+  if (await quota.inputValue() === refquotaGiB && await unit.inputValue() === 'g') return;
+
+  await quota.fill(refquotaGiB);
+  await unit.selectOption('g');
+  await submitLast(form);
+
+  const deadline = Date.now() + 5 * 60_000;
+  while (Date.now() < deadline) {
+    await goto(page, route);
+    form = page.locator('form[action*="page=dataset"][action*="action=edit"]');
+    if (
+      await form.locator('input[name="refquota"]').inputValue() === refquotaGiB
+      && await form.locator('select[name="quota_unit"]').inputValue() === 'g'
+    ) return;
+    await page.waitForTimeout(3_000);
+  }
+  throw new Error(`Dataset #${datasetId} did not reach a ${refquotaGiB} GiB refquota`);
+}
+
+async function ensureMount(page, vpsId, datasetId, mountpoint = '/srv/data') {
   const route = `/?page=adminvps&action=info&veid=${vpsId}`;
   await goto(page, route);
-  const existing = await page.locator('#content-in tr', { hasText: '/srv/data' }).count();
-  if (existing > 1) throw new Error('Multiple fixture mounts use /srv/data');
+  const existing = await page.locator('#content-in tr', { hasText: mountpoint }).count();
+  if (existing > 1) throw new Error(`Multiple fixture mounts use ${mountpoint}`);
   if (existing === 1) return;
   await goto(page, `/?page=dataset&action=mount&dataset=${datasetId}&vps=${vpsId}`);
   const form = page.locator('form[action*="action=mount"]');
-  await form.locator('input[name="mountpoint"]').fill('/srv/data');
+  await form.locator('input[name="mountpoint"]').fill(mountpoint);
   await submitLast(form);
   const deadline = Date.now() + 5 * 60_000;
   while (Date.now() < deadline) {
     await goto(page, route);
-    if ((await page.locator('#content-in tr', { hasText: '/srv/data' }).count()) > 0) return;
+    if ((await page.locator('#content-in tr', { hasText: mountpoint }).count()) > 0) return;
     await page.waitForTimeout(3_000);
   }
-  throw new Error('Fixture mount /srv/data did not become visible');
+  throw new Error(`Fixture mount ${mountpoint} did not become visible`);
 }
 
 async function ensureInterfaceAddress(page, vpsId) {
@@ -395,18 +425,52 @@ async function prepareFixtures({ cluster, language, page, required, repoRoot }) 
   const requiredSet = new Set(required);
   const fixtureLabels = fixturesFor(language);
   const userId = await findUserId(page, 'test-user1');
-  const vpsId = await findOwnedVps(page, 'vps') ||
-    await createVpsIn(page, userId, 'vps', true, 'Production', 'Praha');
-  await waitForRunning(page, vpsId);
-  const datasetId = await rootDatasetId(page, vpsId);
-  const node = await vpsNodeMachine(page, vpsId);
-  const fixtures = { vpsId, datasetId, node, hostname: 'vps' };
-  fixtures.networkInterface = networkInterface(cluster, node, vpsId);
-  fixtures.reverseRecordRoute = await ensureInterfaceAddress(page, vpsId);
+  const fixtures = {};
+  let datasetId;
+  let node;
+  let vpsId;
+  const needsBaseVps = [
+    'base-vps',
+    'nixos-generations',
+    'second-vps',
+    'snapshot',
+    'traffic-samples',
+  ].some((name) => requiredSet.has(name));
 
-  fixtures.childDatasetId = await ensureChildDataset(page, vpsId, datasetId);
-  await ensureMount(page, vpsId, fixtures.childDatasetId);
-  fixtures.nas = await ensureNasDataset(page);
+  if (needsBaseVps) {
+    vpsId = await findOwnedVps(page, 'vps')
+      || await createVpsIn(page, userId, 'vps', true, 'Production', 'Praha');
+    await waitForRunning(page, vpsId);
+    datasetId = await rootDatasetId(page, vpsId);
+    node = await vpsNodeMachine(page, vpsId);
+    Object.assign(fixtures, { vpsId, datasetId, node, hostname: 'vps' });
+    fixtures.networkInterface = networkInterface(cluster, node, vpsId);
+    fixtures.reverseRecordRoute = await ensureInterfaceAddress(page, vpsId);
+    fixtures.childDatasetId = await ensureChildDataset(page, vpsId, datasetId);
+    await ensureMount(page, vpsId, fixtures.childDatasetId);
+    fixtures.nas = await ensureNasDataset(page);
+  }
+
+  if (requiredSet.has('kvm-storage')) {
+    fixtures.kvmVpsId = await findOwnedVps(page, 'kvm-host')
+      || await createVpsIn(page, userId, 'kvm-host', true, 'Production', 'Praha');
+    await waitForRunning(page, fixtures.kvmVpsId);
+    fixtures.kvmRootDatasetId = await rootDatasetId(page, fixtures.kvmVpsId);
+    await ensureDatasetQuota(page, fixtures.kvmRootDatasetId, '20');
+    fixtures.kvmImagesDatasetId = await ensureChildDataset(
+      page,
+      fixtures.kvmVpsId,
+      fixtures.kvmRootDatasetId,
+      { name: 'vm-images', refquotaGiB: '100' },
+    );
+    await ensureDatasetQuota(page, fixtures.kvmImagesDatasetId, '100');
+    await ensureMount(
+      page,
+      fixtures.kvmVpsId,
+      fixtures.kvmImagesDatasetId,
+      '/srv/libvirt/images',
+    );
+  }
 
   if (requiredSet.has('second-vps')) {
     fixtures.secondVpsId = await findOwnedVps(page, 'playground-vps') ||

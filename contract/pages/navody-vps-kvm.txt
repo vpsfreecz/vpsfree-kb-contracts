@@ -47,7 +47,10 @@ V budoucnu tak můžete změnit jeho ZFS vlastnosti bez zásahu do kořenového
 datasetu VPS. Před vytvořením virtuálních strojů zmenšete referenční kvótu
 kořenového datasetu o prostor určený pro obrazy, vytvořte subdataset
 ''vm-images'' s uvolněnou kapacitou a připojte jej do VPS jako
-''/srv/libvirt/images''.
+''/srv/libvirt/images''. Například z běžné kapacity 120 GiB můžete ponechat
+20 GiB kořenovému datasetu a 100 GiB přidělit datasetu ''vm-images''. Prvnímu
+disku virtuálního stroje pak můžete přidělit například 80 GiB a ponechat 20 GiB
+volných pro jeho růst a snapshoty.
 
 Subdataset se [[navody:vps:zalohy|snapshotuje]] odděleně od kořenového datasetu
 VPS.
