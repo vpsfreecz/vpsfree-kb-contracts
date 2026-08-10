@@ -53,8 +53,8 @@ kořenového datasetu o prostor určený pro obrazy, vytvořte subdataset
 ''vm-images'' s uvolněnou kapacitou a připojte jej do VPS jako
 ''/srv/libvirt/images''.
 
-Subdataset je samostatná jednotka pro snapshoty a zálohy. Nastavte mu proto
-požadovaný zálohovací plán, viz [[navody:vps:exporty|snapshoty a zálohy]].
+Subdataset se [[navody:vps:exporty|snapshotuje]] odděleně od kořenového datasetu
+VPS.
 
 {{:cs:screenshots:vpsadmin:vps-details:datasets.png?direct|Datasety VPS}}
 

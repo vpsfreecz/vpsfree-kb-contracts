@@ -53,8 +53,8 @@ reference quota by the capacity intended for images, create a ''vm-images''
 subdataset with the freed capacity, and mount it in the VPS at
 ''/srv/libvirt/images''.
 
-A subdataset is an independent snapshot and backup unit. Configure the desired
-backup plan for it; see [[manuals:vps:exports|snapshots and backups]].
+The subdataset is [[manuals:vps:exports|snapshotted]] separately from the VPS
+root dataset.
 
 {{:en:screenshots:vpsadmin:vps-details:datasets.png?direct|VPS datasets}}
 
