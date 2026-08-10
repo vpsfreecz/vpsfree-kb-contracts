@@ -298,7 +298,7 @@ cat >"$xml" <<EOF
 <network>
   <name>$network</name>
 $uuid_element
-  <forward mode='route'/>
+  <forward mode='open'/>
   <bridge name='virbr-public' stp='on' delay='0'/>
   <ip address='$host_transit_ipv4' prefix='30'/>
   <ip family='ipv6' address='$host_transit_ipv6' prefix='126'/>
@@ -321,6 +321,11 @@ virsh --connect "$connection" net-autostart "$network"
 virsh --connect "$connection" net-start "$network"
 virsh --connect "$connection" net-dumpxml "$network"
 </code>
+
+''forward mode='open''' is intentional: libvirt routes packets but does not add
+forwarding firewall rules. The public ''/32'' and ''/128'' are separate routes
+behind the transit subnets, so filtering belongs in the VPS firewall. Allow
+only the traffic that the domain should receive.
 
 If the network is already active, the script leaves it unchanged and prints
 instructions. Before rerunning it, shut down attached domains and stop the
@@ -352,8 +357,7 @@ Every VPS receives an IPv6 ''/64''. An individual ''/128'' from it can be
 routed to the domain in the same way. If we route a larger prefix such as a
 ''/48'' to you on request, select a dedicated ''/64'' from it for the domain
 and change the IPv6 ''route'' in the XML to that network address with
-''prefix=64''. IPv6 remains free of NAT. Permit only the services that you want
-to expose in the firewalls on both the VPS and the domain.
+''prefix=64''. IPv6 remains free of NAT.
 
 ===== Installer ISO on NFS =====
 

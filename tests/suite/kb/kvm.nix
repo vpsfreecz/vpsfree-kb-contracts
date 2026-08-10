@@ -344,7 +344,8 @@ import ../../make-test.nix (
           firewall: vps_probe.call(
             [
               'iptables -t nat -S',
-              'iptables -t filter -S FORWARD'
+              'iptables -t filter -S',
+              'ip6tables -t filter -S'
             ].join('; ')
           ),
           console: vps_probe.call("tail -n 200 #{console_log}"),
@@ -983,6 +984,7 @@ import ../../make-test.nix (
               expect(unchanged_xml).to include(
                 "address='#{@routed_ipv6.fetch('guest_ipv6')}' prefix='128'"
               )
+              expect(unchanged_xml).to include("<forward mode='open'/>")
               expect(unchanged_xml).not_to include(changed_ipv4)
               expect(unchanged_xml).not_to include(changed_ipv6)
               _, original_uuid = run_command_in_vps(

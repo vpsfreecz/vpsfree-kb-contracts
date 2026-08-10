@@ -296,7 +296,7 @@ cat >"$xml" <<EOF
 <network>
   <name>$network</name>
 $uuid_element
-  <forward mode='route'/>
+  <forward mode='open'/>
   <bridge name='virbr-public' stp='on' delay='0'/>
   <ip address='$host_transit_ipv4' prefix='30'/>
   <ip family='ipv6' address='$host_transit_ipv6' prefix='126'/>
@@ -319,6 +319,11 @@ virsh --connect "$connection" net-autostart "$network"
 virsh --connect "$connection" net-start "$network"
 virsh --connect "$connection" net-dumpxml "$network"
 </code>
+
+''forward mode='open''' je záměrný: libvirt pakety směruje, ale nepřidává
+pravidla firewallu pro forward. Veřejné ''/32'' a ''/128'' jsou samostatné
+trasy za tranzitními podsítěmi, filtrování proto patří do firewallu VPS.
+Povolte jen provoz, který má být doméně dostupný.
 
 Pokud je síť již aktivní, skript ji nezmění a vypíše postup. Před opakováním
 vypněte připojené domény a síť zastavte uvedeným příkazem; po spuštění skriptu
@@ -350,8 +355,7 @@ v doméně a odchozí spojení ji používají jako zdrojovou adresu.
 Každá VPS dostává IPv6 ''/64'', ze které lze stejným způsobem směrovat vybranou
 ''/128'' do domény. Pokud vám na požádání směrujeme například ''/48'', vyberte
 z ní pro doménu samostatnou ''/64'' a změňte IPv6 ''route'' v XML na adresu
-této sítě s ''prefix=64''. IPv6 zůstává bez NAT. Na VPS i v doméně povolte
-ve firewallu pouze služby, které chcete zveřejnit.
+této sítě s ''prefix=64''. IPv6 zůstává bez NAT.
 
 ===== Instalační ISO na NFS =====
 

@@ -23,7 +23,7 @@ cat >"$xml" <<EOF
 <network>
   <name>$network</name>
 $uuid_element
-  <forward mode='route'/>
+  <forward mode='open'/>
   <bridge name='virbr-public' stp='on' delay='0'/>
   <ip address='$host_transit_ipv4' prefix='30'/>
   <ip family='ipv6' address='$host_transit_ipv6' prefix='126'/>
