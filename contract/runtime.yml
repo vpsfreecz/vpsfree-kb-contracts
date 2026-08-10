@@ -79,9 +79,9 @@ pages:
     - create-images
   - key: nfs-installer-iso
     heading: Instalační ISO na NFS
-    fingerprint: 74c729c197fd845f2d9882a5d449a7c11e4ae4164b6f765eb0a4dc77549e445e
+    fingerprint: 99b683c30a358e9f7a31e69cce7b021f1fc11f8d3f1d4d3099fd7d94dc6f5ee3
     claims:
-    - nfs-lock-error-is-conditional
+    - nfs-lock-failure-is-conditional
     - nolock-only-for-single-client-readonly-nfsv3-iso
     tests:
     - kb/kvm#nfs-locking
@@ -128,9 +128,9 @@ pages:
     - create-images
   - key: nfs-installer-iso
     heading: Installer ISO on NFS
-    fingerprint: f35ec4513f0d425ca9bf601faf25eb35393f11187374bbbdbd4a8bcc2c959c5a
+    fingerprint: 0d66dd29e1c70c0e4aef11615d5af3108b506e5632d003deb736b9c11703fc77
     claims:
-    - nfs-lock-error-is-conditional
+    - nfs-lock-failure-is-conditional
     - nolock-only-for-single-client-readonly-nfsv3-iso
     tests:
     - kb/kvm#nfs-locking

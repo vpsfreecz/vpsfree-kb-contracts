@@ -78,7 +78,7 @@ import ../../make-test.nix (
         result.fetch('ip')
       end
 
-      def run_nfs_command_in_vps(services, node, vps_id, command, timeout: 300)
+      def run_nfs_command_in_vps(services, node, vps_id, command, timeout: 90)
         guest = machine_probe(
           node,
           "osctl ct exec #{Integer(vps_id)} bash -lc #{Shellwords.escape(command)}",
@@ -483,25 +483,46 @@ import ../../make-test.nix (
               expect(route).to include("src #{public_ipv4}")
             end
 
-            it 'reports the QEMU lock error on an NFSv3 server without NLM' do
+            it 'does not start QEMU on an NFSv3 server without NLM' do
               _, output = run_nfs_command_in_vps(services, node1, @vps_id, <<~'SH')
                 set -euo pipefail
                 mkdir -p /mnt/installer-iso
                 mount -t nfs -o ro,vers=3 172.16.106.53:/srv/kb-installer /mnt/installer-iso
-                trap 'umount /mnt/installer-iso' EXIT
+                pidfile=/tmp/kb-qemu-normal.pid
+                cleanup() {
+                  if [[ -s "$pidfile" ]]; then
+                    kill "$(cat "$pidfile")" 2>/dev/null || true
+                  fi
+                  umount /mnt/installer-iso
+                  rm -f "$pidfile"
+                }
+                trap cleanup EXIT
+                rm -f "$pidfile"
                 set +e
-                output=$(timeout 20 qemu-system-x86_64 \
+                output=$(timeout --kill-after=5 20 qemu-system-x86_64 \
                   -nodefaults -display none -S -daemonize \
                   -drive file=/mnt/installer-iso/installer.iso,media=cdrom,readonly=on \
-                  -pidfile /tmp/kb-qemu-normal.pid 2>&1)
+                  -pidfile "$pidfile" 2>&1)
                 status=$?
                 set -e
-                test "$status" -ne 0
                 printf '%s\n' "$output"
-                grep -Eiq 'failed to (get .*lock|lock byte)|resource temporarily unavailable' \
-                  <<<"$output"
+
+                case "$status" in
+                  0)
+                    printf 'QEMU unexpectedly started without NLM\n' >&2
+                    exit 1
+                    ;;
+                  124|137)
+                    printf 'QEMU timed out while waiting for an NFS lock\n'
+                    ;;
+                  *)
+                    grep -Eiq \
+                      'failed to (get .*lock|lock byte)|resource temporarily unavailable' \
+                      <<<"$output"
+                    ;;
+                esac
               SH
-              expect(output).to match(/lock|temporarily unavailable/i)
+              expect(output).to match(/lock|temporarily unavailable|timed out/i)
             end
 
             it 'uses nolock only for the same read-only installer ISO' do

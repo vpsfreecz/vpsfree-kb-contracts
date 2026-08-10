@@ -148,8 +148,9 @@ Podrobnosti k ladění podle zátěže popisuje [[https://openzfs.github.io/open
 ===== Instalační ISO na NFS =====
 
 Instalační ISO je bezpečnější nejprve zkopírovat na lokální dataset. U staršího
-NFSv3 exportu bez funkčního síťového zamykání může QEMU skončit chybou jako
-''Failed to lock byte 100'' nebo ''Failed to get ... lock''.
+NFSv3 exportu bez funkčního síťového zamykání může QEMU při čekání na zámek
+uvíznout nebo skončit chybou jako ''Failed to lock byte 100'' či
+''Failed to get ... lock''.
 
 Pouze pro jednoho klienta a pouze pro instalační ISO připojené pro čtení lze
 použít ''nolock'':

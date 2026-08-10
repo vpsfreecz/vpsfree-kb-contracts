@@ -148,8 +148,9 @@ See [[https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Workload
 ===== Installer ISO on NFS =====
 
 It is safer to copy an installer ISO to a local dataset first. On an older NFSv3
-export without working network locking, QEMU can fail with an error such as
-''Failed to lock byte 100'' or ''Failed to get ... lock''.
+export without working network locking, QEMU can hang while waiting for a lock
+or fail with an error such as ''Failed to lock byte 100'' or
+''Failed to get ... lock''.
 
 For one client and a read-only installer ISO only, you can use ''nolock'':
 
