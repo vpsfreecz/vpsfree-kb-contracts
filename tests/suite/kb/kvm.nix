@@ -274,13 +274,13 @@ import ../../make-test.nix (
 
       def machine_probe(machine, command, timeout:, output_limit: 8000)
         status, output = machine.execute(command, timeout:)
-        bounded_output = output.to_s
+        bounded_output = output.to_s.dup.force_encoding(Encoding::UTF_8).scrub
         if bounded_output.length > output_limit
           bounded_output = bounded_output[-output_limit, output_limit]
         end
         { command:, status:, output: bounded_output }
       rescue StandardError => e
-        bounded_error = e.message.to_s
+        bounded_error = e.message.to_s.dup.force_encoding(Encoding::UTF_8).scrub
         if bounded_error.length > output_limit
           bounded_error = bounded_error[-output_limit, output_limit]
         end
