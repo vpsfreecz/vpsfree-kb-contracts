@@ -50,7 +50,6 @@ import ../../make-test.nix (
           "printf %s #{Shellwords.escape(encoded)} | base64 -d |",
           'osctl ct exec',
           Integer(vps_id),
-          '--',
           Shellwords.join(command)
         ].join(' ')
         node.succeeds(shell, timeout:)
@@ -58,7 +57,7 @@ import ../../make-test.nix (
 
       def run_command_in_vps(node, vps_id, command, timeout: 300)
         node.succeeds(
-          "osctl ct exec #{Integer(vps_id)} -- bash -lc #{Shellwords.escape(command)}",
+          "osctl ct exec #{Integer(vps_id)} bash -lc #{Shellwords.escape(command)}",
           timeout:
         )
       end
@@ -186,7 +185,7 @@ import ../../make-test.nix (
         loop do
           last_exec = machine_probe(
             node,
-            "osctl ct exec #{Integer(vps_id)} -- true",
+            "osctl ct exec #{Integer(vps_id)} true",
             timeout: 30
           )
           return true if last_exec[:status] == 0
