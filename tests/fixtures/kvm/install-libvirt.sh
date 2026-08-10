@@ -10,5 +10,4 @@ apt-get install --yes \
   qemu-utils \
   virtinst
 
-systemctl enable --now libvirtd.service
 virsh --connect qemu:///system version

@@ -93,7 +93,7 @@ installed on the capture host.
 
 Captures are intentionally operator-run and this repository contains no
 DokuWiki uploader. GitHub Actions runs static contract checks on changes. The
-maintained nested-KVM documentation suite runs on relevant pushes, manually,
+maintained KVM-in-a-VPS documentation suite runs on relevant pushes, manually,
 and every week on a self-hosted runner with KVM.
 
 ## Documentation contract
@@ -151,9 +151,10 @@ kb/kvm#nfs-locking
 
 The suite provisions the exact `Debian (latest)` template through vpsAdmin
 without feature or ZFS-property overrides. It verifies the runtime devices,
-system libvirt connection and nested KVM, inherited storage defaults and sparse
-images, and the narrowly scoped read-only NFSv3 installer-ISO workaround. It
-does not configure nested-guest networking.
+system libvirt connection and direct KVM capabilities, a subdataset-backed
+libvirt storage pool with inherited ZFS defaults, and the narrowly scoped
+read-only NFSv3 installer-ISO workaround. It does not configure guest
+networking.
 
 List or run the maintained tests from the repository root:
 

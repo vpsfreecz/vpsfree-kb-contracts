@@ -28,11 +28,11 @@ class RuntimeContractCheckerTest < Minitest::Test
 
   def test_sample_drift_is_rejected
     _output, error, status = check_mutated_contract do |contract|
-      contract.fetch('samples').fetch('check-platform')['sha256'] = '0' * 64
+      contract.fetch('samples').fetch('install-libvirt')['sha256'] = '0' * 64
     end
 
     refute(status.success?)
-    assert_match(/check-platform: sample SHA-256 differs/, error)
+    assert_match(/install-libvirt: sample SHA-256 differs/, error)
   end
 
   def test_section_drift_is_rejected

@@ -2,34 +2,21 @@
 
 ====== KVM a libvirt uvnitř VPS ======
 
-VPS může sloužit jako hostitel dalších virtuálních strojů. Vnořená virtualizace
-má režii navíc a výkon závisí na zatížení fyzického uzlu, proto není náhradou za
-dedikovaný server. Tento návod používá aktuální šablonu **Debian (latest)**,
-libvirt a systémové spojení ''qemu:///system''.
+VPS může provozovat virtuální stroje pomocí KVM.
 
 ===== Dostupnost KVM =====
 
+vpsAdminOS provozuje VPS v kontejnerech, nikoli ve virtuálních strojích. KVM
+uvnitř VPS proto není vnořená virtualizace: virtuální stroje používají
+hardwarovou virtualizaci fyzického nodu přímo.
+Tento návod používá aktuální šablonu **Debian (latest)**, libvirt a systémové
+spojení ''qemu:///system''.
+
 <vpsadmin-nav id="vps.features.open">
-V sekci **Funkce** v detailu VPS ve vpsAdminu jsou **KVM** a **TUN/TAP** u
-nových VPS zapnuté ve výchozím nastavení. Není třeba měnit nastavení ZFS ani
-VPS. Po přihlášení ověřte zařízení:
+Pro virtualizaci je potřeba funkce **KVM**. **TUN/TAP** je potřeba pro síťová
+rozhraní virtuálních strojů typu TAP. Obě funkce jsou u nových VPS zapnuté ve
+výchozím nastavení v sekci **Funkce** v detailu VPS ve vpsAdminu.
 </vpsadmin-nav>
-
-<code bash>
-#!/usr/bin/env bash
-set -euo pipefail
-
-test -c /dev/kvm
-test -r /dev/kvm
-test -w /dev/kvm
-test -c /dev/net/tun
-
-printf 'KVM and TUN/TAP devices are available.\n'
-</code>
-
-Pokud kontrola selže, restartujte starší VPS, u které jste právě změnili funkce,
-a znovu zkontrolujte její detail ve vpsAdminu. U nové VPS kontaktujte podporu;
-nevytvářejte náhradní zařízení ručně.
 
 {{:cs:screenshots:vpsadmin:vps-details:feature-settings.png?direct|Výchozí funkce VPS}}
 
@@ -50,7 +37,6 @@ apt-get install --yes \
   qemu-utils \
   virtinst
 
-systemctl enable --now libvirtd.service
 virsh --connect qemu:///system version
 </code>
 
@@ -58,91 +44,45 @@ Používejte systémové spojení ''qemu:///system''. Pro vzdálenou správu pou
 libvirt přes SSH, například ''qemu+ssh://root@HOST/system'', a chraňte SSH
 klíčem. Nezveřejňujte nešifrovaný libvirt TCP socket do internetu.
 
-Následující izolovaná doména bez disku a sítě pouze ověří, že libvirt opravdu
-spustí QEMU s KVM. Neinstaluje operační systém:
-
-<code bash>
-#!/usr/bin/env bash
-set -euo pipefail
-
-domain=${DOMAIN_NAME:-kb-kvm-smoke}
-xml=$(mktemp)
-trap 'rm -f "$xml"' EXIT
-
-cat >"$xml" <<EOF
-<domain type='kvm'>
-  <name>${domain}</name>
-  <memory unit='MiB'>256</memory>
-  <vcpu>1</vcpu>
-  <os>
-    <type arch='x86_64' machine='pc'>hvm</type>
-    <boot dev='hd'/>
-  </os>
-  <devices>
-    <emulator>/usr/bin/qemu-system-x86_64</emulator>
-  </devices>
-</domain>
-EOF
-
-virsh --connect qemu:///system create --validate "$xml"
-virsh --connect qemu:///system domstate "$domain"
-virsh --connect qemu:///system destroy "$domain"
-</code>
-
-Pro skutečnou instalaci pak vytvořte doménu s ''virt-install'' nebo
-''virt-manager'', přidejte instalační ISO a disk a ponechte zatím
-''--network none''.
-
-==== Síť vnořeného stroje ====
-
-Síť pro vnořený virtuální stroj není součástí tohoto návodu. Hostitelská VPS
-obvykle dostává směrovanou veřejnou IPv4 ''/32'', privátní IPv4 ''/32'' s NATem
-na routerech vpsFree.cz a IPv6 ''/64''. Běžné návody s ethernetovým bridgem a
-DHCP proto nelze bez úprav použít. Ověřený postup pro směrovanou síť bude
-zveřejněn samostatně; tento návod záměrně nespouští žádné síťové příkazy pro
-hosta.
-
 ===== Diskové obrazy a ZFS =====
 
-Kořenový dataset VPS je pro obrazy disků dostačující. Samostatný
-[[navody:vps:datasety|subdataset]] je volitelný a dává smysl, když chcete
-oddělenou kvótu, snapshoty, zálohovací plán nebo později měřit a ladit vlastnosti
-pro tuto konkrétní zátěž. Nový subdataset je samostatná zálohovací jednotka;
-ověřte proto jeho [[navody:vps:exporty|snapshoty a zálohy]].
+Pro obrazy disků doporučujeme samostatný [[navody:vps:datasety|subdataset]].
+V budoucnu tak můžete změnit jeho ZFS vlastnosti bez zásahu do kořenového
+datasetu VPS. Před vytvořením virtuálních strojů zmenšete referenční kvótu
+kořenového datasetu o prostor určený pro obrazy, vytvořte subdataset
+''vm-images'' s uvolněnou kapacitou a připojte jej do VPS jako
+''/srv/libvirt/images''.
+
+Subdataset je samostatná jednotka pro snapshoty a zálohy. Nastavte mu proto
+požadovaný zálohovací plán, viz [[navody:vps:exporty|snapshoty a zálohy]].
 
 {{:cs:screenshots:vpsadmin:vps-details:datasets.png?direct|Datasety VPS}}
 
-Bez výsledků měření vlastnosti ZFS neměňte. Výchozí komprese zůstává zapnutá a
-výchozí ''recordsize'' je 128 KiB. Hodnota 64 KiB není obecně nejlepší pro
-všechny virtuální stroje. Změna ''recordsize'' navíc ovlivní nově zapsaná data,
-nepřepíše již existující obraz.
-
-Jednoduchý řídký obraz ''raw'' má nejméně vrstev a je dobrá výchozí volba.
-''qcow2'' použijte, když potřebujete jeho backing files, interní snapshoty nebo
-další obrazové funkce a přijímáte další metadata a copy-on-write vrstvu. Oba
-typy lze vytvořit řídce:
+Připojený adresář přidejte do libvirt jako trvalý storage pool:
 
 <code bash>
 #!/usr/bin/env bash
 set -euo pipefail
 
-image_dir=${IMAGE_DIR:-/var/lib/libvirt/images}
-image_size=${IMAGE_SIZE:-1G}
-
-install -d -m 0755 "$image_dir"
-truncate -s "$image_size" "$image_dir/guest.raw"
-qemu-img create -q -f qcow2 "$image_dir/guest.qcow2" "$image_size"
-
-qemu-img info --output=json "$image_dir/guest.raw"
-qemu-img info --output=json "$image_dir/guest.qcow2"
-du -h "$image_dir/guest.raw" "$image_dir/guest.qcow2"
+virsh --connect qemu:///system pool-define-as \
+  vm-images dir --target /srv/libvirt/images
+virsh --connect qemu:///system pool-start vm-images
+virsh --connect qemu:///system pool-autostart vm-images
+virsh --connect qemu:///system pool-info vm-images
 </code>
 
-Virtuální velikost obrazu není totéž co skutečně alokované místo. Spotřebu mohou
-držet data, metadata a snapshoty. Uvolňování bloků pomocí discard/TRIM funguje
-jen tehdy, když je správně nastaven celý řetězec host–QEMU–host a je předem
-ověřen na daném obrazu. Snapshot běžícího disku je obvykle pouze konzistentní
-jako po pádu; pro aplikační konzistenci hosta pozastavte nebo quiescujte.
+Disky pak vytvářejte prostřednictvím libvirt, ''virt-install'' nebo
+''virt-manager'' v poolu ''vm-images''.
+
+ZFS vlastnosti subdatasetu ponechte na výchozích hodnotách, dokud měření
+neukáže důvod ke změně. Komprese je ve výchozím nastavení zapnutá.
+''recordsize=128K'' není pevná velikost všech bloků, ale jejich výchozí maximální
+velikost; ZFS může pro soubory použít menší bloky. Změna ''recordsize'' platí až
+pro nově vytvořené soubory a existující obrazy nepřepíše.
+
+Pro obrazy na ZFS je vhodnou výchozí volbou formát ''raw'', protože nepřidává
+další copy-on-write vrstvu. ''qcow2'' použijte, pokud potřebujete jeho backing
+files, interní snapshoty nebo jiné funkce obrazového formátu.
 
 Podrobnosti k ladění podle zátěže popisuje [[https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Workload%20Tuning.html|OpenZFS Workload Tuning]], formáty obrazů pak [[https://www.qemu.org/docs/master/system/images|dokumentace QEMU]].
 

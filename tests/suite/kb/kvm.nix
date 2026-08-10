@@ -8,10 +8,8 @@ import ../../make-test.nix (
     ...
   }:
   let
-    checkPlatform = builtins.readFile ../../fixtures/kvm/check-platform.sh;
-    createImages = builtins.readFile ../../fixtures/kvm/create-images.sh;
+    configureStoragePool = builtins.readFile ../../fixtures/kvm/configure-storage-pool.sh;
     installLibvirt = builtins.readFile ../../fixtures/kvm/install-libvirt.sh;
-    libvirtSmokeVm = builtins.readFile ../../fixtures/kvm/libvirt-smoke-vm.sh;
     mountReadonlyIso = builtins.readFile ../../fixtures/kvm/mount-readonly-iso.sh;
 
     common = ''
@@ -19,20 +17,12 @@ import ../../make-test.nix (
       require 'json'
       require 'shellwords'
 
-      def check_platform_script
-        ${builtins.toJSON checkPlatform}
-      end
-
-      def create_images_script
-        ${builtins.toJSON createImages}
+      def configure_storage_pool_script
+        ${builtins.toJSON configureStoragePool}
       end
 
       def install_libvirt_script
         ${builtins.toJSON installLibvirt}
-      end
-
-      def libvirt_smoke_vm_script
-        ${builtins.toJSON libvirtSmokeVm}
       end
 
       def mount_readonly_iso_script
@@ -199,6 +189,72 @@ import ../../make-test.nix (
         )
       end
 
+      def api_session_prelude(user_id = 1)
+        <<~RUBY
+          user = User.find(#{Integer(user_id)})
+          User.current = user
+          UserSession.current = UserSession.create!(
+            user: user,
+            auth_type: 'basic',
+            api_ip_addr: '127.0.0.1',
+            client_version: 'kb-kvm-runtime'
+          )
+        RUBY
+      end
+
+      def prepare_vm_storage(services, vps_id, mountpoint: '/srv/libvirt/images')
+        resize = services.api_ruby_json(code: <<~RUBY)
+          #{api_session_prelude}
+
+          vps = Vps.find(#{Integer(vps_id)})
+          chain = VpsAdmin::API::Operations::Dataset::UpdateProperties.run(
+            vps.dataset_in_pool.dataset,
+            { refquota: 6 * 1024 },
+            {}
+          )
+          puts JSON.dump(chain_id: chain.id)
+        RUBY
+        wait_for_transaction_chain(services, resize.fetch('chain_id'))
+
+        created = services.api_ruby_json(code: <<~RUBY)
+          #{api_session_prelude}
+
+          vps = Vps.find(#{Integer(vps_id)})
+          chain, dataset = VpsAdmin::API::Operations::Dataset::Create.run(
+            'vm-images',
+            vps.dataset_in_pool.dataset,
+            automount: false,
+            properties: { refquota: 2 * 1024 }
+          )
+          dip = dataset.primary_dataset_in_pool!
+          puts JSON.dump(
+            chain_id: chain.id,
+            dataset_id: dataset.id,
+            dataset_in_pool_id: dip.id,
+            dataset: [dip.pool.filesystem, dataset.full_name].join('/')
+          )
+        RUBY
+        wait_for_transaction_chain(services, created.fetch('chain_id'))
+
+        mounted = services.api_ruby_json(code: <<~RUBY)
+          #{api_session_prelude}
+
+          vps = Vps.find(#{Integer(vps_id)})
+          dataset = Dataset.find(#{Integer(created.fetch('dataset_id'))})
+          chain, mount = TransactionChains::Vps::MountDataset.fire(
+            vps,
+            dataset,
+            #{mountpoint.inspect},
+            mode: 'rw',
+            enabled: true
+          )
+          puts JSON.dump(chain_id: chain.id, mount_id: mount.id)
+        RUBY
+        wait_for_transaction_chain(services, mounted.fetch('chain_id'))
+
+        created.merge('mountpoint' => mountpoint, 'mount_id' => mounted.fetch('mount_id'))
+      end
+
       def machine_probe(machine, command, timeout:, output_limit: 8000)
         status, output = machine.execute(command, timeout:)
         bounded_output = output.to_s
@@ -309,15 +365,16 @@ import ../../make-test.nix (
         end
       end
 
-      def dataset_contract(services, vps_id)
+      def dataset_contract(services, dataset_id)
         services.api_ruby_json(code: <<~RUBY)
-          vps = Vps.find(#{Integer(vps_id)})
-          properties = vps.dataset_in_pool.dataset_properties
+          dataset = Dataset.find(#{Integer(dataset_id)})
+          dip = dataset.primary_dataset_in_pool!
+          properties = dip.dataset_properties
                           .where(name: %w[compression recordsize])
                           .pluck(:name, :value, :inherited)
                           .to_h { |name, value, inherited| [name, { value: value, inherited: inherited }] }
           puts JSON.generate(
-            dataset: [vps.pool.filesystem, vps.dataset.full_name].join('/'),
+            dataset: [dip.pool.filesystem, dataset.full_name].join('/'),
             properties: properties
           )
         RUBY
@@ -341,7 +398,7 @@ import ../../make-test.nix (
 
     scripts = {
       platform-defaults = mkScript
-        "Verify the default KVM/TUN features and untouched ZFS properties"
+        "Verify the default KVM/TUN features and device mappings"
         "kb-kvm-defaults"
         ''
           describe 'the vpsFree KVM host defaults' do
@@ -356,43 +413,28 @@ import ../../make-test.nix (
               expect(state.fetch('features')).to eq('kvm' => true, 'tun' => true)
             end
 
-            it 'exposes the documented character devices' do
-              _, output = run_in_vps(node1, @vps_id, check_platform_script)
-              expect(output).to include('KVM and TUN/TAP devices are available.')
-            end
-
-            it 'inherits the platform storage defaults' do
-              contract = dataset_contract(services, @vps_id)
-              properties = contract.fetch('properties')
-              expect(properties.dig('compression', 'value')).to be(true)
-              expect(properties.dig('recordsize', 'value')).to eq(128 * 1024)
-
-              _, output = node1.succeeds(
-                "zfs get -H -o property,value compression,recordsize " \
-                "#{Shellwords.escape(contract.fetch('dataset'))}"
+            it 'exposes the feature device mappings in the VPS' do
+              run_command_in_vps(
+                node1,
+                @vps_id,
+                'test -c /dev/kvm && test -r /dev/kvm && test -w /dev/kvm && ' \
+                'test -c /dev/net/tun'
               )
-              actual = output.lines.map { |line| line.split }.to_h
-              expect(actual.fetch('compression')).not_to eq('off')
-              expect(actual.fetch('recordsize')).to eq('128K')
             end
           end
         '';
 
       libvirt = mkScript
-        "Install Debian libvirt and start an isolated nested-KVM smoke domain"
+        "Install Debian libvirt and verify direct KVM capabilities"
         "kb-kvm-libvirt"
         ''
           describe 'the documented Debian libvirt setup' do
             it 'installs and reaches the system libvirt connection' do
-              run_in_vps(node1, @vps_id, check_platform_script)
               _, output = run_in_vps(node1, @vps_id, install_libvirt_script)
               expect(output).to include('Using API: QEMU')
             end
 
-            it 'starts a KVM domain with no guest network' do
-              _, output = run_in_vps(node1, @vps_id, libvirt_smoke_vm_script)
-              expect(output).to match(/running/i)
-
+            it 'reports KVM support without creating a domain' do
               _, xml = run_command_in_vps(
                 node1,
                 @vps_id,
@@ -404,56 +446,64 @@ import ../../make-test.nix (
         '';
 
       storage = mkScript
-        "Verify default ZFS properties and sparse raw/qcow2 image creation"
+        "Verify the recommended subdataset-backed libvirt storage pool"
         "kb-kvm-storage"
         ''
-          describe 'the documented disk-image choices' do
-            it 'keeps inherited compression and record size unchanged' do
-              contract = dataset_contract(services, @vps_id)
+          describe 'the documented libvirt storage pool' do
+            before(:context) do
+              @storage = prepare_vm_storage(services, @vps_id)
+              run_in_vps(node1, @vps_id, install_libvirt_script)
+            end
+
+            it 'mounts a subdataset with inherited ZFS defaults' do
+              contract = dataset_contract(services, @storage.fetch('dataset_id'))
               properties = contract.fetch('properties')
+              expect(contract.fetch('dataset')).to eq(@storage.fetch('dataset'))
               expect(properties.dig('compression', 'value')).to be(true)
               expect(properties.dig('compression', 'inherited')).to be(true)
               expect(properties.dig('recordsize', 'value')).to eq(128 * 1024)
               expect(properties.dig('recordsize', 'inherited')).to be(true)
+
+              _, actual = node1.succeeds(
+                "zfs get -H -o property,value compression,recordsize " \
+                "#{Shellwords.escape(contract.fetch('dataset'))}"
+              )
+              zfs_properties = actual.lines.map { |line| line.split }.to_h
+              expect(zfs_properties.fetch('compression')).not_to eq('off')
+              expect(zfs_properties.fetch('recordsize')).to eq('128K')
+
+              _, mountpoint = run_command_in_vps(
+                node1,
+                @vps_id,
+                'findmnt --noheadings --output TARGET --target /srv/libvirt/images'
+              )
+              expect(mountpoint.strip).to eq('/srv/libvirt/images')
             end
 
-            it 'creates sparse raw and qcow2 images from the exact sample' do
-              run_command_in_vps(
-                node1,
-                @vps_id,
-                'apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --yes qemu-utils',
-                timeout: 1200
-              )
-              run_in_vps(
-                node1,
-                @vps_id,
-                create_images_script,
-                environment: {
-                  'IMAGE_DIR' => '/root/kb-images',
-                  'IMAGE_SIZE' => '256M'
-                }
-              )
+            it 'lets libvirt manage volumes on the mounted subdataset' do
+              _, pool_info = run_in_vps(node1, @vps_id, configure_storage_pool_script)
+              expect(pool_info).to match(/State:\s+running/)
+              expect(pool_info).to match(/Autostart:\s+yes/)
 
-              _, output = run_command_in_vps(
+              _, pool_xml = run_command_in_vps(
                 node1,
                 @vps_id,
-                "qemu-img info --output=json /root/kb-images/guest.raw; " \
-                "qemu-img info --output=json /root/kb-images/guest.qcow2; " \
-                "stat -c 'allocation raw %s %b' /root/kb-images/guest.raw; " \
-                "stat -c 'allocation qcow2 %s %b' /root/kb-images/guest.qcow2"
+                'virsh --connect qemu:///system pool-dumpxml vm-images'
               )
-              expect(output).to include('"format": "raw"')
-              expect(output).to include('"format": "qcow2"')
+              expect(pool_xml).to include('<path>/srv/libvirt/images</path>')
 
-              allocations = output.lines.grep(/^allocation /).to_h do |line|
-                _, format, size, blocks = line.split
-                [format, { size: Integer(size), allocated: Integer(blocks) * 512 }]
-              end
-              virtual_size = 256 * 1024 * 1024
-              expect(allocations.fetch('raw').fetch(:size)).to eq(virtual_size)
-              expect(allocations.fetch('raw').fetch(:allocated)).to be < virtual_size
-              expect(allocations.fetch('qcow2').fetch(:size)).to be < virtual_size
-              expect(allocations.fetch('qcow2').fetch(:allocated)).to be < virtual_size
+              _, volume = run_command_in_vps(
+                node1,
+                @vps_id,
+                'virsh --connect qemu:///system vol-create-as ' \
+                'vm-images kb-volume.raw 256M --allocation 0 --format raw && ' \
+                'virsh --connect qemu:///system vol-path ' \
+                '--pool vm-images kb-volume.raw && ' \
+                'findmnt --noheadings --output TARGET ' \
+                '--target /srv/libvirt/images/kb-volume.raw'
+              )
+              expect(volume).to include('/srv/libvirt/images/kb-volume.raw')
+              expect(volume.lines.last.strip).to eq('/srv/libvirt/images')
             end
           end
         '';
@@ -692,8 +742,8 @@ import ../../make-test.nix (
     seedPools = false;
     testName = "kb-kvm";
     testDescription = ''
-      Validate the vpsFree nested-KVM documentation against a vpsAdmin-provisioned
-      Debian host on the capture cluster topology.
+      Validate the vpsFree KVM documentation against a vpsAdmin-provisioned
+      Debian container host on the capture cluster topology.
     '';
     testScripts = scripts;
     extraModules = {

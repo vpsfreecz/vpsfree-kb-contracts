@@ -2,34 +2,21 @@
 
 ====== KVM and libvirt inside a VPS ======
 
-A VPS can host additional virtual machines. Nested virtualization adds
-overhead and performance depends on load on the physical node, so it is not a
-replacement for a dedicated server. This guide uses the current **Debian
-(latest)** template, libvirt and the ''qemu:///system'' system connection.
+A VPS can run virtual machines using KVM.
 
 ===== KVM availability =====
 
+vpsAdminOS runs VPSes as containers, not as virtual machines. KVM inside a VPS
+is therefore not nested virtualization: virtual machines use the physical
+node's hardware virtualization directly. This guide uses the current **Debian
+(latest)** template, libvirt and the ''qemu:///system'' system connection.
+
 <vpsadmin-nav id="vps.features.open">
-In the **Features** section of the VPS detail in vpsAdmin, **KVM** and
-**TUN/TAP** are enabled by default for new VPSes. You do not need to change ZFS
-or VPS settings. Verify the devices after logging in:
+The **KVM** feature is required for virtualization. **TUN/TAP** is required for
+TAP-based virtual-machine network interfaces. Both features are enabled by
+default for new VPSes in the **Features** section of the VPS detail in
+vpsAdmin.
 </vpsadmin-nav>
-
-<code bash>
-#!/usr/bin/env bash
-set -euo pipefail
-
-test -c /dev/kvm
-test -r /dev/kvm
-test -w /dev/kvm
-test -c /dev/net/tun
-
-printf 'KVM and TUN/TAP devices are available.\n'
-</code>
-
-If the check fails, restart an older VPS after changing its features and check
-its details in vpsAdmin again. For a new VPS, contact support; do not create
-replacement device nodes manually.
 
 {{:en:screenshots:vpsadmin:vps-details:feature-settings.png?direct|Default VPS features}}
 
@@ -50,7 +37,6 @@ apt-get install --yes \
   qemu-utils \
   virtinst
 
-systemctl enable --now libvirtd.service
 virsh --connect qemu:///system version
 </code>
 
@@ -58,91 +44,45 @@ Use the ''qemu:///system'' system connection. For remote administration, use
 libvirt over SSH, for example ''qemu+ssh://root@HOST/system'', and protect SSH
 with a key. Do not expose an unencrypted libvirt TCP socket to the Internet.
 
-The following isolated domain without a disk or network only verifies that
-libvirt can start QEMU with KVM. It does not install an operating system:
-
-<code bash>
-#!/usr/bin/env bash
-set -euo pipefail
-
-domain=${DOMAIN_NAME:-kb-kvm-smoke}
-xml=$(mktemp)
-trap 'rm -f "$xml"' EXIT
-
-cat >"$xml" <<EOF
-<domain type='kvm'>
-  <name>${domain}</name>
-  <memory unit='MiB'>256</memory>
-  <vcpu>1</vcpu>
-  <os>
-    <type arch='x86_64' machine='pc'>hvm</type>
-    <boot dev='hd'/>
-  </os>
-  <devices>
-    <emulator>/usr/bin/qemu-system-x86_64</emulator>
-  </devices>
-</domain>
-EOF
-
-virsh --connect qemu:///system create --validate "$xml"
-virsh --connect qemu:///system domstate "$domain"
-virsh --connect qemu:///system destroy "$domain"
-</code>
-
-For a real installation, create a domain with ''virt-install'' or
-''virt-manager'', add an installer ISO and a disk, and keep ''--network none''
-for now.
-
-==== Nested guest networking ====
-
-Nested-guest networking is outside the scope of this guide. The host VPS
-usually receives a routed public IPv4 ''/32'', a private IPv4 ''/32'' with NAT
-on the vpsFree.cz routers, and an IPv6 ''/64''. Generic Ethernet bridge and DHCP
-tutorials therefore cannot be followed unchanged. A tested routed-network
-procedure will be published separately; this guide deliberately runs no guest
-networking commands.
-
 ===== Disk images and ZFS =====
 
-The VPS root dataset is sufficient for disk images. A separate
-[[manuals:vps:datasets|subdataset]] is optional and is useful when you want a
-separate quota, snapshots, backup plan, or a boundary for later workload-based
-tuning. A new subdataset is an independent backup unit, so verify its
-[[manuals:vps:exports|snapshots and backups]].
+A separate [[manuals:vps:datasets|subdataset]] is recommended for disk images.
+It lets you change ZFS properties for this workload later without affecting the
+VPS root dataset. Before creating virtual machines, reduce the root dataset's
+reference quota by the capacity intended for images, create a ''vm-images''
+subdataset with the freed capacity, and mount it in the VPS at
+''/srv/libvirt/images''.
+
+A subdataset is an independent snapshot and backup unit. Configure the desired
+backup plan for it; see [[manuals:vps:exports|snapshots and backups]].
 
 {{:en:screenshots:vpsadmin:vps-details:datasets.png?direct|VPS datasets}}
 
-Do not change ZFS properties without measurements. Compression remains enabled
-by default and the default ''recordsize'' is 128 KiB. A value of 64 KiB is not
-universally optimal for all virtual machines. Changing ''recordsize'' also
-affects newly written data; it does not rewrite an existing image.
-
-A simple sparse ''raw'' image has the fewest layers and is a good default.
-Choose ''qcow2'' when you need backing files, internal snapshots or its other
-image features and accept another metadata and copy-on-write layer. Both types
-can be created sparsely:
+Add the mounted directory to libvirt as a persistent storage pool:
 
 <code bash>
 #!/usr/bin/env bash
 set -euo pipefail
 
-image_dir=${IMAGE_DIR:-/var/lib/libvirt/images}
-image_size=${IMAGE_SIZE:-1G}
-
-install -d -m 0755 "$image_dir"
-truncate -s "$image_size" "$image_dir/guest.raw"
-qemu-img create -q -f qcow2 "$image_dir/guest.qcow2" "$image_size"
-
-qemu-img info --output=json "$image_dir/guest.raw"
-qemu-img info --output=json "$image_dir/guest.qcow2"
-du -h "$image_dir/guest.raw" "$image_dir/guest.qcow2"
+virsh --connect qemu:///system pool-define-as \
+  vm-images dir --target /srv/libvirt/images
+virsh --connect qemu:///system pool-start vm-images
+virsh --connect qemu:///system pool-autostart vm-images
+virsh --connect qemu:///system pool-info vm-images
 </code>
 
-An image's virtual size is not the same as physically allocated space. Data,
-metadata and snapshots can retain allocation. Discard/TRIM only releases space
-when the complete guest–QEMU–host chain is configured correctly and verified
-for the image. A snapshot of a running disk is normally only crash-consistent;
-pause or quiesce the guest for application consistency.
+Then create disks through libvirt, ''virt-install'' or ''virt-manager'' in the
+''vm-images'' pool.
+
+Leave the subdataset's ZFS properties at their defaults unless measurements
+show a reason to change them. Compression is enabled by default.
+''recordsize=128K'' is not a fixed size for every block; it is the default
+maximum, and ZFS can use smaller blocks for files. A ''recordsize'' change only
+applies to newly created files and does not rewrite existing images.
+
+For images on ZFS, ''raw'' is a suitable default because it does not add another
+copy-on-write layer. Choose ''qcow2'' when you need backing files, internal
+snapshots, or other image-format features.
 
 See [[https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Workload%20Tuning.html|OpenZFS Workload Tuning]] for workload-based tuning and the [[https://www.qemu.org/docs/master/system/images|QEMU documentation]] for image formats.
 

@@ -11,25 +11,14 @@ tests:
     - storage
     - nfs-locking
 samples:
-  check-platform:
-    path: tests/fixtures/kvm/check-platform.sh
-    sha256: 4db12a0d657184873f43fece08cf95f0b7637ae865cd6a27f27a45d4e63df82a
-    tests:
-    - kb/kvm#platform-defaults
-    - kb/kvm#libvirt
   install-libvirt:
     path: tests/fixtures/kvm/install-libvirt.sh
-    sha256: ff597715591bbe85c2aedb39651d2479070b5161a7d262d89b7a6534e8341267
+    sha256: 09ed2bf1f49a51f085e283baade888df9f85e8e72d525eac62f6ad31174125ee
     tests:
     - kb/kvm#libvirt
-  libvirt-smoke-vm:
-    path: tests/fixtures/kvm/libvirt-smoke-vm.sh
-    sha256: 252cc892284ab5d0d64ca42b1ae88635f58e8cd389946bc4c2a69e530f4d3ce5
-    tests:
-    - kb/kvm#libvirt
-  create-images:
-    path: tests/fixtures/kvm/create-images.sh
-    sha256: 00a67b4ec77433b183aafa4b080ad42507deeca2d2fe6ced423425890e6e8b9f
+  configure-storage-pool:
+    path: tests/fixtures/kvm/configure-storage-pool.sh
+    sha256: 084d6aedf300b10ef0275d20949bcebac4a72777201b02fed7d08adb36dba642
     tests:
     - kb/kvm#storage
   mount-readonly-iso:
@@ -45,38 +34,37 @@ pages:
   sections:
   - key: availability
     heading: Dostupnost KVM
-    fingerprint: 35497b237e9f444e4ee77532af64d568dfae0539dd8c6cd6fbdfcf084b0c76f4
+    fingerprint: cc0913bedaac82fd2df347573057ff7801edcb101b3e362f1821f3bfbe0f2d50
     claims:
+    - kvm-is-direct-not-nested
     - kvm-and-tun-default-enabled
     - debian-latest-template
     tests:
     - kb/kvm#platform-defaults
-    samples:
-    - check-platform
+    samples: []
   - key: libvirt
     heading: Instalace libvirt
-    fingerprint: 6ab11a075f401a2a6efe499c663ccba25ca504e65f664fea5297b42518666fad
+    fingerprint: a1fa738fac6bacb802d5cf3d5d7a4766c03cd2908825a5d249867c6a39785d68
     claims:
+    - debian-packages-start-libvirt-automatically
     - libvirt-system-connection
-    - nested-kvm-domain-without-network
-    - routed-guest-networking-deferred
+    - direct-kvm-capabilities-without-test-domain
     tests:
     - kb/kvm#libvirt
     samples:
     - install-libvirt
-    - libvirt-smoke-vm
   - key: storage
     heading: Diskové obrazy a ZFS
-    fingerprint: 8a5b08eb5d664b197da7bb2687f6c3f3e480bcf3a8f318ec0d01bd368944efea
+    fingerprint: 639da80870c7e84417f43d9da18c38882429301142629fd945d5893d9b245717
     claims:
-    - root-dataset-sufficient
-    - subdataset-optional-boundary
-    - compression-enabled-and-recordsize-128k-defaults
-    - raw-and-qcow2-are-sparse-workload-choices
+    - subdataset-recommended-property-boundary
+    - mounted-subdataset-is-persistent-libvirt-pool
+    - compression-enabled-and-recordsize-128k-maximum-default
+    - raw-default-and-qcow2-feature-choice
     tests:
     - kb/kvm#storage
     samples:
-    - create-images
+    - configure-storage-pool
   - key: nfs-installer-iso
     heading: Instalační ISO na NFS
     fingerprint: 99b683c30a358e9f7a31e69cce7b021f1fc11f8d3f1d4d3099fd7d94dc6f5ee3
@@ -94,38 +82,37 @@ pages:
   sections:
   - key: availability
     heading: KVM availability
-    fingerprint: abb95acf32f7b6ed59f36a0862b7b2dd8d1769c39c1553dfcf059bac8248996d
+    fingerprint: 561de7b752f6680c34f909978ebe477dda707a8f6794e357b13fd4d6b7301be1
     claims:
+    - kvm-is-direct-not-nested
     - kvm-and-tun-default-enabled
     - debian-latest-template
     tests:
     - kb/kvm#platform-defaults
-    samples:
-    - check-platform
+    samples: []
   - key: libvirt
     heading: Installing libvirt
-    fingerprint: 2ce23cf62f12ef8e8ffb3da0ea0058269459eab1f7fda31182d51649377e824b
+    fingerprint: f81c43eebb59c2be0686023b5362e8a00896ad9b536bc30200079691907b473f
     claims:
+    - debian-packages-start-libvirt-automatically
     - libvirt-system-connection
-    - nested-kvm-domain-without-network
-    - routed-guest-networking-deferred
+    - direct-kvm-capabilities-without-test-domain
     tests:
     - kb/kvm#libvirt
     samples:
     - install-libvirt
-    - libvirt-smoke-vm
   - key: storage
     heading: Disk images and ZFS
-    fingerprint: dc85fc421de4352363e637dba4c1000357b968d340b9c8fcf7e3b325e6d4f18e
+    fingerprint: 887980941827009e270780cd9199895e66aeded53a0e6b90c9c1ada106906f35
     claims:
-    - root-dataset-sufficient
-    - subdataset-optional-boundary
-    - compression-enabled-and-recordsize-128k-defaults
-    - raw-and-qcow2-are-sparse-workload-choices
+    - subdataset-recommended-property-boundary
+    - mounted-subdataset-is-persistent-libvirt-pool
+    - compression-enabled-and-recordsize-128k-maximum-default
+    - raw-default-and-qcow2-feature-choice
     tests:
     - kb/kvm#storage
     samples:
-    - create-images
+    - configure-storage-pool
   - key: nfs-installer-iso
     heading: Installer ISO on NFS
     fingerprint: 0d66dd29e1c70c0e4aef11615d5af3108b506e5632d003deb736b9c11703fc77
