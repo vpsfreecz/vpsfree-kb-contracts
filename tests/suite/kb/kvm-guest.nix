@@ -1,10 +1,28 @@
 { pkgs }:
 let
   kernel = pkgs.linuxPackages.kernel;
+  udpEcho = pkgs.pkgsStatic.stdenv.mkDerivation {
+    pname = "kb-kvm-udp-echo";
+    version = "1";
+    src = ./kvm-udp-echo.c;
+    dontUnpack = true;
+    buildPhase = ''
+      runHook preBuild
+      $CC -std=c11 -O2 -Wall -Wextra -Werror \
+        "$src" -o udp-echo
+      runHook postBuild
+    '';
+    installPhase = ''
+      runHook preInstall
+      install -D -m 0755 udp-echo "$out/bin/udp-echo"
+      runHook postInstall
+    '';
+  };
   guestPrograms = pkgs.closureInfo {
     rootPaths = [
       pkgs.busybox
       pkgs.dropbear
+      udpEcho
     ];
   };
   initrd = pkgs.runCommand "kb-kvm-network-guest-initrd" {
@@ -32,6 +50,7 @@ let
     ln -s ${pkgs.busybox}/bin/busybox "$root/bin/busybox"
     ln -s ${pkgs.dropbear}/bin/dropbear "$root/bin/dropbear"
     ln -s ${pkgs.dropbear}/bin/dropbearkey "$root/bin/dropbearkey"
+    ln -s ${udpEcho}/bin/udp-echo "$root/bin/udp-echo"
 
     while read -r command module; do
       [ "$command" = insmod ] || continue
@@ -126,9 +145,9 @@ if [ -n "$public4" ]; then
 fi
 if [ -n "$gateway4" ]; then
   if [ -n "$public4" ]; then
-    ip route add default via "$gateway4" src "$public4"
+    ip route replace default via "$gateway4" src "$public4"
   else
-    ip route add default via "$gateway4"
+    ip route replace default via "$gateway4"
   fi
 fi
 
@@ -147,34 +166,44 @@ if [ -n "$public6" ]; then
 fi
 if [ -n "$gateway6" ]; then
   if [ -n "$public6" ]; then
-    ip -6 route add default via "$gateway6" src "$public6"
+    ip -6 route replace default via "$gateway6" src "$public6"
   else
-    ip -6 route add default via "$gateway6"
+    ip -6 route replace default via "$gateway6"
   fi
 fi
 
 printf '%s\n' "$mode" > /www/index.html
 dropbear -R -E
-while true; do
-  nc -u -l -p 9000 -e /bin/cat
-done &
+/bin/udp-echo server 4 "$ipv4" 9000 &
+udp4_pid=$!
+/bin/udp-echo server 6 "$ipv6" 9001 &
+udp6_pid=$!
+sleep 1
+kill -0 "$udp4_pid"
+kill -0 "$udp6_pid"
 
 if [ -n "$upstream4" ]; then
   (
-    for _ in $(seq 1 60); do
-      wget -q -O /www/outbound4 "http://$upstream4:18080/source" && exit 0
+    while :; do
+      if wget -q -O /tmp/outbound4 "http://$upstream4:18080/source"; then
+        mv /tmp/outbound4 /www/outbound4
+        exit 0
+      fi
+      rm -f /tmp/outbound4
       sleep 1
     done
-    exit 1
   ) &
 fi
 if [ -n "$upstream6" ]; then
   (
-    for _ in $(seq 1 60); do
-      wget -q -O /www/outbound6 "http://[$upstream6]:18080/source" && exit 0
+    while :; do
+      if wget -q -O /tmp/outbound6 "http://[$upstream6]:18080/source"; then
+        mv /tmp/outbound6 /www/outbound6
+        exit 0
+      fi
+      rm -f /tmp/outbound6
       sleep 1
     done
-    exit 1
   ) &
 fi
 
@@ -192,5 +221,5 @@ INIT
   '';
 in
 {
-  inherit initrd kernel;
+  inherit initrd kernel udpEcho;
 }

@@ -153,10 +153,12 @@ kb/kvm#nfs-locking
 The suite provisions the exact `Debian (latest)` template through vpsAdmin
 without feature or ZFS-property overrides. It verifies the runtime devices,
 system libvirt connection and direct KVM capabilities, a subdataset-backed
-libvirt storage pool with inherited ZFS defaults, libvirt NAT port forwarding,
-routed public IPv4 and IPv6 guests, and the narrowly scoped read-only NFSv3
-installer-ISO workaround. The networking script boots deterministic Nix-built
-KVM guests and verifies their inbound and outbound paths from outside the VPS.
+libvirt storage pool with inherited ZFS defaults, dual-stack libvirt NAT with
+persistent port forwarding, a public IPv4 routed through a private VPS address,
+a delegated IPv6 `/64` routed through the VPS's primary `/64`, and the
+narrowly scoped read-only NFSv3 installer-ISO workaround. The networking script
+boots deterministic Nix-built KVM guests and verifies their inbound and
+outbound IPv4 and IPv6 paths from outside the VPS.
 
 List or run the maintained tests from the repository root:
 

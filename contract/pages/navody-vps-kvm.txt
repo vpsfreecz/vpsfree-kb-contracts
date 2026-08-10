@@ -89,59 +89,141 @@ Podrobnosti k ladění podle zátěže popisuje [[https://openzfs.github.io/open
 ===== Síť virtuálních strojů =====
 
 Síťové rozhraní VPS je k nodu připojené směrovaným spojem na třetí vrstvě.
-Nepřidávejte proto rozhraní VPS do bridge spravovaného libvirt. Virtuálním
-strojům zpřístupněte síť pomocí NAT nebo směrováním adres přes samostatnou síť
-libvirt.
+Nepřidávejte proto rozhraní VPS do bridge spravovaného libvirt. Pro připojení
+virtuálních strojů k síti jsou vhodná dvě zapojení:
 
-==== Veřejná IPv4 na VPS a NAT v libvirt ====
+^ Zapojení ^ Adresy v doméně ^ Výhody ^ Nevýhody ^
+| NAT v libvirt | Privátní IPv4 a privátní ULA IPv6 | Funguje s běžnými adresami VPS, snadno obslouží více domén. | Příchozí služby potřebují přesměrování portů a provoz prochází NAT44 i NAT66. |
+| Směrované veřejné adresy | Veřejná IPv4 ''/32'' a adresy ze samostatné IPv6 ''/64'' | Doména je dostupná přímo, bez NAT a bez překladu portů. | Vyžaduje privátní IPv4 na VPS, další směrovanou IPv6 síť a pečlivě nastavený firewall. |
 
-V nejjednodušším zapojení zůstane veřejná IPv4 ''/32'' na VPS a doména použije
-výchozí síť libvirt ''default'' s NAT. Před spuštěním domény ji připojte k této
-síti. Následující skript jí podle MAC adresy rezervuje
-''192.168.122.10'', zapne automatické spuštění sítě a zveřejní web na portu 80
-a SSH na portu 2222 veřejné adresy VPS. Před spuštěním nastavte ''DOMAIN'' na
-název domény a ''PUBLIC_IPV4'' na veřejnou adresu VPS.
+NAT je obvykle jednodušší pro jednu nebo několik domén s malým počtem
+zveřejněných služeb. Směrované adresy použijte, když má mít doména vlastní
+veřejné adresy, všechny porty nebo protokoly, které se přes port forwarding
+obsluhují špatně. Pro čistě vnitřní komunikaci mezi doménami můžete přidat další
+izolovanou síť libvirt; přístup ven nadále řeší jedno z uvedených zapojení.
+
+==== Veřejné adresy na VPS a dvouprotokolový NAT ====
+
+Veřejná IPv4 ''/32'' i IPv6 ''/64'' zůstanou na VPS. Doména dostane
+''192.168.124.10/24'' a ''fd5f:6d2e:9c4a:124::10/64'' ze sítě
+''dualstack-nat''. Libvirt překládá odchozí IPv4 pomocí NAT44 a IPv6 pomocí
+NAT66. Výchozí síť ''default'' v běžné instalaci libvirt obvykle obsahuje jen
+IPv4 a používá ''192.168.122.0/24'', proto zde definujeme vlastní
+dvouprotokolovou síť s odlišnou IPv4 podsítí. NAT66 se v XML zapíná pomocí
+''<nat ipv6='yes'/>''; podrobnosti jsou v
+[[https://libvirt.org/formatnetwork.html|dokumentaci formátu sítí libvirt]].
+
+ULA ''fd5f:6d2e:9c4a::/48'' je příklad pro samostatnou instalaci. Pokud budete
+více privátních sítí později propojovat pomocí VPN nebo směrování, vytvořte pro
+každou z nich vlastní náhodný ULA ''/48'' a změňte ''HOST_IPV6'' i
+''GUEST_IPV6'' na adresy ze stejné ''/64''.
+
+Podstatnou část definice sítě tvoří následující XML:
+
+<code xml>
+<network>
+  <name>dualstack-nat</name>
+  <forward mode='nat'>
+    <nat ipv6='yes'/>
+  </forward>
+  <bridge name='virbr-nat'/>
+  <ip address='192.168.124.1' prefix='24'/>
+  <ip family='ipv6' address='fd5f:6d2e:9c4a:124::1' prefix='64'/>
+</network>
+</code>
+
+Vytvořenou doménu připojte k ''dualstack-nat'', například volbou
+''--network network=dualstack-nat,model=virtio'' ve ''virt-install''. V doméně
+nastavte stabilní adresy a brány:
+
+<code conf>
+auto ens3
+iface ens3 inet static
+    address 192.168.124.10/24
+    gateway 192.168.124.1
+
+iface ens3 inet6 static
+    address fd5f:6d2e:9c4a:124::10/64
+    gateway fd5f:6d2e:9c4a:124::1
+</code>
+
+Přesměrování portu se skládá z DNAT na adresu domény a povolení odpovídajícího
+forwardu. Pro web na IPv4 jsou podstatou například tyto dva příkazy:
+
+<code bash>
+iptables -t nat -I PREROUTING 1 -p tcp -d VPS_IPV4 --dport 80 \
+  -j DNAT --to-destination 192.168.124.10:80
+iptables -t filter -I FORWARD 1 -p tcp -d 192.168.124.10 --dport 80 \
+  -j ACCEPT
+</code>
+
+Stejná pravidla je potřeba vytvořit i pomocí ''ip6tables'' pro IPv6. Ručně
+zadaná pravidla však libvirt při změnách sítě nezachová. Následující úplný
+skript proto vytvoří síť, soubor s přesměrováním a hook, který pravidla obnoví
+při spuštění nebo znovupřipojení sítě. Ve výchozím nastavení zveřejní web na
+portu 80 a SSH domény na portu 2222 pro IPv4 i IPv6.
+
+Uložte jej například jako ''/root/configure-nat-port-forwards.sh'' a spusťte
+s jednou veřejnou IPv4 a jednou adresou z IPv6 ''/64'' nakonfigurovanou na VPS:
+
+<code bash>
+PUBLIC_IPV4=VPS_IPV4 PUBLIC_IPV6=VPS_IPV6 \
+  /root/configure-nat-port-forwards.sh
+</code>
+
+Skript se spouští při prvním vytvoření sítě a znovu při změně jeho vstupních
+hodnot, ne po každém restartu VPS. Síť má zapnutý autostart a pravidla při jejím
+spuštění načte hook.
 
 <code bash>
 #!/usr/bin/env bash
 set -euo pipefail
 
-: "${DOMAIN:?set DOMAIN to the libvirt domain name}"
 : "${PUBLIC_IPV4:?set PUBLIC_IPV4 to the VPS public IPv4 address}"
+: "${PUBLIC_IPV6:?set PUBLIC_IPV6 to a public IPv6 address of the VPS}"
 
-guest_ipv4=${GUEST_IPV4:-192.168.122.10}
+guest_ipv4=${GUEST_IPV4:-192.168.124.10}
+guest_ipv6=${GUEST_IPV6:-fd5f:6d2e:9c4a:124::10}
+host_ipv4=${HOST_IPV4:-192.168.124.1}
+host_ipv6=${HOST_IPV6:-fd5f:6d2e:9c4a:124::1}
 connection=qemu:///system
+network=dualstack-nat
 hook=/etc/libvirt/hooks/network.d/50-port-forwards
 config=/etc/libvirt/port-forwards.conf
+xml=$(mktemp)
+trap 'rm -f "$xml"' EXIT
 
-export LC_ALL=C
-virsh --connect "$connection" net-autostart default
-if ! virsh --connect "$connection" net-list --name \
-  | grep -Fx default >/dev/null; then
-  virsh --connect "$connection" net-start default
+network_uuid=$(virsh --connect "$connection" net-uuid "$network" 2>/dev/null || :)
+uuid_element=
+if [[ -n $network_uuid ]]; then
+  uuid_element="  <uuid>$network_uuid</uuid>"
 fi
+cat >"$xml" <<EOF
+<network>
+  <name>$network</name>
+$uuid_element
+  <forward mode='nat'>
+    <nat ipv6='yes'/>
+  </forward>
+  <bridge name='virbr-nat' stp='on' delay='0'/>
+  <ip address='$host_ipv4' prefix='24'>
+    <dhcp>
+      <range start='192.168.124.100' end='192.168.124.254'/>
+    </dhcp>
+  </ip>
+  <ip family='ipv6' address='$host_ipv6' prefix='64'/>
+</network>
+EOF
 
-guest_mac=$(virsh --connect "$connection" domiflist "$DOMAIN" \
-  | awk '$3 == "default" { print $5; exit }')
-if [[ ! $guest_mac =~ ^([0-9a-f]{2}:){5}[0-9a-f]{2}$ ]]; then
-  printf 'Unable to find the default-network MAC for %s\n' "$DOMAIN" >&2
+if virsh --connect "$connection" net-list --name \
+  | grep -Fx "$network" >/dev/null; then
+  printf '%s is active. Shut down its attached domains, run ' "$network" >&2
+  printf 'virsh net-destroy %s, then rerun this script.\n' "$network" >&2
   exit 1
-fi
-
-reservation="<host mac='$guest_mac' name='$DOMAIN' ip='$guest_ipv4'/>"
-if virsh --connect "$connection" net-dumpxml default \
-  | grep -Fq "mac='$guest_mac'"; then
-  virsh --connect "$connection" net-update default modify ip-dhcp-host \
-    "$reservation" --live --config
-else
-  virsh --connect "$connection" net-update default add-last ip-dhcp-host \
-    "$reservation" --live --config
 fi
 
 install -d -m 0755 /etc/libvirt/hooks/network.d
 install -d -m 0755 /etc/libvirt
-touch "$hook"
-chmod 0755 "$hook"
 cat >"$hook" <<'HOOK'
 #!/usr/bin/env bash
 set -euo pipefail
@@ -153,33 +235,49 @@ config=/etc/libvirt/port-forwards.conf
 nat_chain=VPSFREE_KVM_DNAT
 filter_chain=VPSFREE_KVM_FWD
 
-[[ $network == default ]] || exit 0
+[[ $network == dualstack-nat ]] || exit 0
 exec 9>/run/lock/vpsfree-kvm-port-forwards.lock
 flock 9
 
 delete_jumps() {
-  while iptables -w -t nat -C PREROUTING -j "$nat_chain" 2>/dev/null; do
-    iptables -w -t nat -D PREROUTING -j "$nat_chain"
-  done
-  while iptables -w -t filter -C FORWARD -j "$filter_chain" 2>/dev/null; do
-    iptables -w -t filter -D FORWARD -j "$filter_chain"
+  local tool
+  for tool in iptables ip6tables; do
+    while "$tool" -w -t nat -C PREROUTING -j "$nat_chain" 2>/dev/null; do
+      "$tool" -w -t nat -D PREROUTING -j "$nat_chain"
+    done
+    while "$tool" -w -t filter -C FORWARD -j "$filter_chain" 2>/dev/null; do
+      "$tool" -w -t filter -D FORWARD -j "$filter_chain"
+    done
   done
 }
 
 delete_chains() {
-  if iptables -w -t nat -S "$nat_chain" >/dev/null 2>&1; then
-    iptables -w -t nat -F "$nat_chain"
-    iptables -w -t nat -X "$nat_chain"
-  fi
-  if iptables -w -t filter -S "$filter_chain" >/dev/null 2>&1; then
-    iptables -w -t filter -F "$filter_chain"
-    iptables -w -t filter -X "$filter_chain"
-  fi
+  local tool
+  for tool in iptables ip6tables; do
+    if "$tool" -w -t nat -S "$nat_chain" >/dev/null 2>&1; then
+      "$tool" -w -t nat -F "$nat_chain"
+      "$tool" -w -t nat -X "$nat_chain"
+    fi
+    if "$tool" -w -t filter -S "$filter_chain" >/dev/null 2>&1; then
+      "$tool" -w -t filter -F "$filter_chain"
+      "$tool" -w -t filter -X "$filter_chain"
+    fi
+  done
 }
 
 cleanup() {
   delete_jumps
   delete_chains
+}
+
+valid_ip_address() {
+  local family=$1 address=$2
+
+  perl -MSocket=AF_INET,AF_INET6,inet_pton -e '
+    my ($family, $address) = @ARGV;
+    my $af = $family eq "ipv4" ? AF_INET : AF_INET6;
+    exit(defined(inet_pton($af, $address)) ? 0 : 1);
+  ' "$family" "$address"
 }
 
 if [[ $action == stopped ]]; then
@@ -188,99 +286,181 @@ if [[ $action == stopped ]]; then
 fi
 [[ $action == started || $action == reconnect ]] || exit 0
 
-valid_ipv4() {
-  local octet
-  local -a octets
-  IFS=. read -r -a octets <<<"$1"
-  ((${#octets[@]} == 4)) || return 1
-  for octet in "${octets[@]}"; do
-    [[ $octet =~ ^[0-9]{1,3}$ ]] && ((10#$octet <= 255)) || return 1
-  done
-}
-
 entries=()
-while read -r protocol public_ip public_port guest_ip guest_port extra; do
-  [[ -n ${protocol:-} && $protocol != \#* ]] || continue
+while read -r family protocol public_ip public_port guest_ip guest_port extra \
+    || [[ -n ${family:-} ]]; do
+  [[ -n ${family:-} && $family != \#* ]] || continue
+  [[ $family == ipv4 || $family == ipv6 ]] || {
+    printf 'Invalid address family in %s: %s\n' "$config" "$family" >&2
+    exit 1
+  }
   [[ $protocol == tcp || $protocol == udp ]] || {
     printf 'Invalid protocol in %s: %s\n' "$config" "$protocol" >&2
     exit 1
   }
-  valid_ipv4 "$public_ip" && valid_ipv4 "$guest_ip" || {
-    printf 'Invalid IPv4 address in %s\n' "$config" >&2
-    exit 1
-  }
-  [[ $public_port =~ ^[0-9]+$ && $guest_port =~ ^[0-9]+$ ]] || {
+  for address in "$public_ip" "$guest_ip"; do
+    valid_ip_address "$family" "$address" || {
+      printf 'Invalid %s address in %s: %s\n' \
+        "$family" "$config" "$address" >&2
+      exit 1
+    }
+  done
+  [[ $public_port =~ ^[0-9]{1,5}$ && $guest_port =~ ^[0-9]{1,5}$ ]] || {
     printf 'Invalid port in %s\n' "$config" >&2
     exit 1
   }
+  public_port=$((10#$public_port))
+  guest_port=$((10#$guest_port))
   ((public_port >= 1 && public_port <= 65535)) || exit 1
   ((guest_port >= 1 && guest_port <= 65535)) || exit 1
   [[ -z ${extra:-} ]] || {
     printf 'Too many fields in %s\n' "$config" >&2
     exit 1
   }
-  entries+=("$protocol|$public_ip|$public_port|$guest_ip|$guest_port")
+  entries+=("$family|$protocol|$public_ip|$public_port|$guest_ip|$guest_port")
 done <"$config"
 
 cleanup
-iptables -w -t nat -N "$nat_chain"
-iptables -w -t filter -N "$filter_chain"
+for tool in iptables ip6tables; do
+  "$tool" -w -t nat -N "$nat_chain"
+  "$tool" -w -t filter -N "$filter_chain"
+done
 for entry in "${entries[@]}"; do
-  IFS='|' read -r protocol public_ip public_port guest_ip guest_port <<<"$entry"
-  iptables -w -t nat -A "$nat_chain" -p "$protocol" -d "$public_ip" \
-    --dport "$public_port" -j DNAT --to-destination "$guest_ip:$guest_port"
-  iptables -w -t filter -A "$filter_chain" -p "$protocol" -d "$guest_ip" \
+  IFS='|' read -r family protocol public_ip public_port guest_ip guest_port \
+    <<<"$entry"
+  tool=iptables
+  destination="$guest_ip:$guest_port"
+  if [[ $family == ipv6 ]]; then
+    tool=ip6tables
+    destination="[$guest_ip]:$guest_port"
+  fi
+  "$tool" -w -t nat -A "$nat_chain" -p "$protocol" -d "$public_ip" \
+    --dport "$public_port" -j DNAT --to-destination "$destination"
+  "$tool" -w -t filter -A "$filter_chain" -p "$protocol" -d "$guest_ip" \
     --dport "$guest_port" -j ACCEPT
 done
-iptables -w -t nat -I PREROUTING 1 -j "$nat_chain"
-iptables -w -t filter -I FORWARD 1 -j "$filter_chain"
+for tool in iptables ip6tables; do
+  "$tool" -w -t nat -I PREROUTING 1 -j "$nat_chain"
+  "$tool" -w -t filter -I FORWARD 1 -j "$filter_chain"
+done
 HOOK
+chmod 0755 "$hook"
 
 cat >"$config" <<EOF
-# PROTOCOL PUBLIC_IP PUBLIC_PORT GUEST_IP GUEST_PORT
-tcp $PUBLIC_IPV4 80 $guest_ipv4 80
-tcp $PUBLIC_IPV4 2222 $guest_ipv4 22
-udp $PUBLIC_IPV4 5353 $guest_ipv4 9000
+# FAMILY PROTOCOL PUBLIC_IP PUBLIC_PORT GUEST_IP GUEST_PORT
+ipv4 tcp $PUBLIC_IPV4 80 $guest_ipv4 80
+ipv4 tcp $PUBLIC_IPV4 2222 $guest_ipv4 22
+ipv6 tcp $PUBLIC_IPV6 80 $guest_ipv6 80
+ipv6 tcp $PUBLIC_IPV6 2222 $guest_ipv6 22
 EOF
 
+virsh --connect "$connection" net-define "$xml"
+virsh --connect "$connection" net-autostart "$network"
 systemctl restart libvirtd.service
-"$hook" default started begin -
+if ! virsh --connect "$connection" net-list --name \
+  | grep -Fx "$network" >/dev/null; then
+  virsh --connect "$connection" net-start "$network"
+fi
+"$hook" "$network" started begin -
+virsh --connect "$connection" net-dumpxml "$network"
 </code>
 
-Další port přidáte jako řádek
-''PROTOKOL VEŘEJNÁ_IP VEŘEJNÝ_PORT IP_DOMÉNY PORT_DOMÉNY'' do
-''/etc/libvirt/port-forwards.conf''. Podporované protokoly jsou ''tcp'' a
-''udp''. Poté pravidla načtěte příkazem
-''/etc/libvirt/hooks/network.d/50-port-forwards default started begin -''.
+Další port přidáte do ''/etc/libvirt/port-forwards.conf'' ve tvaru
+''RODINA PROTOKOL VEŘEJNÁ_IP VEŘEJNÝ_PORT IP_DOMÉNY PORT_DOMÉNY''. Například
+HTTPS dostupné na portu 8443 přidáte pro oba protokoly takto:
+
+<code conf>
+ipv4 tcp VPS_IPV4 8443 192.168.124.10 443
+ipv6 tcp VPS_IPV6 8443 fd5f:6d2e:9c4a:124::10 443
+</code>
+
+Podporované protokoly jsou ''tcp'' a ''udp''. Řádek s neplatnou syntaxí se
+odmítne dříve, než se změní aktivní pravidla. Po změně souboru pravidla načtěte:
+
+<code bash>
+/etc/libvirt/hooks/network.d/50-port-forwards   dualstack-nat started begin -
+</code>
+
 Port 2222 byl zvolen proto, aby SSH domény nekolidovalo s SSH samotné VPS.
+Pravidla firewallu VPS dále omezte podle toho, kdo má mít ke službám přístup.
 
 ==== Privátní IPv4 na VPS a veřejné adresy v doméně ====
 
-Pokud má být veřejná ''/32'' přímo ve virtuálním stroji, přidejte VPS běžným
-způsobem privátní IPv4. Privátní adresy fungují ve vnitřní síti vpsFree.cz a na
-internet odcházejí přes NAT na našich routerech.
+V tomto zapojení má VPS privátní IPv4 ''/32'' a svou běžnou veřejnou IPv6
+''/64''. Doména dostane veřejnou IPv4 ''/32'' a adresu ze samostatné IPv6
+''/64'', která je směrovaná přes adresu VPS z její první ''/64''. Privátní IPv4
+VPS funguje ve vnitřní síti vpsFree.cz a na internet odchází přes NAT na našich
+routerech; veřejné adresy domény se v libvirt nepřekládají.
+
+Pro IPv4 nejprve požádejte podporu o přidělení privátní IPv4 ''/32'' k VPS.
 
 <vpsadmin-nav id="networking.routable-addresses.open">
 V části **Síť → Routované adresy** pak vyberte veřejnou ''/32'' v poli
 **Adresa**, privátní adresu VPS v poli **Přes** a cílové rozhraní VPS. Veřejná
-adresa se tím na VPS nepřidá; vpsAdminOS ji k VPS směruje přes privátní adresu.
+adresa se tím nenastaví na žádném rozhraní uvnitř VPS; vpsAdminOS ji k VPS
+směruje přes privátní adresu.
 </vpsadmin-nav>
 
-Následující skript vytvoří směrovanou síť libvirt. Před spuštěním nastavte
-''PUBLIC_IPV4'' na routovanou veřejnou ''/32'' a ''PUBLIC_IPV6'' na nepoužitou
-adresu z IPv6 prefixu VPS.
+Pro IPv6 použijte další ''/64'', kterou máte v části **Síť → Routované adresy**
+k dispozici, a nastavte její směrování přes adresu z běžné ''/64'' VPS. Pokud už
+máte směrovanou větší síť, například ''/48'', vyberte z ní pro doménu
+samostatnou ''/64''. První adresu této druhé ''/64'' použijeme jako bránu na
+bridge libvirt; například pro ''ROUTED_IPV6_PREFIX::/64'' to bude
+''ROUTED_IPV6_PREFIX::1''.
+
+Tok IPv4 paketů používá malou tranzitní síť pouze mezi VPS a doménou:
+
+<code>
+internet → veřejná /32 → VPS → 192.168.123.1/30
+                                  ↓
+                            192.168.123.2/30 → veřejná /32 v doméně
+</code>
+
+V XML libvirt je veřejná IPv4 samostatná trasa přes tranzitní adresu domény.
+Směrovaná IPv6 ''/64'' je naproti tomu přímo na bridge:
+
+<code xml>
+<network>
+  <name>public-routed</name>
+  <forward mode='open'/>
+  <bridge name='virbr-public'/>
+  <ip address='192.168.123.1' prefix='30'/>
+  <ip family='ipv6' address='ROUTED_IPV6_PREFIX::1' prefix='64'/>
+  <route family='ipv4' address='PUBLIC_IPV4' prefix='32'
+         gateway='192.168.123.2'/>
+</network>
+</code>
+
+Na VPS musí být povolené směrování obou protokolů:
+
+<code bash>
+sysctl -w net.ipv4.ip_forward=1
+sysctl -w net.ipv6.conf.all.forwarding=1
+</code>
+
+Následující skript vytvoří tuto síť a uloží forwarding do
+''/etc/sysctl.d/90-libvirt-routing.conf''. Uložte jej například jako
+''/root/configure-routed-network.sh'' a spusťte jej s routovanou IPv4 a první
+adresou routované IPv6 ''/64'':
+
+<code bash>
+PUBLIC_IPV4=PUBLIC_IPV4 \
+IPV6_GATEWAY=ROUTED_IPV6_PREFIX::1 \
+  /root/configure-routed-network.sh
+</code>
+
+Stejně jako u NAT se skript spouští při vytvoření sítě nebo změně adres.
+Autostart sítě a nastavení v ''/etc/sysctl.d'' se postarají o restarty VPS.
 
 <code bash>
 #!/usr/bin/env bash
 set -euo pipefail
 
 : "${PUBLIC_IPV4:?set PUBLIC_IPV4 to the routed public IPv4 address}"
-: "${PUBLIC_IPV6:?set PUBLIC_IPV6 to an unused address from the VPS IPv6 prefix}"
+: "${IPV6_GATEWAY:?set IPV6_GATEWAY to the first address of the routed IPv6 /64}"
 
 host_transit_ipv4=${HOST_TRANSIT_IPV4:-192.168.123.1}
 guest_transit_ipv4=${GUEST_TRANSIT_IPV4:-192.168.123.2}
-host_transit_ipv6=${HOST_TRANSIT_IPV6:-fd00:0:0:123::1}
-guest_transit_ipv6=${GUEST_TRANSIT_IPV6:-fd00:0:0:123::2}
 connection=qemu:///system
 network=public-routed
 forwarding_config=/etc/sysctl.d/90-libvirt-routing.conf
@@ -300,11 +480,9 @@ $uuid_element
   <forward mode='open'/>
   <bridge name='virbr-public' stp='on' delay='0'/>
   <ip address='$host_transit_ipv4' prefix='30'/>
-  <ip family='ipv6' address='$host_transit_ipv6' prefix='126'/>
+  <ip family='ipv6' address='$IPV6_GATEWAY' prefix='64'/>
   <route family='ipv4' address='$PUBLIC_IPV4' prefix='32'
          gateway='$guest_transit_ipv4'/>
-  <route family='ipv6' address='$PUBLIC_IPV6' prefix='128'
-         gateway='$guest_transit_ipv6'/>
 </network>
 EOF
 
@@ -328,20 +506,14 @@ virsh --connect "$connection" net-start "$network"
 virsh --connect "$connection" net-dumpxml "$network"
 </code>
 
-Skript trvale zapne IPv4 i IPv6 forwarding v
-''/etc/sysctl.d/90-libvirt-routing.conf''. ''forward mode='open''' je záměrný:
-libvirt pakety směruje, ale nepřidává pravidla firewallu pro forward. Veřejné
-''/32'' a ''/128'' jsou samostatné trasy za tranzitními podsítěmi, filtrování
-proto patří do firewallu VPS. Povolte jen provoz, který má být doméně dostupný.
+Pokud je síť již aktivní, skript ji nezmění. Vypněte připojené domény, zastavte
+síť příkazem ''virsh net-destroy public-routed'', skript spusťte znovu a domény
+opět zapněte. Skript zachová UUID existující sítě.
 
-Pokud je síť již aktivní, skript ji nezmění a vypíše postup. Před opakováním
-vypněte připojené domény a síť zastavte uvedeným příkazem; po spuštění skriptu
-můžete domény znovu zapnout.
-
-Doménu připojte k síti ''public-routed''. V Debianu v doméně pak například
-uložte následující konfiguraci do
-''/etc/network/interfaces.d/public-routed''; ''ens3'', ''PUBLIC_IPV4'' a
-''PUBLIC_IPV6'' nahraďte skutečnými hodnotami:
+Doménu připojte k ''public-routed''. V Debianu v doméně pak například uložte
+následující konfiguraci do ''/etc/network/interfaces.d/public-routed'';
+''ens3'', ''PUBLIC_IPV4'', ''GUEST_IPV6'' a ''IPV6_GATEWAY'' nahraďte
+skutečnými hodnotami:
 
 <code conf>
 auto ens3
@@ -352,19 +524,16 @@ iface ens3 inet static
     down ip address del PUBLIC_IPV4/32 dev ens3
 
 iface ens3 inet6 static
-    address fd00:0:0:123::2/126
-    up ip -6 address add PUBLIC_IPV6/128 dev ens3
-    up ip -6 route replace default via fd00:0:0:123::1 src PUBLIC_IPV6
-    down ip -6 address del PUBLIC_IPV6/128 dev ens3
+    address GUEST_IPV6/64
+    gateway IPV6_GATEWAY
 </code>
 
-Toto zapojení nepoužívá NAT v libvirt. Veřejná IPv4 je nakonfigurovaná pouze
-v doméně a odchozí spojení ji používají jako zdrojovou adresu.
-
-Každá VPS dostává IPv6 ''/64'', ze které lze stejným způsobem směrovat vybranou
-''/128'' do domény. Pokud vám na požádání směrujeme například ''/48'', vyberte
-z ní pro doménu samostatnou ''/64'' a změňte IPv6 ''route'' v XML na adresu
-této sítě s ''prefix=64''. IPv6 zůstává bez NAT.
+''forward mode='open''' nechává filtrování forwardovaného provozu na firewallu
+VPS. Povolte jen provoz, který má být doméně dostupný, a nezapomeňte pravidla
+pro IPv4 i IPv6. Veřejná IPv4 je nakonfigurovaná pouze v doméně. IPv6 brána a
+adresy domén jsou z druhé, směrované ''/64''; na vnějším rozhraní VPS zůstává
+jen adresa z její běžné ''/64''. Ani jeden protokol v tomto zapojení nepoužívá
+NAT.
 
 ===== Instalační ISO na NFS =====
 

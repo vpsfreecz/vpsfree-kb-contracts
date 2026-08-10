@@ -24,12 +24,12 @@ samples:
     - kb/kvm#storage
   configure-nat-port-forwards:
     path: tests/fixtures/kvm/configure-nat-port-forwards.sh
-    sha256: de7b040be99c310bca7cdcffdb3918bda12b15c9732f89776f83ff82c94bfe50
+    sha256: 2d3de08932f8f9aa8675b4ba98cd917699ea485617891960604f239853d7ab2d
     tests:
     - kb/kvm#networking
   configure-routed-network:
     path: tests/fixtures/kvm/configure-routed-network.sh
-    sha256: 0877a69b8fc875a376b1e0bc4c97275449b216fd89dda5517c05e9573c0cb4d0
+    sha256: 5c39d649181b155ca48b01efc454dc9e98082d4e2bcbb2b6c0c7d18ae80dad5e
     tests:
     - kb/kvm#networking
   mount-readonly-iso:
@@ -72,15 +72,18 @@ pages:
     - configure-storage-pool
   - key: networking
     heading: Síť virtuálních strojů
-    fingerprint: f0eb5d6af8969a1c21a75c1332f2c218e4ce3cac9c4612d9f59a631e744a70c9
+    fingerprint: 8ab6318f047d4536015c311ed50a931dc2fba20e180dfb9800d7efd0909a52be
     claims:
     - outer-veth-is-routed-and-must-not-be-bridged
-    - default-nat-fixed-lease-and-persistent-port-forwards
+    - networking-topologies-have-explicit-tradeoffs
+    - explicit-dual-stack-nat44-and-nat66-network
+    - dual-stack-nat-coexists-with-default-libvirt-network
+    - persistent-dual-stack-port-forwards
     - public-ipv4-routed-via-private-vps-address
+    - delegated-ipv6-64-routed-via-primary-vps-64
     - ipv4-and-ipv6-forwarding-enabled-persistently
     - open-forwarding-leaves-filtering-to-vps-firewall
-    - selected-ipv6-address-routed-without-nat
-    - larger-ipv6-prefix-can-delegate-a-dedicated-64
+    - routed-public-addresses-use-no-libvirt-nat
     tests:
     - kb/kvm#networking
     samples:
@@ -130,15 +133,18 @@ pages:
     - configure-storage-pool
   - key: networking
     heading: Virtual-machine networking
-    fingerprint: cca9ba578f6716ba077e6e567b4f59570cf706beda661dd992cf4283d8e48474
+    fingerprint: f2635f80ca413949b96916b4ced9133a85325da4530c386ade27eda453de754e
     claims:
     - outer-veth-is-routed-and-must-not-be-bridged
-    - default-nat-fixed-lease-and-persistent-port-forwards
+    - networking-topologies-have-explicit-tradeoffs
+    - explicit-dual-stack-nat44-and-nat66-network
+    - dual-stack-nat-coexists-with-default-libvirt-network
+    - persistent-dual-stack-port-forwards
     - public-ipv4-routed-via-private-vps-address
+    - delegated-ipv6-64-routed-via-primary-vps-64
     - ipv4-and-ipv6-forwarding-enabled-persistently
     - open-forwarding-leaves-filtering-to-vps-firewall
-    - selected-ipv6-address-routed-without-nat
-    - larger-ipv6-prefix-can-delegate-a-dedicated-64
+    - routed-public-addresses-use-no-libvirt-nat
     tests:
     - kb/kvm#networking
     samples:
