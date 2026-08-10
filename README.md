@@ -112,12 +112,16 @@ test files cannot satisfy them. DokuWiki annotation inventory will use the path
 IDs without making this repository responsible for publishing pages.
 
 `contract/kb-annotations.yml` records expected tags for every affected path.
-`contract/kb-navigation-inventory.yml` is produced from an independent scan of
-all accessible production pages, not from the curated path list. Every detected
-source paragraph records its semantic path IDs or an explicit reason why it is
-not bound. The inventory pins the complete per-language page-ID sets, and the
-checker rejects duplicate IDs or files, so an accidentally partial source fetch
-cannot pass validation by preserving only the page count.
+`contract/kb-navigation-inventory.yml` represents an independent scan of the
+complete final page corpus, not the curated path list. When a release changes
+content, refresh the affected discoveries from the candidates; unchanged
+candidates are identical to the fetched production pages. Every detected
+candidate paragraph records its semantic path IDs or an explicit reason why it
+is not bound. The inventory and guarded source index pin the complete
+per-language page-ID sets, and the checker rejects duplicate IDs or files, so
+an accidentally partial source fetch cannot pass validation by preserving only
+the page count. Candidate construction and the release manifest separately
+guard production content checksums and revisions.
 Validate a locally prepared candidate set with:
 
 ```sh
@@ -127,7 +131,7 @@ ruby tools/check-kb-annotations.rb \
 ```
 
 The checker rejects unknown IDs, malformed tags, count drift, partial page
-sets, source paragraphs missed by the discovery heuristic, and newly
+sets, candidate paragraphs missed by the discovery heuristic, and newly
 unclassified or stale independently discovered paragraphs.
 Fetching, staging, and publishing DokuWiki pages remain outside this repository.
 

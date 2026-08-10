@@ -142,7 +142,10 @@ ruby /path/to/vpsadmin-kb-captures/tools/check-kb-annotations.rb \
 
 Review `kb-candidates/review.md`. The checker rejects malformed or unknown
 tags, count drift, partial or duplicated page inventories, newly unclassified
-source paragraphs, and navigation tags missed by independent discovery.
+candidate paragraphs, and navigation tags missed by independent discovery.
+The source index still has to contain exactly the same complete page-ID set;
+candidate construction and the release manifest separately guard the fetched
+production checksums and revisions.
 
 ## 6. Build and stage guarded releases
 

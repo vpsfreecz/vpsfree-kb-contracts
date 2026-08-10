@@ -162,7 +162,7 @@ if options[:candidate_index]
     reason = inventoried['reason']
     if reason
       abort "#{discovery.fetch('id')}: exception reason must not be blank" unless reason.is_a?(String) && !reason.strip.empty?
-      abort "#{discovery.fetch('id')}: excepted source paragraph contains candidate tags" unless actual_paths.empty?
+      abort "#{discovery.fetch('id')}: excepted candidate paragraph contains tags" unless actual_paths.empty?
     elsif expected_paths.empty?
       abort "#{discovery.fetch('id')}: discovery needs paths or an exception reason"
     elsif expected_paths != actual_paths
