@@ -814,10 +814,25 @@ import ../../make-test.nix (
               )
             end
 
-            it 'reconciles additional TCP or UDP forwards idempotently' do
+            it 'persists and reconciles additional TCP or UDP forwards' do
               services.wait_until_succeeds(
                 "test \"$(printf kb-udp | nc -u -w 2 #{@nat_public_ipv4} 5353)\" = kb-udp",
                 timeout: 60
+              )
+              run_command_in_vps(node1, @nat_vps_id, <<~'SH')
+                set -euo pipefail
+                virsh --connect qemu:///system destroy nat-guest
+                virsh --connect qemu:///system net-destroy default
+                ! iptables -t nat -S VPSFREE_KVM_DNAT >/dev/null 2>&1
+                ! iptables -t filter -S VPSFREE_KVM_FWD >/dev/null 2>&1
+                virsh --connect qemu:///system net-start default
+                iptables -t nat -S VPSFREE_KVM_DNAT | grep -q -- '--dport 5353'
+                iptables -t filter -S VPSFREE_KVM_FWD | grep -q -- '--dport 9000'
+                virsh --connect qemu:///system start nat-guest
+              SH
+              services.wait_until_succeeds(
+                "test \"$(printf kb-udp | nc -u -w 2 #{@nat_public_ipv4} 5353)\" = kb-udp",
+                timeout: 180
               )
               2.times do
                 run_command_in_vps(
