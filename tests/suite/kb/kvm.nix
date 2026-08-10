@@ -490,16 +490,41 @@ import ../../make-test.nix (
                 mount -t nfs -o ro,vers=3 172.16.106.53:/srv/kb-installer /mnt/installer-iso
                 pidfile=/tmp/kb-qemu-normal.pid
                 cleanup() {
+                  local pid=
                   if [[ -s "$pidfile" ]]; then
-                    kill "$(cat "$pidfile")" 2>/dev/null || true
+                    pid=$(cat "$pidfile")
+                    if [[ "$pid" =~ ^[0-9]+$ ]] && kill -0 "$pid" 2>/dev/null; then
+                      kill "$pid" 2>/dev/null || true
+                      for _ in {1..50}; do
+                        ! kill -0 "$pid" 2>/dev/null && break
+                        sleep 0.1
+                      done
+                      if kill -0 "$pid" 2>/dev/null; then
+                        kill -KILL "$pid" 2>/dev/null || true
+                        for _ in {1..50}; do
+                          ! kill -0 "$pid" 2>/dev/null && break
+                          sleep 0.1
+                        done
+                      fi
+                    fi
+                  fi
+                  rm -f "$pidfile"
+                  if [[ -n "$pid" ]] && kill -0 "$pid" 2>/dev/null; then
+                    printf 'QEMU process %s survived TERM and KILL\n' "$pid" >&2
+                    return 1
                   fi
                   umount /mnt/installer-iso
-                  rm -f "$pidfile"
                 }
-                trap cleanup EXIT
+                finish() {
+                  local status=$?
+                  cleanup || status=1
+                  trap - EXIT
+                  exit "$status"
+                }
+                trap finish EXIT
                 rm -f "$pidfile"
                 set +e
-                output=$(timeout --kill-after=5 20 qemu-system-x86_64 \
+                output=$(LC_ALL=C timeout --verbose --kill-after=5 20 qemu-system-x86_64 \
                   -nodefaults -display none -S -daemonize \
                   -drive file=/mnt/installer-iso/installer.iso,media=cdrom,readonly=on \
                   -pidfile "$pidfile" 2>&1)
@@ -513,6 +538,7 @@ import ../../make-test.nix (
                     exit 1
                     ;;
                   124|137)
+                    grep -Fq 'timeout: sending signal TERM to command' <<<"$output"
                     printf 'QEMU timed out while waiting for an NFS lock\n'
                     ;;
                   *)
