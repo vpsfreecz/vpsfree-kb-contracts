@@ -291,6 +291,68 @@ import ../../make-test.nix (
         }
       end
 
+      def wait_for_guest_command(
+        services,
+        node,
+        vps_id,
+        domain,
+        command,
+        timeout:
+      )
+        deadline = Time.now + timeout
+        last_probe = nil
+
+        loop do
+          last_probe = machine_probe(services, command, timeout: 30)
+          return last_probe if last_probe[:status] == 0
+
+          break if Time.now >= deadline
+
+          sleep 1
+        end
+
+        escaped_domain = Shellwords.escape(domain)
+        console_log = Shellwords.escape(
+          "/var/log/libvirt/qemu/#{domain}-console.log"
+        )
+        qemu_log = Shellwords.escape("/var/log/libvirt/qemu/#{domain}.log")
+        vps_probe = lambda do |probe_command, output_limit: 8000|
+          machine_probe(
+            node,
+            "osctl ct exec #{Integer(vps_id)} bash -lc " \
+            "#{Shellwords.escape(probe_command)}",
+            timeout: 60,
+            output_limit:
+          )
+        end
+        diagnostic = {
+          endpoint: last_probe,
+          domain: vps_probe.call(
+            [
+              "virsh --connect qemu:///system domstate #{escaped_domain}",
+              "virsh --connect qemu:///system domiflist #{escaped_domain}"
+            ].join('; '),
+            output_limit: 4000
+          ),
+          network: vps_probe.call(
+            [
+              'ip -brief address',
+              'ip -4 route show',
+              'ip -6 route show'
+            ].join('; ')
+          ),
+          firewall: vps_probe.call(
+            [
+              'iptables -t nat -S',
+              'iptables -t filter -S FORWARD'
+            ].join('; ')
+          ),
+          console: vps_probe.call("tail -n 200 #{console_log}"),
+          qemu: vps_probe.call("tail -n 100 #{qemu_log}")
+        }
+        expect(last_probe&.fetch(:status, nil)).to eq(0), JSON.pretty_generate(diagnostic)
+      end
+
       def wait_for_documentation_vps(services, node, vps_id, timeout: 180)
         deadline = Time.now + timeout
         last_exec = nil
@@ -498,7 +560,10 @@ import ../../make-test.nix (
                 <source network='#{CGI.escapeHTML(network)}'/>
                 <model type='virtio'/>
               </interface>
-              <console type='pty'/>
+              <console type='file'>
+                <source path='/var/log/libvirt/qemu/#{CGI.escapeHTML(name)}-console.log'/>
+                <target type='serial' port='0'/>
+              </console>
             </devices>
           </domain>
         XML
@@ -798,7 +863,11 @@ import ../../make-test.nix (
 
           describe 'a public VPS address forwarded through libvirt NAT' do
             it 'exposes HTTP and SSH while preserving outbound access' do
-              services.wait_until_succeeds(
+              wait_for_guest_command(
+                services,
+                node1,
+                @nat_vps_id,
+                'nat-guest',
                 "curl --fail --silent http://#{@nat_public_ipv4}/ | grep -Fx nat",
                 timeout: 180
               )
@@ -971,7 +1040,11 @@ import ../../make-test.nix (
 
             it 'routes IPv4 HTTP, SSH and the guest source address without NAT' do
               public_ipv4 = @routed_ipv4.fetch('public_ipv4')
-              services.wait_until_succeeds(
+              wait_for_guest_command(
+                services,
+                node1,
+                @routed_vps_id,
+                'routed-guest',
                 "curl --fail --silent http://#{public_ipv4}/ | grep -Fx routed",
                 timeout: 180
               )
@@ -1000,7 +1073,11 @@ import ../../make-test.nix (
                 "ip -6 route show #{Shellwords.escape(guest_ipv6)}/128"
               )
               expect(route).to include('via 2001:db8:ffff:1::2')
-              services.wait_until_succeeds(
+              wait_for_guest_command(
+                services,
+                node1,
+                @routed_vps_id,
+                'routed-guest',
                 "curl --globoff --fail --silent http://[#{guest_ipv6}]/ | grep -Fx routed",
                 timeout: 180
               )
