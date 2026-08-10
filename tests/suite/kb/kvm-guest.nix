@@ -59,12 +59,12 @@ let
 #!/bin/busybox sh
 set -eu
 
-exec >/dev/console 2>&1
 /bin/busybox --install -s /bin
 mount -t proc proc /proc
 mount -t sysfs sysfs /sys
 mount -t devtmpfs devtmpfs /dev
 mkdir -p /dev/pts /run /root /tmp /var/run /www
+exec >/dev/console 2>&1
 mount -t devpts devpts /dev/pts
 
 modprobe virtio_pci
