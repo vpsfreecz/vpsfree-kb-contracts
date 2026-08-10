@@ -13,6 +13,7 @@ network=public-routed
 xml=$(mktemp)
 trap 'rm -f "$xml"' EXIT
 
+export LC_ALL=C
 cat >"$xml" <<EOF
 <network>
   <name>$network</name>
@@ -27,10 +28,14 @@ cat >"$xml" <<EOF
 </network>
 EOF
 
+if virsh --connect "$connection" net-info "$network" 2>/dev/null \
+  | grep -Eq '^Active:[[:space:]]+yes$'; then
+  printf '%s is active. Shut down its attached domains, run ' "$network" >&2
+  printf 'virsh net-destroy %s, then rerun this script.\n' "$network" >&2
+  exit 1
+fi
+
 virsh --connect "$connection" net-define "$xml"
 virsh --connect "$connection" net-autostart "$network"
-if ! virsh --connect "$connection" net-info "$network" \
-  | grep -Eq '^Active:[[:space:]]+yes$'; then
-  virsh --connect "$connection" net-start "$network"
-fi
+virsh --connect "$connection" net-start "$network"
 virsh --connect "$connection" net-dumpxml "$network"

@@ -863,6 +863,98 @@ import ../../make-test.nix (
               expect(route).to include('onlink')
             end
 
+            it 'refuses stale live routes and applies changed inputs when stopped' do
+              changed_ipv4 = '203.0.113.254'
+              changed_ipv6 = '2001:db8:ffff:ffff::254'
+              environment = {
+                'PUBLIC_IPV4' => changed_ipv4,
+                'PUBLIC_IPV6' => changed_ipv6,
+                'HOST_TRANSIT_IPV4' => '192.0.2.1',
+                'GUEST_TRANSIT_IPV4' => '192.0.2.2',
+                'HOST_TRANSIT_IPV6' => '2001:db8:ffff:1::1',
+                'GUEST_TRANSIT_IPV6' => '2001:db8:ffff:1::2'
+              }
+              encoded = Base64.strict_encode64(configure_routed_network_script)
+              command = ['env'] + environment.map { |key, value| "#{key}=#{value}" } +
+                        ['bash', '-s']
+              probe = machine_probe(
+                node1,
+                [
+                  "printf %s #{Shellwords.escape(encoded)} | base64 -d |",
+                  'osctl ct exec',
+                  Integer(@routed_vps_id),
+                  Shellwords.join(command)
+                ].join(' '),
+                timeout: 300
+              )
+              expect(probe.fetch(:status)).not_to eq(0)
+              expect(probe.fetch(:output)).to include('public-routed is active')
+              _, unchanged_xml = run_command_in_vps(
+                node1,
+                @routed_vps_id,
+                'virsh --connect qemu:///system net-dumpxml --inactive public-routed'
+              )
+              expect(unchanged_xml).to include(
+                "address='#{@routed_ipv4.fetch('public_ipv4')}' prefix='32'"
+              )
+              expect(unchanged_xml).to include(
+                "address='#{@routed_ipv6.fetch('guest_ipv6')}' prefix='128'"
+              )
+              expect(unchanged_xml).not_to include(changed_ipv4)
+              expect(unchanged_xml).not_to include(changed_ipv6)
+
+              run_command_in_vps(node1, @routed_vps_id, <<~'SH')
+                virsh --connect qemu:///system destroy routed-guest
+                virsh --connect qemu:///system net-destroy public-routed
+              SH
+              run_in_vps(
+                node1,
+                @routed_vps_id,
+                configure_routed_network_script,
+                environment:
+              )
+              _, active_xml = run_command_in_vps(
+                node1,
+                @routed_vps_id,
+                'virsh --connect qemu:///system net-dumpxml public-routed'
+              )
+              expect(active_xml).to include("address='#{changed_ipv4}' prefix='32'")
+              expect(active_xml).to include("address='#{changed_ipv6}' prefix='128'")
+              expect(active_xml).not_to include(@routed_ipv4.fetch('public_ipv4'))
+              expect(active_xml).not_to include(@routed_ipv6.fetch('guest_ipv6'))
+
+              run_command_in_vps(
+                node1,
+                @routed_vps_id,
+                'virsh --connect qemu:///system net-destroy public-routed'
+              )
+              run_in_vps(
+                node1,
+                @routed_vps_id,
+                configure_routed_network_script,
+                environment: environment.merge(
+                  'PUBLIC_IPV4' => @routed_ipv4.fetch('public_ipv4'),
+                  'PUBLIC_IPV6' => @routed_ipv6.fetch('guest_ipv6')
+                )
+              )
+              _, restored_xml = run_command_in_vps(
+                node1,
+                @routed_vps_id,
+                'virsh --connect qemu:///system net-dumpxml public-routed'
+              )
+              expect(restored_xml).to include(
+                "address='#{@routed_ipv4.fetch('public_ipv4')}' prefix='32'"
+              )
+              expect(restored_xml).to include(
+                "address='#{@routed_ipv6.fetch('guest_ipv6')}' prefix='128'"
+              )
+              run_command_in_vps(
+                node1,
+                @routed_vps_id,
+                'virsh --connect qemu:///system start routed-guest'
+              )
+            end
+
             it 'routes IPv4 HTTP, SSH and the guest source address without NAT' do
               public_ipv4 = @routed_ipv4.fetch('public_ipv4')
               services.wait_until_succeeds(
