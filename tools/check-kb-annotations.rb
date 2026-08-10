@@ -73,7 +73,6 @@ if options[:candidate_index]
   root = File.dirname(index_path)
   source_index_path = options.fetch(:source_index)
   source_index = JSON.parse(File.read(source_index_path))
-  source_root = File.dirname(source_index_path)
   inventory = YAML.safe_load_file(options.fetch(:inventory))
   abort 'KB navigation inventory schema must be 1' unless inventory.fetch('schema') == 1
   candidate_pages = index.fetch('pages')
@@ -123,11 +122,11 @@ if options[:candidate_index]
     abort "candidate annotation counts differ; expected=#{expected.inspect}, actual=#{actual.inspect}"
   end
 
-  discoveries = source_pages.flat_map do |page|
+  discoveries = candidate_pages.flat_map do |page|
     KbNavigationDiscovery.discover(
       language: page.fetch('language'),
       page: page.fetch('id'),
-      content: File.read(File.join(source_root, page.fetch('file')))
+      content: File.read(File.join(root, page.fetch('file')))
     )
   end
   discovered_by_id = discoveries.to_h { |entry| [entry.fetch('id'), entry] }

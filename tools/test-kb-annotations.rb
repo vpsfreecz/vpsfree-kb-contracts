@@ -70,6 +70,24 @@ class KbAnnotationsCheckerTest < Minitest::Test
     assert_match(/duplicate candidate page IDs/, error)
   end
 
+  def test_full_page_replacement_uses_candidate_navigation_inventory
+    body = <<~DOKUWIKI
+      New introduction
+
+      <vpsadmin-nav id="member.public-keys.open">vpsAdmin -> Edit profile</vpsadmin-nav>
+    DOKUWIKI
+    source_body = <<~DOKUWIKI
+      vpsAdmin -> Old profile
+
+      Historical explanation
+
+      vpsAdmin -> Another old action
+    DOKUWIKI
+    _out, error, status = run_checker(body:, source_body:)
+
+    assert(status.success?, error)
+  end
+
   private
 
   def run_checker(
@@ -123,7 +141,7 @@ class KbAnnotationsCheckerTest < Minitest::Test
       discoveries = inventory_discoveries || KbNavigationDiscovery.discover(
         language: 'cs',
         page: 'navody:test',
-        content: source_body
+        content: body
       )
       candidate_paths = KbNavigationDiscovery.semantic_content(body)
                                              .scan(/<vpsadmin-nav\s+id="([a-z][a-z0-9.-]*)">/)
