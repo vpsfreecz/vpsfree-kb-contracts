@@ -86,14 +86,46 @@ class ArticleContractCheckerTest < Minitest::Test
     assert_match(/unknown tests missing/, error)
   end
 
-  def test_wrong_article_label_is_rejected
+  def test_unknown_article_label_is_rejected
     metadata = Marshal.load(Marshal.dump(self.class.tests_meta))
     metadata.dig('kb/kvm', 'testScripts', 'storage', 'labels')['kbArticle'] = 'other'
 
     _output, error, status = run_checker(YAML.safe_load_file(CONTRACT), metadata)
 
     refute(status.success?)
-    assert_match(/storage has the wrong kbArticle label/, error)
+    assert_match(/storage has unknown kbArticle label "other"/, error)
+  end
+
+  def test_runtime_script_without_an_article_label_is_rejected
+    metadata = Marshal.load(Marshal.dump(self.class.tests_meta))
+    metadata.dig('kb/kvm', 'testScripts', 'storage', 'labels').delete('kbArticle')
+
+    _output, error, status = run_checker(YAML.safe_load_file(CONTRACT), metadata)
+
+    refute(status.success?)
+    assert_match(/storage lacks the kbArticle label/, error)
+  end
+
+  def test_article_labeled_script_without_the_runtime_tag_is_rejected
+    metadata = Marshal.load(Marshal.dump(self.class.tests_meta))
+    metadata.dig('kb/kvm', 'testScripts', 'storage', 'tags').delete('kb-runtime')
+
+    _output, error, status = run_checker(YAML.safe_load_file(CONTRACT), metadata)
+
+    refute(status.success?)
+    assert_match(/storage has a kbArticle label but lacks the kb-runtime tag/, error)
+  end
+
+  def test_article_label_in_an_unregistered_suite_is_rejected
+    metadata = Marshal.load(Marshal.dump(self.class.tests_meta))
+    script = Marshal.load(Marshal.dump(metadata.dig('kb/kvm', 'testScripts', 'storage')))
+    metadata['kb/unregistered'] = { 'testScripts' => { 'external' => script } }
+
+    _output, error, status = run_checker(YAML.safe_load_file(CONTRACT), metadata)
+
+    refute(status.success?)
+    assert_match(/kb\/unregistered#external is labeled for kvm/, error)
+    assert_match(/article owns suite kb\/kvm/, error)
   end
 
   def test_repository_link_drift_is_rejected

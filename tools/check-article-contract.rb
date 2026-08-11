@@ -101,20 +101,62 @@ tests_meta = load_tests_meta(root, options.fetch(:tests_meta))
 articles = contract.fetch('articles')
 raise ArticleContractError, 'articles must not be empty' unless articles.is_a?(Hash) && !articles.empty?
 
+article_suites = articles.to_h do |article_id, article|
+  unless article_id.match?(/\A[a-z0-9][a-z0-9-]*\z/)
+    raise ArticleContractError, "invalid article ID #{article_id.inspect}"
+  end
+
+  [article_id, article.fetch('test').fetch('suite')]
+end
+unless article_suites.values.uniq.length == article_suites.length
+  raise ArticleContractError, 'each article must own a distinct test suite'
+end
+
+runtime_inventory = Hash.new { |hash, key| hash[key] = [] }
+tests_meta.each do |suite, suite_meta|
+  scripts_meta = suite_meta.fetch('testScripts', {})
+  unless scripts_meta.is_a?(Hash)
+    raise ArticleContractError, "#{suite}: testScripts metadata must be a mapping"
+  end
+
+  scripts_meta.each do |script_id, metadata|
+    tags = metadata.fetch('tags', [])
+    labels = metadata.fetch('labels', {})
+    unless tags.is_a?(Array) && labels.is_a?(Hash)
+      raise ArticleContractError, "#{suite}##{script_id}: invalid test tags or labels metadata"
+    end
+    runtime = tags.include?('kb-runtime')
+    labeled = labels.key?('kbArticle')
+    next unless runtime || labeled
+
+    unless runtime
+      raise ArticleContractError, "#{suite}##{script_id} has a kbArticle label but lacks the kb-runtime tag"
+    end
+    article_id = labels['kbArticle']
+    unless article_id
+      raise ArticleContractError, "#{suite}##{script_id} lacks the kbArticle label"
+    end
+    expected_suite = article_suites[article_id]
+    unless expected_suite
+      raise ArticleContractError, "#{suite}##{script_id} has unknown kbArticle label #{article_id.inspect}"
+    end
+    unless suite == expected_suite
+      raise ArticleContractError, "#{suite}##{script_id} is labeled for #{article_id}, " \
+                                  "but that article owns suite #{expected_suite}"
+    end
+
+    runtime_inventory[article_id] << [suite, script_id]
+  end
+end
+
 page_ids = []
-test_suites = []
 article_count = 0
 test_count = 0
 sample_count = 0
 
 articles.each do |article_id, article|
-  unless article_id.match?(/\A[a-z0-9][a-z0-9-]*\z/)
-    raise ArticleContractError, "invalid article ID #{article_id.inspect}"
-  end
-
   test = article.fetch('test')
   suite = test.fetch('suite')
-  test_suites << suite
   test_source = path_within(root, test.fetch('source'))
   raise ArticleContractError, "#{article_id}: test source is missing" unless File.file?(test_source)
 
@@ -124,6 +166,10 @@ articles.each do |article_id, article|
   scripts_meta = suite_meta.fetch('testScripts')
   script_ids = scripts_meta.keys
   raise ArticleContractError, "#{article_id}: test suite has no scripts" if script_ids.empty?
+  discovered_scripts = runtime_inventory.fetch(article_id, []).map(&:last)
+  unless discovered_scripts.sort == script_ids.sort
+    raise ArticleContractError, "#{article_id}: registered suite and kb-runtime inventory differ"
+  end
   scripts_meta.each do |script_id, metadata|
     unless metadata.fetch('tags').include?('kb-runtime')
       raise ArticleContractError, "#{article_id}: #{suite}##{script_id} lacks the kb-runtime tag"
@@ -284,9 +330,6 @@ end
 
 unless page_ids.uniq.length == page_ids.length
   raise ArticleContractError, 'duplicate managed page IDs'
-end
-unless test_suites.uniq.length == test_suites.length
-  raise ArticleContractError, 'each article must own a distinct test suite'
 end
 
 puts "Valid article contract: #{article_count} articles, #{page_ids.length} pages, " \
