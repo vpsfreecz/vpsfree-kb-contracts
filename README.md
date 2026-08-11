@@ -75,6 +75,11 @@ and the pinned vpsAdmin commit are shared. A scenario can emit several related
 screenshots, but every bitmap has an independently addressable semantic
 checkpoint and language variant.
 
+The `vpsadmin-kb-captures/schema-5` value in capture provenance is a stable
+schema identifier retained across the repository rename. New repository links
+and package metadata use `vpsfree-kb-contracts`; existing capture records do
+not change identity merely because their repository was renamed.
+
 `bin/validate --update` accepts capture results only when their ID, checkpoint,
 driver, output path, and SHA-256 agree with the manifest and generated file.
 Review the image and manifest diffs, then run strict `bin/validate`.

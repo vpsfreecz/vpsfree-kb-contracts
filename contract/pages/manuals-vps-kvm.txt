@@ -4,9 +4,9 @@
 
 <note important>
 This article is maintained as
-[[https://github.com/vpsfreecz/vpsadmin-kb-captures/blob/master/contract/pages/manuals-vps-kvm.txt|source text]]
+[[https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/contract/pages/manuals-vps-kvm.txt|source text]]
 and verified by
-[[https://github.com/vpsfreecz/vpsadmin-kb-captures/blob/master/tests/suite/kb/kvm.nix|automated tests]]
+[[https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/tests/suite/kb/kvm.nix|automated tests]]
 in the repository. Do not edit it directly in the KB; propose changes in the
 repository instead.
 </note>

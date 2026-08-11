@@ -4,9 +4,9 @@
 
 <note important>
 Tento článek je spravován jako
-[[https://github.com/vpsfreecz/vpsadmin-kb-captures/blob/master/contract/pages/navody-vps-kvm.txt|zdrojový text]]
+[[https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/contract/pages/navody-vps-kvm.txt|zdrojový text]]
 a ověřován
-[[https://github.com/vpsfreecz/vpsadmin-kb-captures/blob/master/tests/suite/kb/kvm.nix|automatickými testy]]
+[[https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/tests/suite/kb/kvm.nix|automatickými testy]]
 v repozitáři. Neupravujte jej proto přímo v KB; změnu navrhněte v repozitáři.
 </note>
 

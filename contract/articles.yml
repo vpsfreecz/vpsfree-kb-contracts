@@ -1,6 +1,6 @@
 ---
 schema: 1
-repository: vpsfreecz/vpsadmin-kb-captures
+repository: vpsfreecz/vpsfree-kb-contracts
 revisions:
   vpsadmin: 63c2c44f6ca04ab958f3d72f777add389b77b162
   vpsadminos: 67fcc17372d175b036706a1459a8b471bfc225e0

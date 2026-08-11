@@ -10,7 +10,7 @@ itself.
 
 - `vpsadmin` owns WebUI behavior, gettext labels, routes, and rendered
   `data-vpsadmin-doc-id` landmarks.
-- `vpsadmin-kb-captures` owns semantic controls and paths, source fingerprints,
+- `vpsfree-kb-contracts` owns semantic controls and paths, source fingerprints,
   page bindings, screenshot scenarios, deterministic fixtures, and PNGs.
 - `dokuwiki-plugin-vpsadmindoc` renders `<vpsadmin-nav>` annotations. It does
   not fetch labels or write documentation.
@@ -34,7 +34,7 @@ couples all three facts.
 
 ## 2. Pin the feature revision
 
-In a dedicated `vpsadmin-kb-captures` feature branch, update the exact vpsAdmin
+In a dedicated `vpsfree-kb-contracts` feature branch, update the exact vpsAdmin
 revision in:
 
 - `flake.nix` and `flake.lock`;
@@ -135,7 +135,7 @@ prose must remain outside its semantic span.
 Validate the immutable source inventory against the candidates:
 
 ```sh
-ruby /path/to/vpsadmin-kb-captures/tools/check-kb-annotations.rb \
+ruby /path/to/vpsfree-kb-contracts/tools/check-kb-annotations.rb \
   --source-index work/SLUG/kb-sources/index.json \
   --candidate-index work/SLUG/kb-candidates/index.json
 ```
@@ -155,7 +155,7 @@ the explicit pre-change Git base to the builder:
 bin/kb-contract-build \
   --source work/SLUG/kb-sources \
   --plan work/SLUG/kb-annotation-plan.yml \
-  --code-root /path/to/vpsadmin-kb-captures \
+  --code-root /path/to/vpsfree-kb-contracts \
   --code-base BASE-COMMIT \
   --output work/SLUG/kb-candidates
 ```
