@@ -26,8 +26,9 @@ Every source-controlled article must be registered in
 `contract/articles.yml`, provide reciprocal Czech/English pages, and bind every
 claim, executable sample, screenshot, and `kb-runtime` test script. Article
 tests must expose the registry key through the `kbArticle` metadata label.
-Managed pages must retain the visible source/test note and must be reconciled
-against direct wiki edits before candidate construction.
+Managed pages must retain the invisible `<kb-managed>` source/test marker
+immediately after their language mapping and must be reconciled against direct
+wiki edits before candidate construction.
 
 When a vpsAdmin feature changes anything visible in the WebUI, follow
 `docs/webui-change-workflow.md`. It is the canonical cross-repository procedure

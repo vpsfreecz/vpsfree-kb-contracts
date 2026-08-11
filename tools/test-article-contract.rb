@@ -134,10 +134,65 @@ class ArticleContractCheckerTest < Minitest::Test
     end
 
     refute(status.success?)
-    assert_match(/managed-article note is missing/, error)
+    assert_match(/managed-page marker is misplaced or differs/, error)
+  end
+
+  def test_missing_managed_page_marker_is_rejected
+    _output, error, status = check_czech_source do |_marker|
+      "<page>manuals:vps:kvm</page>\n\n====== Test ======\n"
+    end
+
+    refute(status.success?)
+    assert_match(/expected exactly one managed-page marker/, error)
+  end
+
+  def test_managed_page_marker_below_the_title_is_rejected
+    _output, error, status = check_czech_source do |marker|
+      "<page>manuals:vps:kvm</page>\n\n====== Test ======\n\n#{marker}\n"
+    end
+
+    refute(status.success?)
+    assert_match(/managed-page marker is misplaced/, error)
+  end
+
+  def test_duplicate_managed_page_markers_are_rejected
+    _output, error, status = check_czech_source do |marker|
+      "<page>manuals:vps:kvm</page>\n\n#{marker}\n\n#{marker}\n"
+    end
+
+    refute(status.success?)
+    assert_match(/expected exactly one managed-page marker/, error)
+  end
+
+  def test_additional_malformed_managed_page_marker_is_rejected
+    _output, error, status = check_czech_source do |marker|
+      "<page>manuals:vps:kvm</page>\n\n#{marker}\n\n<kb-managed source=\"invalid\">\n"
+    end
+
+    refute(status.success?)
+    assert_match(/expected exactly one managed-page marker/, error)
   end
 
   private
+
+  def check_czech_source
+    Dir.mktmpdir('.article-contract-', ROOT) do |dir|
+      contract = YAML.safe_load_file(CONTRACT)
+      source_path = File.join(dir, 'page.txt')
+      relative_path = source_path.delete_prefix("#{ROOT}/")
+      contract.dig('articles', 'kvm', 'pages', 'cs')['source'] = relative_path
+      repository = contract.fetch('repository')
+      test_source = contract.dig('articles', 'kvm', 'test', 'source')
+      marker = <<~MARKER.chomp
+        <kb-managed
+          source="https://github.com/#{repository}/blob/master/#{relative_path}"
+          test="https://github.com/#{repository}/blob/master/#{test_source}"
+        />
+      MARKER
+      File.write(source_path, yield(marker))
+      run_checker(contract, self.class.tests_meta)
+    end
+  end
 
   def check_mutated_contract
     contract = YAML.safe_load_file(CONTRACT)

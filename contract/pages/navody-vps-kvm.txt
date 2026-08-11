@@ -1,14 +1,11 @@
 <page>manuals:vps:kvm</page>
 
-====== KVM a libvirt uvnitř VPS ======
+<kb-managed
+  source="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/contract/pages/navody-vps-kvm.txt"
+  test="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/tests/suite/kb/kvm.nix"
+/>
 
-<note important>
-Tento článek je spravován jako
-[[https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/contract/pages/navody-vps-kvm.txt|zdrojový text]]
-a ověřován
-[[https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/tests/suite/kb/kvm.nix|automatickými testy]]
-v repozitáři. Neupravujte jej proto přímo v KB; změnu navrhněte v repozitáři.
-</note>
+====== KVM a libvirt uvnitř VPS ======
 
 ===== Instalace libvirt =====
 

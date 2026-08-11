@@ -25,6 +25,15 @@ def sections(source)
   end
 end
 
+def managed_marker(source_url, test_url)
+  <<~MARKER.chomp
+    <kb-managed
+      source="#{source_url}"
+      test="#{test_url}"
+    />
+  MARKER
+end
+
 def path_within(root, relative)
   raise ArticleContractError, "invalid relative path #{relative.inspect}" unless relative.is_a?(String)
 
@@ -200,14 +209,17 @@ articles.each do |article_id, article|
 
     source_url = "https://github.com/#{repository}/blob/master/#{page.fetch('source')}"
     test_url = "https://github.com/#{repository}/blob/master/#{test.fetch('source')}"
-    note = source.scan(/<note important>\s*(.*?)\s*<\/note>/m).flatten.find do |body|
-      body.include?(source_url) && body.include?(test_url)
+    marker_starts = source.scan(/<kb-managed\b/)
+    unless marker_starts.length == 1
+      raise ArticleContractError,
+            "#{article_id}: #{language}: expected exactly one managed-page marker"
     end
-    raise ArticleContractError, "#{article_id}: #{language}: managed-article note is missing" unless note
 
-    direct_edit_pattern = language == 'cs' ? /Neupravujte .* přímo v KB/m : /Do not edit .* directly in the KB/m
-    unless note.match?(direct_edit_pattern)
-      raise ArticleContractError, "#{article_id}: #{language}: managed-article note permits direct edits"
+    expected_prefix = "<page>#{counterpart}</page>\n\n" \
+                      "#{managed_marker(source_url, test_url)}\n\n"
+    unless source.start_with?(expected_prefix)
+      raise ArticleContractError,
+            "#{article_id}: #{language}: managed-page marker is misplaced or differs from the registry"
     end
 
     page_sources[language] = source

@@ -180,9 +180,11 @@ List or run the maintained tests from the repository root:
   --filter 'tag=kb-runtime && kbArticle=kvm'
 ```
 
-Managed pages contain a visible note linking their canonical source and test.
-Do not edit them directly in DokuWiki. Candidate construction compares the
-fetched wiki page, an explicit Git base commit, and the working source. A
+Managed pages place an invisible `<kb-managed>` marker immediately after their
+language mapping. It links the canonical source and test; the DokuWiki plugin
+uses those links for a **Source on GitHub** page tool and an editor warning.
+Do not edit these pages directly in DokuWiki. Candidate construction compares
+the fetched wiki page, an explicit Git base commit, and the working source. A
 wiki-only edit or concurrent Git/wiki edits stop the release until the change
 is explicitly adopted or merged into the repository and verified again.
 
