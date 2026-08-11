@@ -156,14 +156,18 @@ bin/kb-contract-build \
   --source work/SLUG/kb-sources \
   --plan work/SLUG/kb-annotation-plan.yml \
   --code-root /path/to/vpsfree-kb-contracts \
-  --code-base BASE-COMMIT \
+  --code-base FULL-BASE-COMMIT-OID \
   --output work/SLUG/kb-candidates
 ```
 
-The builder compares the base source, working source, and fetched wiki page. A
-wiki-only or concurrent edit stops candidate construction. Inspect it with
+Use the full 40-character commit OID so the reconciliation base cannot move
+after a fetch. The candidate index and generated release manifest record that
+base, the contract HEAD, the registry digest, and the canonical page digests.
+The builder compares the base source, committed source, and fetched wiki page.
+A wiki-only or concurrent edit stops candidate construction. Inspect it with
 `bin/kb-contract-reconcile`; import a wiki-only edit only with an explicit
-`--adopt --yes`, then update its contract evidence and rerun the tests.
+`--adopt --yes`, then commit it, update its contract evidence, and rerun the
+tests.
 
 ## 6. Build and stage guarded releases
 
