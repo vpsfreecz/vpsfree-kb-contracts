@@ -2,6 +2,15 @@
 
 ====== KVM and libvirt inside a VPS ======
 
+<note important>
+This article is maintained as
+[[https://github.com/vpsfreecz/vpsadmin-kb-captures/blob/master/contract/pages/manuals-vps-kvm.txt|source text]]
+and verified by
+[[https://github.com/vpsfreecz/vpsadmin-kb-captures/blob/master/tests/suite/kb/kvm.nix|automated tests]]
+in the repository. Do not edit it directly in the KB; propose changes in the
+repository instead.
+</note>
+
 ===== Installing libvirt =====
 
 vpsAdminOS runs VPSes as containers, not as virtual machines. KVM inside a VPS
@@ -407,12 +416,14 @@ The public address is not configured on any interface inside the VPS; vpsAdminOS
 routes it to the VPS via the private address.
 </vpsadmin-nav>
 
+<vpsadmin-nav id="networking.routable-addresses.open">
 For IPv6, use another ''/64'' available to you under **Networking → Routable
 addresses** and route it through an address in the VPS's ordinary ''/64''. If
 you already have a larger routed network such as a ''/48'', select a dedicated
 ''/64'' from it for the domain. Use the first address of this second ''/64'' as
 the gateway on the libvirt bridge; for example, ''ROUTED_IPV6_PREFIX::1'' for
 ''ROUTED_IPV6_PREFIX::/64''.
+</vpsadmin-nav>
 
 IPv4 uses a small transit network only between the VPS and the domain:
 

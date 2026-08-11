@@ -56,7 +56,7 @@ bindings:
 - language: cs
   page: navody:vps:kvm
   path: networking.routable-addresses.open
-  count: 1
+  count: 2
 - language: cs
   page: navody:vps:kvm
   path: vps.features.open
@@ -204,7 +204,7 @@ bindings:
 - language: en
   page: manuals:vps:kvm
   path: networking.routable-addresses.open
-  count: 1
+  count: 2
 - language: en
   page: manuals:vps:kvm
   path: vps.features.open

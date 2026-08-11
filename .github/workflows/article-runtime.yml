@@ -1,19 +1,20 @@
-name: KVM documentation runtime
+name: Managed article runtime
 
 on:
   push:
     paths:
-      - .github/workflows/kvm-runtime.yml
+      - .github/workflows/article-runtime.yml
       - captures.json
       - cluster/**
+      - contract/articles.yml
       - contract/pages/**
-      - contract/runtime.yml
       - flake.lock
       - flake.nix
       - test-runner.sh
       - tests/**
-      - tools/check-runtime-contract.rb
-      - tools/test-runtime-contract.rb
+      - tools/article-runtime-matrix.rb
+      - tools/check-article-contract.rb
+      - tools/test-article-contract.rb
   workflow_dispatch:
   schedule:
     - cron: "30 3 * * 0"
@@ -22,8 +23,26 @@ permissions:
   contents: read
 
 jobs:
+  matrix:
+    name: Discover managed articles
+    runs-on: ubuntu-latest
+    outputs:
+      articles: ${{ steps.articles.outputs.matrix }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Build article matrix
+        id: articles
+        run: echo "matrix=$(ruby tools/article-runtime-matrix.rb)" >> "$GITHUB_OUTPUT"
+
   test:
-    name: Run kb-runtime tests
+    name: Test ${{ matrix.article }} article
+    needs: matrix
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.matrix.outputs.articles) }}
     runs-on: self-hosted
     if: github.event_name != 'push' || github.event.deleted != true
     timeout-minutes: 480
@@ -38,11 +57,13 @@ jobs:
         run: nix develop --command bin/check --allow-missing
 
       - name: Preview selected tests
-        run: ./test-runner.sh ls --filter 'tag=kb-runtime'
+        run: >-
+          ./test-runner.sh ls
+          --filter 'tag=kb-runtime && kbArticle=${{ matrix.article }}'
 
       - name: Prepare test state
         id: prepare-tests
-        uses: vpsfreecz/vpsadminos/.github/actions/prepare-test-state@837baf04054c6ee0e71d288b8870ac42a6990c38
+        uses: vpsfreecz/vpsadminos/.github/actions/prepare-test-state@67fcc17372d175b036706a1459a8b471bfc225e0
 
       - name: Run tests
         id: run-tests
@@ -53,7 +74,7 @@ jobs:
             --state-dir "$TEST_RUNNER_STATE_DIR" \
             --fresh \
             --jobs 1 \
-            --filter 'tag=kb-runtime' \
+            --filter 'tag=kb-runtime && kbArticle=${{ matrix.article }}' \
             | tee "$TEST_RUNNER_STATE_DIR/test.log"
 
       - name: Upload full test logs
@@ -62,9 +83,9 @@ jobs:
           (failure() || cancelled()) &&
           steps.prepare-tests.outcome == 'success' &&
           steps.run-tests.outcome != 'skipped'
-        uses: vpsfreecz/vpsadminos/.github/actions/upload-test-logs@837baf04054c6ee0e71d288b8870ac42a6990c38
+        uses: vpsfreecz/vpsadminos/.github/actions/upload-test-logs@67fcc17372d175b036706a1459a8b471bfc225e0
         with:
-          name: kb-kvm-test-logs-${{ github.run_id }}
+          name: kb-${{ matrix.article }}-test-logs-${{ github.run_id }}
           paths: |
             ${{ steps.prepare-tests.outputs.state-directory }}/**/*.log
             ${{ steps.prepare-tests.outputs.state-directory }}/**/*.txt
@@ -74,7 +95,7 @@ jobs:
           always() &&
           steps.prepare-tests.outcome == 'success' &&
           steps.run-tests.outcome != 'skipped'
-        uses: vpsfreecz/vpsadminos/.github/actions/evaluate-test-results@837baf04054c6ee0e71d288b8870ac42a6990c38
+        uses: vpsfreecz/vpsadminos/.github/actions/evaluate-test-results@67fcc17372d175b036706a1459a8b471bfc225e0
         with:
           log-file: ${{ steps.prepare-tests.outputs.state-directory }}/test.log
 
@@ -83,13 +104,13 @@ jobs:
           always() &&
           steps.prepare-tests.outcome == 'success' &&
           steps.run-tests.outcome != 'skipped'
-        uses: vpsfreecz/vpsadminos/.github/actions/summarise-test-logs@837baf04054c6ee0e71d288b8870ac42a6990c38
+        uses: vpsfreecz/vpsadminos/.github/actions/summarise-test-logs@67fcc17372d175b036706a1459a8b471bfc225e0
         with:
           logs-root: ${{ steps.prepare-tests.outputs.state-directory }}
 
       - name: Cleanup test state
         if: always()
-        uses: vpsfreecz/vpsadminos/.github/actions/cleanup-test-state@837baf04054c6ee0e71d288b8870ac42a6990c38
+        uses: vpsfreecz/vpsadminos/.github/actions/cleanup-test-state@67fcc17372d175b036706a1459a8b471bfc225e0
         with:
           state-directory: ${{ steps.prepare-tests.outputs.state-directory }}
           prepare-outcome: ${{ steps.prepare-tests.outcome }}

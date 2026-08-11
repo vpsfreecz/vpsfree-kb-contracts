@@ -1,0 +1,126 @@
+---
+schema: 1
+repository: vpsfreecz/vpsadmin-kb-captures
+revisions:
+  vpsadmin: 63c2c44f6ca04ab958f3d72f777add389b77b162
+  vpsadminos: 67fcc17372d175b036706a1459a8b471bfc225e0
+articles:
+  kvm:
+    test:
+      suite: kb/kvm
+      source: tests/suite/kb/kvm.nix
+    pages:
+      cs:
+        id: navody:vps:kvm
+        counterpart: manuals:vps:kvm
+        source: contract/pages/navody-vps-kvm.txt
+      en:
+        id: manuals:vps:kvm
+        counterpart: navody:vps:kvm
+        source: contract/pages/manuals-vps-kvm.txt
+    captures:
+    - vps-details/feature-settings
+    - vps-details/datasets
+    samples:
+      install-libvirt:
+        path: tests/fixtures/kvm/install-libvirt.sh
+        sha256: a6395dfa25324f3e9b666c7680b2b41b0e7a511cf8868857f3d0d1599b283c83
+        tests:
+        - libvirt
+      configure-storage-pool:
+        path: tests/fixtures/kvm/configure-storage-pool.sh
+        sha256: '084d6aedf300b10ef0275d20949bcebac4a72777201b02fed7d08adb36dba642'
+        tests:
+        - storage
+      configure-nat-port-forwards:
+        path: tests/fixtures/kvm/configure-nat-port-forwards.sh
+        sha256: 2d3de08932f8f9aa8675b4ba98cd917699ea485617891960604f239853d7ab2d
+        tests:
+        - networking
+      configure-routed-network:
+        path: tests/fixtures/kvm/configure-routed-network.sh
+        sha256: 5c39d649181b155ca48b01efc454dc9e98082d4e2bcbb2b6c0c7d18ae80dad5e
+        tests:
+        - networking
+      mount-readonly-iso:
+        path: tests/fixtures/kvm/mount-readonly-iso.sh
+        sha256: 9c85085d0df9f0b2b499218800e247fba3ef38eac6236e467ab21c3a280b87e4
+        tests:
+        - nfs-locking
+    sections:
+      libvirt:
+        claims:
+        - kvm-is-direct-not-nested
+        - kvm-and-tun-default-enabled
+        - debian-latest-template
+        - debian-packages-start-libvirt-automatically
+        - libvirt-system-connection
+        - direct-kvm-capabilities-without-test-domain
+        tests:
+        - platform-defaults
+        - libvirt
+        samples:
+        - install-libvirt
+        localizations:
+          cs:
+            heading: Instalace libvirt
+            fingerprint: b9eba91b2c7f596194a300c5cbb2bfb3435e8df0c18c870145b0f884e27f7717
+          en:
+            heading: Installing libvirt
+            fingerprint: 35a21790a9a080b106c9b70a3fa7d2768e554ee17c796f592195bdd1f8a339db
+      storage:
+        claims:
+        - subdataset-recommended-property-boundary
+        - mounted-subdataset-is-persistent-libvirt-pool
+        - compression-enabled-and-recordsize-128k-maximum-default
+        - raw-default-and-qcow2-feature-choice
+        tests:
+        - storage
+        samples:
+        - configure-storage-pool
+        localizations:
+          cs:
+            heading: Diskové obrazy a ZFS
+            fingerprint: ce0b68b5669c7f9deb380fee232ba733000e9fbc9ffcf040ca5d5388e8972a1c
+          en:
+            heading: Disk images and ZFS
+            fingerprint: b263697385465b79bd9ca4002571620a47affffd116be9ec8b6c1f985e134ca4
+      networking:
+        claims:
+        - outer-veth-is-routed-and-must-not-be-bridged
+        - networking-topologies-have-explicit-tradeoffs
+        - explicit-dual-stack-nat44-and-nat66-network
+        - dual-stack-nat-coexists-with-default-libvirt-network
+        - persistent-dual-stack-port-forwards
+        - public-ipv4-routed-via-private-vps-address
+        - delegated-ipv6-64-routed-via-primary-vps-64
+        - ipv4-and-ipv6-forwarding-enabled-persistently
+        - open-forwarding-leaves-filtering-to-vps-firewall
+        - routed-public-addresses-use-no-libvirt-nat
+        tests:
+        - networking
+        samples:
+        - configure-nat-port-forwards
+        - configure-routed-network
+        localizations:
+          cs:
+            heading: Síť virtuálních strojů
+            fingerprint: 0b06561987af6780c9b42492e28ad0d088d899b43d0d72e78d6e4b0bda8da821
+          en:
+            heading: Virtual-machine networking
+            fingerprint: 33bb85537af3d518aaed35382d700ba9697cf2b436ac2bc4d4604a0011b81c0d
+      nfs-installer-iso:
+        claims:
+        - nfs-lock-failure-is-conditional
+        - nolock-only-for-single-client-readonly-nfsv3-iso
+        tests:
+        - nfs-locking
+        samples:
+        - mount-readonly-iso
+        localizations:
+          cs:
+            heading: Instalační ISO na NFS
+            fingerprint: 99b683c30a358e9f7a31e69cce7b021f1fc11f8d3f1d4d3099fd7d94dc6f5ee3
+          en:
+            heading: Installer ISO on NFS
+            fingerprint: 0d66dd29e1c70c0e4aef11615d5af3108b506e5632d003deb736b9c11703fc77

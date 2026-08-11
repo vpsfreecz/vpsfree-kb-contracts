@@ -850,6 +850,7 @@ import ../../make-test.nix (
       {
         inherit description;
         tags = [ "kb-runtime" ];
+        labels.kbArticle = "kvm";
         script = common + ''
           before(:suite) do
             verify_executable_samples

@@ -1,7 +1,9 @@
-# vpsAdmin KB Capture Repository
+# vpsFree KB Contract Repository
 
-This repository owns reproducible screenshots used by the vpsFree.cz
-knowledge bases. Screenshots are generated artifacts. Never edit them by hand.
+This repository owns canonical sources, runtime tests, and reproducible
+screenshots for an explicit subset of the vpsFree.cz knowledge bases. It does
+not own every KB page. Screenshots are generated artifacts. Never edit them by
+hand.
 
 Every concept in `captures.json` must map to exactly one scenario and
 checkpoint and provide both Czech and English variants. A scenario may produce
@@ -19,6 +21,13 @@ Capture scripts may modify only their dedicated development cluster. They must
 be safe to rerun and must not stop, reset, or reuse another initiative's
 cluster. Wiki uploads are deliberately outside the capture command and require
 an explicit, separately reviewed DokuWiki publication workflow.
+
+Every source-controlled article must be registered in
+`contract/articles.yml`, provide reciprocal Czech/English pages, and bind every
+claim, executable sample, screenshot, and `kb-runtime` test script. Article
+tests must expose the registry key through the `kbArticle` metadata label.
+Managed pages must retain the visible source/test note and must be reconciled
+against direct wiki edits before candidate construction.
 
 When a vpsAdmin feature changes anything visible in the WebUI, follow
 `docs/webui-change-workflow.md`. It is the canonical cross-repository procedure

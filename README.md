@@ -1,9 +1,11 @@
-# vpsAdmin KB captures
+# vpsFree KB contracts
 
-This repository makes vpsAdmin documentation screenshots reproducible. It
-contains the complete asset inventory, its own pinned vpsAdmin development
-cluster, deterministic screenshot fixtures, and Playwright capture scenarios
-for the WebUI, remote console, and CLI.
+This repository owns reproducible evidence for an explicit subset of the
+vpsFree.cz knowledge bases. It contains canonical article sources and runtime
+tests, the complete vpsAdmin screenshot inventory, a pinned development
+cluster, deterministic fixtures, and Playwright capture scenarios for the
+WebUI, remote console, and CLI. It is not the source repository for every KB
+page.
 
 It is self-contained at runtime. The Nix lock file pins upstream vpsAdmin,
 vpsAdminOS, and supporting sources; no external checkout layout or helper
@@ -92,8 +94,8 @@ by the WebUI console, so terminal cell measurements do not depend on fonts
 installed on the capture host.
 
 Captures are intentionally operator-run and this repository contains no
-DokuWiki uploader. GitHub Actions runs static contract checks on changes. The
-maintained KVM-in-a-VPS documentation suite runs on relevant pushes, manually,
+DokuWiki uploader. GitHub Actions runs static contract checks on changes.
+Registered article suites run as separate jobs on relevant pushes, manually,
 and every week on a self-hosted runner with KVM.
 
 ## Documentation contract
@@ -135,12 +137,16 @@ sets, candidate paragraphs missed by the discovery heuristic, and newly
 unclassified or stale independently discovered paragraphs.
 Fetching, staging, and publishing DokuWiki pages remain outside this repository.
 
-## Runtime documentation contract
+## Managed article contract
 
-`contract/runtime.yml` binds the Czech `navody:vps:kvm` and English
-`manuals:vps:kvm` sources to pinned vpsAdmin/vpsAdminOS revisions, executable
-shell samples, section fingerprints, screenshot references, and these
-independently runnable test scripts:
+`contract/articles.yml` is the registry of source-controlled KB articles. Each
+entry binds its Czech and English sources to a test suite, executable samples,
+section claims and fingerprints, and screenshot references. The checker reads
+the flake's `testsMeta` output, so adding an article does not require an
+article-specific source parser or workflow edit.
+
+Every test script has the common `kb-runtime` tag and a `kbArticle` label. The
+KVM article currently provides these independently runnable scripts:
 
 ```text
 kb/kvm#platform-defaults
@@ -165,8 +171,15 @@ List or run the maintained tests from the repository root:
 ```sh
 ./test-runner.sh ls --filter 'tag=kb-runtime'
 ./test-runner.sh test --fresh 'kb/kvm#platform-defaults'
-./test-runner.sh test --fresh --jobs 1 --filter 'tag=kb-runtime'
+./test-runner.sh test --fresh --jobs 1 \
+  --filter 'tag=kb-runtime && kbArticle=kvm'
 ```
+
+Managed pages contain a visible note linking their canonical source and test.
+Do not edit them directly in DokuWiki. Candidate construction compares the
+fetched wiki page, an explicit Git base commit, and the working source. A
+wiki-only edit or concurrent Git/wiki edits stop the release until the change
+is explicitly adopted or merged into the repository and verified again.
 
 The flake exports `tests`, `testsMeta`, `lib.testFramework`, and a named
 `test-runner` app using the pinned vpsAdminOS external-test interface. The

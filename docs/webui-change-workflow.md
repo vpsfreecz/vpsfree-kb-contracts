@@ -147,6 +147,24 @@ The source index still has to contain exactly the same complete page-ID set;
 candidate construction and the release manifest separately guard the fetched
 production checksums and revisions.
 
+For pages registered in `contract/articles.yml`, use replacement-plan schema 4
+and name the article under `managed_articles`. Pass the contract repository and
+the explicit pre-change Git base to the builder:
+
+```sh
+bin/kb-contract-build \
+  --source work/SLUG/kb-sources \
+  --plan work/SLUG/kb-annotation-plan.yml \
+  --code-root /path/to/vpsadmin-kb-captures \
+  --code-base BASE-COMMIT \
+  --output work/SLUG/kb-candidates
+```
+
+The builder compares the base source, working source, and fetched wiki page. A
+wiki-only or concurrent edit stops candidate construction. Inspect it with
+`bin/kb-contract-reconcile`; import a wiki-only edit only with an explicit
+`--adopt --yes`, then update its contract evidence and rerun the tests.
+
 ## 6. Build and stage guarded releases
 
 Create one manifest per language with an informative, localized production

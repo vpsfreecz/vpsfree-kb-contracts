@@ -1,0 +1,131 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'json'
+require 'minitest/autorun'
+require 'open3'
+require 'tmpdir'
+require 'yaml'
+
+class ArticleContractCheckerTest < Minitest::Test
+  ROOT = File.expand_path('..', __dir__)
+  CHECKER = File.join(ROOT, 'tools/check-article-contract.rb')
+  CONTRACT = File.join(ROOT, 'contract/articles.yml')
+
+  def self.tests_meta
+    @tests_meta ||= begin
+      if ENV['ARTICLE_TESTS_META']
+        JSON.parse(File.read(ENV.fetch('ARTICLE_TESTS_META')))
+      else
+        output, error, status = Open3.capture3(
+          'nix', 'eval', '--json', '.#testsMeta.x86_64-linux',
+          chdir: ROOT
+        )
+        raise error unless status.success?
+
+        JSON.parse(output)
+      end
+    end
+  end
+
+  def test_current_contract_is_valid
+    _output, error, status = run_checker(YAML.safe_load_file(CONTRACT), self.class.tests_meta)
+
+    assert(status.success?, error)
+  end
+
+  def test_article_id_is_not_hard_coded
+    contract = YAML.safe_load_file(CONTRACT)
+    article = contract.fetch('articles').delete('kvm')
+    contract.fetch('articles')['virtualization'] = article
+    metadata = Marshal.load(Marshal.dump(self.class.tests_meta))
+    metadata.fetch('kb/kvm').fetch('testScripts').each_value do |script|
+      script.fetch('labels')['kbArticle'] = 'virtualization'
+    end
+
+    _output, error, status = run_checker(contract, metadata)
+
+    assert(status.success?, error)
+  end
+
+  def test_revision_drift_is_rejected
+    _output, error, status = check_mutated_contract do |contract|
+      contract.fetch('revisions')['vpsadminos'] = '0' * 40
+    end
+
+    refute(status.success?)
+    assert_match(/vpsadminos revision differs/, error)
+  end
+
+  def test_sample_drift_is_rejected
+    _output, error, status = check_mutated_contract do |contract|
+      contract.dig('articles', 'kvm', 'samples', 'install-libvirt')['sha256'] = '0' * 64
+    end
+
+    refute(status.success?)
+    assert_match(/install-libvirt: sample SHA-256 differs/, error)
+  end
+
+  def test_section_drift_is_rejected
+    _output, error, status = check_mutated_contract do |contract|
+      contract.dig(
+        'articles', 'kvm', 'sections', 'libvirt', 'localizations', 'cs'
+      )['fingerprint'] = '0' * 64
+    end
+
+    refute(status.success?)
+    assert_match(/section fingerprint differs/, error)
+  end
+
+  def test_unknown_test_binding_is_rejected
+    _output, error, status = check_mutated_contract do |contract|
+      contract.dig('articles', 'kvm', 'sections', 'libvirt')['tests'] = ['missing']
+    end
+
+    refute(status.success?)
+    assert_match(/unknown tests missing/, error)
+  end
+
+  def test_wrong_article_label_is_rejected
+    metadata = Marshal.load(Marshal.dump(self.class.tests_meta))
+    metadata.dig('kb/kvm', 'testScripts', 'storage', 'labels')['kbArticle'] = 'other'
+
+    _output, error, status = run_checker(YAML.safe_load_file(CONTRACT), metadata)
+
+    refute(status.success?)
+    assert_match(/storage has the wrong kbArticle label/, error)
+  end
+
+  def test_repository_link_drift_is_rejected
+    _output, error, status = check_mutated_contract do |contract|
+      contract['repository'] = 'vpsfreecz/different-repository'
+    end
+
+    refute(status.success?)
+    assert_match(/managed-article note is missing/, error)
+  end
+
+  private
+
+  def check_mutated_contract
+    contract = YAML.safe_load_file(CONTRACT)
+    yield contract
+    run_checker(contract, self.class.tests_meta)
+  end
+
+  def run_checker(contract, tests_meta)
+    Dir.mktmpdir do |dir|
+      contract_path = File.join(dir, 'articles.yml')
+      metadata_path = File.join(dir, 'tests-meta.json')
+      File.write(contract_path, YAML.dump(contract))
+      File.write(metadata_path, JSON.generate(tests_meta))
+      Open3.capture3(
+        RbConfig.ruby,
+        CHECKER,
+        '--contract', contract_path,
+        '--root', ROOT,
+        '--tests-meta', metadata_path
+      )
+    end
+  end
+end

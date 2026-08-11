@@ -2,6 +2,14 @@
 
 ====== KVM a libvirt uvnitř VPS ======
 
+<note important>
+Tento článek je spravován jako
+[[https://github.com/vpsfreecz/vpsadmin-kb-captures/blob/master/contract/pages/navody-vps-kvm.txt|zdrojový text]]
+a ověřován
+[[https://github.com/vpsfreecz/vpsadmin-kb-captures/blob/master/tests/suite/kb/kvm.nix|automatickými testy]]
+v repozitáři. Neupravujte jej proto přímo v KB; změnu navrhněte v repozitáři.
+</note>
+
 ===== Instalace libvirt =====
 
 vpsAdminOS provozuje VPS v kontejnerech, nikoli ve virtuálních strojích. KVM
@@ -401,12 +409,14 @@ adresa se tím nenastaví na žádném rozhraní uvnitř VPS; vpsAdminOS ji k VP
 směruje přes privátní adresu.
 </vpsadmin-nav>
 
+<vpsadmin-nav id="networking.routable-addresses.open">
 Pro IPv6 použijte další ''/64'', kterou máte v části **Síť → Routované adresy**
 k dispozici, a nastavte její směrování přes adresu z běžné ''/64'' VPS. Pokud už
 máte směrovanou větší síť, například ''/48'', vyberte z ní pro doménu
 samostatnou ''/64''. První adresu této druhé ''/64'' použijeme jako bránu na
 bridge libvirt; například pro ''ROUTED_IPV6_PREFIX::/64'' to bude
 ''ROUTED_IPV6_PREFIX::1''.
+</vpsadmin-nav>
 
 Tok IPv4 paketů používá malou tranzitní síť pouze mezi VPS a doménou:
 
