@@ -225,6 +225,17 @@ discoveries:
     groupchat * Vyplňte údaje a následně vidíte jabber místnost jako nový jabber kontakt
     ve vašem contact listu."
   reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
+- id: 2466e5888917d854
+  language: cs
+  page: informace:jak_psat
+  paragraph: 9
+  text: "==== Články spravované v repozitáři ==== Některé články jsou společně se svými
+    automatickými testy spravovány v repozitáři ''vpsfree-kb-contracts''. Poznáte je
+    podle odkazu **Zdroj na GitHubu** v panelu nástrojů stránky. Editor KB navíc zobrazí
+    upozornění s odkazy na zdrojový text, automatický test a návod **Jak přispívat do
+    znalostní báze**. Ruční úpravy takového článku přímo v KB jsou možné, ale automatický
+    test je neověří. Ověřenou změnu je proto potřeba provést také v odkazovaném repozitáři."
+  reason: Documentation-authoring instructions, not a member navigation path.
 - id: 310addbc83a73ba5
   language: cs
   page: informace:jak_psat
@@ -1094,6 +1105,18 @@ discoveries:
     ''%%%%'' tag. Its ''id'' attribute contains the stable semantic identifier of
     that control. The visible text remains in English and must match the current WebUI
     labels."
+  reason: Documentation-authoring instructions, not a member navigation path.
+- id: 9b142b246d8be39b
+  language: en
+  page: information:kb
+  paragraph: 9
+  text: "==== Repository-managed articles ==== Some articles and their automated tests
+    are maintained in the ''vpsfree-kb-contracts'' repository. They have a **Source
+    on GitHub** entry in the page toolbar. The KB editor also displays a notice with
+    links to the source text, automated test, and **Contributing to the Knowledge Base**
+    guide. Manual edits to such an article in the KB are possible, but the automated
+    test does not verify them. To make a verified change, update the linked repository
+    as well."
   reason: Documentation-authoring instructions, not a member navigation path.
 - id: 421fac99a88a8c17
   language: en
