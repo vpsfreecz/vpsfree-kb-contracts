@@ -50,13 +50,16 @@ klíčem. Nezveřejňuj nešifrovaný libvirt TCP socket do internetu.
 
 Pro obrazy disků doporučujeme samostatný [[navody:vps:datasety|subdataset]].
 V budoucnu tak můžeš změnit jeho ZFS vlastnosti bez zásahu do kořenového
-datasetu VPS. Před vytvořením virtuálních strojů zmenši referenční kvótu
-kořenového datasetu o prostor určený pro obrazy, vytvoř subdataset
-''vm-images'' s uvolněnou kapacitou a připoj jej do VPS jako
-''/srv/libvirt/images''. Například z běžné kapacity 120 GiB můžeš ponechat
-20 GiB kořenovému datasetu a 100 GiB přidělit datasetu ''vm-images''. Prvnímu
-disku virtuálního stroje pak můžeš přidělit například 80 GiB a ponechat 20 GiB
-volných pro jeho růst a snapshoty.
+datasetu VPS. Doporučené úložiště připrav takto:
+
+  * <vpsadmin-nav id="datasets.edit.open">V detailu VPS u kořenového datasetu použij akci **Upravit** a zmenši jeho referenční kvótu o prostor určený pro obrazy.</vpsadmin-nav>
+  * <vpsadmin-nav id="datasets.create.open">Pomocí **Vytvořit dataset** vytvoř subdataset ''vm-images'' s uvolněnou kapacitou.</vpsadmin-nav>
+  * <vpsadmin-nav id="datasets.mount.open">U datasetu ''vm-images'' použij **Mount** a připoj jej do VPS jako ''/srv/libvirt/images''.</vpsadmin-nav>
+
+Například z běžné kapacity 120 GiB můžeš ponechat 20 GiB kořenovému datasetu
+a 100 GiB přidělit datasetu ''vm-images''. Prvnímu disku virtuálního stroje pak
+můžeš přidělit například 80 GiB a ponechat 20 GiB volných pro jeho růst a
+snapshoty.
 
 Subdataset se [[navody:vps:zalohy|snapshotuje]] odděleně od kořenového datasetu
 VPS.

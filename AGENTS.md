@@ -30,6 +30,12 @@ Managed pages must retain the invisible `<kb-managed>` source/test marker
 immediately after their language mapping and must be reconciled against direct
 wiki edits before candidate construction.
 
+Every instruction that tells the reader to perform an action in the vpsAdmin
+WebUI must be wrapped in a paired `<vpsadmin-nav>` tag with a semantic path from
+`contract/navigation.yml`. This includes action-oriented prose that does not
+explicitly name a menu, form, or navigation path. Treat independent discovery
+as a safety net, not as proof that every instruction is annotated.
+
 When authoring or translating Czech KB articles, address the reader using
 informal singular forms (`tykání`), for example `můžeš`, `potřebuješ`,
 `nainstaluj`, and `použij`. Do not use formal `vy` or plural imperatives as a

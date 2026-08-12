@@ -1,5 +1,5 @@
 schema: 1
-vpsadmin_revision: 63c2c44f6ca04ab958f3d72f777add389b77b162
+vpsadmin_revision: 02449a1e0966c00969e98e7267ad68e002123d62
 languages:
   - cs
   - en
@@ -286,6 +286,16 @@ controls:
       fingerprint: 111aa84621734d1ef6401e3fba95d96635d32d3deab6edff8245604356caf940
     captures:
       - datasets/create-dataset-form
+      - vps-details/datasets
+
+  - id: datasets.edit
+    label: { en: Edit, cs: Upravit }
+    source:
+      path: webui/forms/dataset.forms.php
+      contains: 'data-vpsadmin-doc-id="datasets.edit"'
+      fingerprint: b397af2ef43e89a6aec228526ce116d78698435f2ed5838e4eabda949d803659
+    captures:
+      - vps-details/datasets
 
   - id: datasets.mount
     label: { en: Mount, cs: Mount }
@@ -296,6 +306,7 @@ controls:
     captures:
       - datasets/mount-list
       - datasets/mount-dataset-form
+      - vps-details/datasets
 
   - id: vps.create
     label: { en: New VPS, cs: Nové VPS }
@@ -514,14 +525,20 @@ paths:
   - id: datasets.create.open
     steps: [datasets.create]
     pages:
-      cs: [navody:vps:datasety]
-      en: [manuals:vps:datasets]
+      cs: [navody:vps:datasety, navody:vps:kvm]
+      en: [manuals:vps:datasets, manuals:vps:kvm]
+
+  - id: datasets.edit.open
+    steps: [datasets.edit]
+    pages:
+      cs: [navody:vps:kvm]
+      en: [manuals:vps:kvm]
 
   - id: datasets.mount.open
     steps: [datasets.mount]
     pages:
-      cs: [navody:vps:oprava, navody:distribuce:nixos:impermanence]
-      en: [manuals:vps:repair, manuals:distributions:nixos:impermanence]
+      cs: [navody:vps:oprava, navody:distribuce:nixos:impermanence, navody:vps:kvm]
+      en: [manuals:vps:repair, manuals:distributions:nixos:impermanence, manuals:vps:kvm]
 
   - id: vps.features.open
     steps: [vps.features]

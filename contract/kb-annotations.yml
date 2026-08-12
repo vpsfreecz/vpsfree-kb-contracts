@@ -55,6 +55,18 @@ bindings:
   count: 1
 - language: cs
   page: navody:vps:kvm
+  path: datasets.create.open
+  count: 1
+- language: cs
+  page: navody:vps:kvm
+  path: datasets.edit.open
+  count: 1
+- language: cs
+  page: navody:vps:kvm
+  path: datasets.mount.open
+  count: 1
+- language: cs
+  page: navody:vps:kvm
   path: networking.routable-addresses.open
   count: 2
 - language: cs
@@ -200,6 +212,18 @@ bindings:
 - language: en
   page: manuals:vps:ip_addresses
   path: networking.routable-addresses.open
+  count: 1
+- language: en
+  page: manuals:vps:kvm
+  path: datasets.create.open
+  count: 1
+- language: en
+  page: manuals:vps:kvm
+  path: datasets.edit.open
+  count: 1
+- language: en
+  page: manuals:vps:kvm
+  path: datasets.mount.open
   count: 1
 - language: en
   page: manuals:vps:kvm

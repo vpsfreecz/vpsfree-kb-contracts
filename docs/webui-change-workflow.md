@@ -143,6 +143,10 @@ ruby /path/to/vpsfree-kb-contracts/tools/check-kb-annotations.rb \
 Review `kb-candidates/review.md`. The checker rejects malformed or unknown
 tags, count drift, partial or duplicated page inventories, newly unclassified
 candidate paragraphs, and navigation tags missed by independent discovery.
+Discovery is deliberately heuristic. Manually enumerate every instruction that
+tells the reader to perform a vpsAdmin WebUI action, including prose that does
+not name a menu or form, and verify that each instruction has a semantic
+`<vpsadmin-nav>` binding.
 The source index still has to contain exactly the same complete page-ID set;
 candidate construction and the release manifest separately guard the fetched
 production checksums and revisions.

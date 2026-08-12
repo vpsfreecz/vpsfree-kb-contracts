@@ -246,15 +246,16 @@ discoveries:
     zadejte své přihlašovací údaje do vpsAdminu."
   reason: Existing WebUI reference outside the localized navigation-label set; inventoried
     for future semantic binding.
-- id: e32bc9578c3cbe5b
+- id: bd8c4c19d2b09d9f
   language: cs
   page: informace:jak_psat
   paragraph: 5
-  text: "===== Dokumentace vpsAdminu ===== ==== Navigace ve vpsAdminu ==== Každý popis
-    navigace, položky nabídky nebo formuláře ve vpsAdminu musí být uzavřen v párovém
-    tagu ''%%%%''. Atribut ''id'' obsahuje stabilní sémantický identifikátor daného
-    ovládacího prvku. Viditelný text zůstává česky a musí odpovídat názvům v aktuálním
-    webovém rozhraní."
+  text: "===== Dokumentace vpsAdminu ===== ==== Navigace ve vpsAdminu ==== Každý pokyn
+    k provedení akce ve vpsAdminu i každý popis navigace, položky nabídky nebo formuláře
+    musí být uzavřen v párovém tagu ''%%%%''. Platí to i pro pokyn, který pouze říká
+    změnit nastavení a výslovně nezmiňuje nabídku ani formulář. Atribut ''id'' obsahuje
+    stabilní sémantický identifikátor daného ovládacího prvku. Viditelný text zůstává
+    česky a musí odpovídat názvům v aktuálním webovém rozhraní."
   reason: Documentation-authoring instructions, not a member navigation path.
 - id: 1f7eed5630861960
   language: cs
@@ -633,20 +634,32 @@ discoveries:
     výchozím nastavení v sekci **Funkce** v detailu VPS ve vpsAdminu.
   paths:
   - vps.features.open
-- id: 35752042426bf16b
+- id: 9fe39931614dee3f
   language: cs
   page: navody:vps:kvm
-  paragraph: 37
+  paragraph: 11
+  text: "* V detailu VPS u kořenového datasetu použij akci **Upravit** a zmenši jeho
+    referenční kvótu o prostor určený pro obrazy. * Pomocí **Vytvořit dataset** vytvoř
+    subdataset ''vm-images'' s uvolněnou kapacitou. * U datasetu ''vm-images'' použij
+    **Mount** a připoj jej do VPS jako ''/srv/libvirt/images''."
+  paths:
+  - datasets.edit.open
+  - datasets.create.open
+  - datasets.mount.open
+- id: 3442b9f7cad1736c
+  language: cs
+  page: navody:vps:kvm
+  paragraph: 39
   text: V části **Síť → Routované adresy** pak vyber veřejnou ''/32'' v poli **Adresa**,
     privátní adresu VPS v poli **Přes** a cílové rozhraní VPS. Veřejná adresa se tím
     nenastaví na žádném rozhraní uvnitř VPS; vpsAdminOS ji k VPS směruje přes privátní
     adresu.
   paths:
   - networking.routable-addresses.open
-- id: ce4ad585dc15df3f
+- id: 2165b77a54142020
   language: cs
   page: navody:vps:kvm
-  paragraph: 38
+  paragraph: 40
   text: Pro IPv6 použij další ''/64'', kterou máš v části **Síť → Routované adresy**
     k dispozici, a nastav její směrování přes adresu z běžné ''/64'' VPS. Pokud už máš
     směrovanou větší síť, například ''/48'', vyber z ní pro doménu samostatnou ''/64''.
@@ -1096,13 +1109,15 @@ discoveries:
     you can remove them from your VPS using the same form in vpsAdmin.
   reason: Existing WebUI reference outside the localized navigation-label set; inventoried
     for future semantic binding.
-- id: '00987ae126f2aaaf'
+- id: 0354a7334de9d6ab
   language: en
   page: information:kb
   paragraph: 5
-  text: "===== Documenting vpsAdmin ===== ==== Navigation in vpsAdmin ==== Every description
-    of navigation, a menu entry, or a form in vpsAdmin must be wrapped in a paired
-    ''%%%%'' tag. Its ''id'' attribute contains the stable semantic identifier of
+  text: "===== Documenting vpsAdmin ===== ==== Navigation in vpsAdmin ==== Every instruction
+    to perform an action in vpsAdmin, as well as every description of navigation,
+    a menu entry, or a form, must be wrapped in a paired ''%%%%'' tag. This also applies
+    when an instruction only says to change a setting without explicitly naming a
+    menu or form. Its ''id'' attribute contains the stable semantic identifier of
     that control. The visible text remains in English and must match the current WebUI
     labels."
   reason: Documentation-authoring instructions, not a member navigation path.
@@ -1462,20 +1477,32 @@ discoveries:
     default for new VPSes in the **Features** section of the VPS detail in vpsAdmin.
   paths:
   - vps.features.open
-- id: e0892d361529d1b9
+- id: b160827260dfc0ca
   language: en
   page: manuals:vps:kvm
-  paragraph: 37
+  paragraph: 11
+  text: "* In the VPS details, use **Edit** on the root dataset and reduce its reference
+    quota by the capacity intended for images. * Use **Create dataset** to create
+    a ''vm-images'' subdataset with the freed capacity. * Use **Mount** on ''vm-images''
+    and mount it in the VPS at ''/srv/libvirt/images''."
+  paths:
+  - datasets.edit.open
+  - datasets.create.open
+  - datasets.mount.open
+- id: c73064cd1cf20b4b
+  language: en
+  page: manuals:vps:kvm
+  paragraph: 39
   text: Under **Networking → Routable addresses**, select the public ''/32'' in **Address**,
     the VPS private address in **Via**, and the target VPS interface. The public address
     is not configured on any interface inside the VPS; vpsAdminOS routes it to the VPS
     via the private address.
   paths:
   - networking.routable-addresses.open
-- id: e2b2af52adbe06eb
+- id: bd34f7f139b43811
   language: en
   page: manuals:vps:kvm
-  paragraph: 38
+  paragraph: 40
   text: For IPv6, use another ''/64'' available to you under **Networking → Routable
     addresses** and route it through an address in the VPS's ordinary ''/64''. If you
     already have a larger routed network such as a ''/48'', select a dedicated ''/64''

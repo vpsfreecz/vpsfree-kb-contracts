@@ -2,7 +2,7 @@
 schema: 1
 repository: vpsfreecz/vpsfree-kb-contracts
 revisions:
-  vpsadmin: 63c2c44f6ca04ab958f3d72f777add389b77b162
+  vpsadmin: 02449a1e0966c00969e98e7267ad68e002123d62
   vpsadminos: 67fcc17372d175b036706a1459a8b471bfc225e0
 articles:
   kvm:
@@ -81,10 +81,10 @@ articles:
         localizations:
           cs:
             heading: Diskové obrazy a ZFS
-            fingerprint: b68411f700be54f8057ed8866f2efeff523ce34501363debdaa3227dc75cda93
+            fingerprint: 0caff2a7ae450298ef408dd9e97699d8a2332f6f1406410eda09b18864275e84
           en:
             heading: Disk images and ZFS
-            fingerprint: b263697385465b79bd9ca4002571620a47affffd116be9ec8b6c1f985e134ca4
+            fingerprint: bf9d190c5634c499cdc0066fb808163dfba312c6402bbad42abdea807fcf47ca
       networking:
         claims:
         - outer-veth-is-routed-and-must-not-be-bridged

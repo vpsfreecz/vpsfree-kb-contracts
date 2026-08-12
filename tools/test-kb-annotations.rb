@@ -63,6 +63,17 @@ class KbAnnotationsCheckerTest < Minitest::Test
     assert_match(/independent navigation inventory mismatch/, error)
   end
 
+  def test_dataset_preparation_workflow_is_independently_discovered
+    discoveries = KbNavigationDiscovery.discover(
+      language: 'en',
+      page: 'manuals:vps:kvm',
+      content: 'Reduce the root quota, create a subdataset, and mount it in the VPS.'
+    )
+
+    assert_equal(1, discoveries.length)
+    assert_equal('manuals:vps:kvm', discoveries.first.fetch('page'))
+  end
+
   def test_duplicate_page_cannot_replace_an_omitted_identity
     _out, error, status = run_checker(duplicate_candidate: true)
 

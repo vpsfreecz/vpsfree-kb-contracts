@@ -12,7 +12,8 @@ module KbNavigationDiscovery
     [[:upper:]][[:alpha:] ]{1,60}\s+menu\b|
     (?:section|sekci|odkaz|link|action|funkce).{0,180}(?:vpsadmin|\*\*|["„])|
     (?:\*\*|["“„]).{0,180}(?:details?|detailu|sidebar)|
-    (?:VPS.{0,100}details?|details?.{0,100}VPS)
+    (?:VPS.{0,100}details?|details?.{0,100}VPS)|
+    (?:quota|kvót\w*).{0,420}subdataset.{0,420}(?:mount|připoj\w*)
   )/imx
 
   module_function
