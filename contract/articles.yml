@@ -64,7 +64,7 @@ articles:
         localizations:
           cs:
             heading: Instalace libvirt
-            fingerprint: b9eba91b2c7f596194a300c5cbb2bfb3435e8df0c18c870145b0f884e27f7717
+            fingerprint: c27bcd24bdc1bb18ffd5f1637696b474c1b0a8d58010e072ee422d1ed7a25ff7
           en:
             heading: Installing libvirt
             fingerprint: 35a21790a9a080b106c9b70a3fa7d2768e554ee17c796f592195bdd1f8a339db
@@ -81,7 +81,7 @@ articles:
         localizations:
           cs:
             heading: Diskové obrazy a ZFS
-            fingerprint: ce0b68b5669c7f9deb380fee232ba733000e9fbc9ffcf040ca5d5388e8972a1c
+            fingerprint: b68411f700be54f8057ed8866f2efeff523ce34501363debdaa3227dc75cda93
           en:
             heading: Disk images and ZFS
             fingerprint: b263697385465b79bd9ca4002571620a47affffd116be9ec8b6c1f985e134ca4
@@ -105,7 +105,7 @@ articles:
         localizations:
           cs:
             heading: Síť virtuálních strojů
-            fingerprint: 0b06561987af6780c9b42492e28ad0d088d899b43d0d72e78d6e4b0bda8da821
+            fingerprint: 9840f2f06a24d65d6ced73e9aa9bc55e033b9dd19826eda092ae90917aebb2f3
           en:
             heading: Virtual-machine networking
             fingerprint: 33bb85537af3d518aaed35382d700ba9697cf2b436ac2bc4d4604a0011b81c0d
@@ -120,7 +120,7 @@ articles:
         localizations:
           cs:
             heading: Instalační ISO na NFS
-            fingerprint: 99b683c30a358e9f7a31e69cce7b021f1fc11f8d3f1d4d3099fd7d94dc6f5ee3
+            fingerprint: e2f4bcbccffc76647e0cacade6f702cc671ee2995bd0829cb85c4134be85a129
           en:
             heading: Installer ISO on NFS
             fingerprint: 0d66dd29e1c70c0e4aef11615d5af3108b506e5632d003deb736b9c11703fc77

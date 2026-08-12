@@ -23,7 +23,7 @@ výchozím nastavení v sekci **Funkce** v detailu VPS ve vpsAdminu.
 
 {{:cs:screenshots:vpsadmin:vps-details:feature-settings.png?direct|Výchozí funkce VPS}}
 
-Nainstalujte QEMU, libvirt a ''virt-install'' z Debianu:
+Nainstaluj QEMU, libvirt a ''virt-install'' z Debianu:
 
 <code bash>
 #!/usr/bin/env bash
@@ -42,20 +42,20 @@ apt-get install --yes \
 virsh --connect qemu:///system version
 </code>
 
-Používejte systémové spojení ''qemu:///system''. Pro vzdálenou správu použijte
-libvirt přes SSH, například ''qemu+ssh://root@HOST/system'', a chraňte SSH
-klíčem. Nezveřejňujte nešifrovaný libvirt TCP socket do internetu.
+Používej systémové spojení ''qemu:///system''. Pro vzdálenou správu použij
+libvirt přes SSH, například ''qemu+ssh://root@HOST/system'', a chraň SSH
+klíčem. Nezveřejňuj nešifrovaný libvirt TCP socket do internetu.
 
 ===== Diskové obrazy a ZFS =====
 
 Pro obrazy disků doporučujeme samostatný [[navody:vps:datasety|subdataset]].
-V budoucnu tak můžete změnit jeho ZFS vlastnosti bez zásahu do kořenového
-datasetu VPS. Před vytvořením virtuálních strojů zmenšete referenční kvótu
-kořenového datasetu o prostor určený pro obrazy, vytvořte subdataset
-''vm-images'' s uvolněnou kapacitou a připojte jej do VPS jako
-''/srv/libvirt/images''. Například z běžné kapacity 120 GiB můžete ponechat
+V budoucnu tak můžeš změnit jeho ZFS vlastnosti bez zásahu do kořenového
+datasetu VPS. Před vytvořením virtuálních strojů zmenši referenční kvótu
+kořenového datasetu o prostor určený pro obrazy, vytvoř subdataset
+''vm-images'' s uvolněnou kapacitou a připoj jej do VPS jako
+''/srv/libvirt/images''. Například z běžné kapacity 120 GiB můžeš ponechat
 20 GiB kořenovému datasetu a 100 GiB přidělit datasetu ''vm-images''. Prvnímu
-disku virtuálního stroje pak můžete přidělit například 80 GiB a ponechat 20 GiB
+disku virtuálního stroje pak můžeš přidělit například 80 GiB a ponechat 20 GiB
 volných pro jeho růst a snapshoty.
 
 Subdataset se [[navody:vps:zalohy|snapshotuje]] odděleně od kořenového datasetu
@@ -63,7 +63,7 @@ VPS.
 
 {{:cs:screenshots:vpsadmin:vps-details:datasets.png?direct|Datasety VPS}}
 
-Připojený adresář přidejte do libvirt jako trvalý storage pool:
+Připojený adresář přidej do libvirt jako trvalý storage pool:
 
 <code bash>
 #!/usr/bin/env bash
@@ -76,17 +76,17 @@ virsh --connect qemu:///system pool-autostart vm-images
 virsh --connect qemu:///system pool-info vm-images
 </code>
 
-Disky pak vytvářejte prostřednictvím libvirt, ''virt-install'' nebo
+Disky pak vytvářej prostřednictvím libvirt, ''virt-install'' nebo
 ''virt-manager'' v poolu ''vm-images''.
 
-ZFS vlastnosti subdatasetu ponechte na výchozích hodnotách, dokud měření
+ZFS vlastnosti subdatasetu ponech na výchozích hodnotách, dokud měření
 neukáže důvod ke změně. Komprese je ve výchozím nastavení zapnutá. Výchozí
 ''recordsize=128K'' určuje maximální velikost záznamu souboru; ZFS podle potřeby
 používá i menší záznamy. Změna ''recordsize'' se projeví pouze u nově
 vytvořených souborů.
 
 Pro obrazy na ZFS je vhodnou výchozí volbou formát ''raw'', protože nepřidává
-další copy-on-write vrstvu. ''qcow2'' použijte, pokud potřebujete jeho backing
+další copy-on-write vrstvu. ''qcow2'' použij, pokud potřebuješ jeho backing
 files, interní snapshoty nebo jiné funkce obrazového formátu.
 
 Podrobnosti k ladění podle zátěže popisuje [[https://openzfs.github.io/openzfs-docs/Performance%20and%20Tuning/Workload%20Tuning.html|OpenZFS Workload Tuning]], formáty obrazů pak [[https://www.qemu.org/docs/master/system/images|dokumentace QEMU]].
@@ -94,7 +94,7 @@ Podrobnosti k ladění podle zátěže popisuje [[https://openzfs.github.io/open
 ===== Síť virtuálních strojů =====
 
 Síťové rozhraní VPS je k nodu připojené směrovaným spojem na třetí vrstvě.
-Nepřidávejte proto rozhraní VPS do bridge spravovaného libvirt. Pro připojení
+Nepřidávej proto rozhraní VPS do bridge spravovaného libvirt. Pro připojení
 virtuálních strojů k síti jsou vhodná dvě zapojení:
 
 ^ Zapojení ^ Adresy v doméně ^ Výhody ^ Nevýhody ^
@@ -102,9 +102,9 @@ virtuálních strojů k síti jsou vhodná dvě zapojení:
 | Směrované veřejné adresy | Veřejná IPv4 ''/32'' a adresy ze samostatné IPv6 ''/64'' | Doména je dostupná přímo, bez NAT a bez překladu portů. | Vyžaduje privátní IPv4 na VPS, další směrovanou IPv6 síť a pečlivě nastavený firewall. |
 
 NAT je obvykle jednodušší pro jednu nebo několik domén s malým počtem
-zveřejněných služeb. Směrované adresy použijte, když má mít doména vlastní
+zveřejněných služeb. Směrované adresy použij, když má mít doména vlastní
 veřejné adresy, všechny porty nebo protokoly, které se přes port forwarding
-obsluhují špatně. Pro čistě vnitřní komunikaci mezi doménami můžete přidat další
+obsluhují špatně. Pro čistě vnitřní komunikaci mezi doménami můžeš přidat další
 izolovanou síť libvirt; přístup ven nadále řeší jedno z uvedených zapojení.
 
 ==== Veřejné adresy na VPS a dvouprotokolový NAT ====
@@ -118,9 +118,9 @@ dvouprotokolovou síť s odlišnou IPv4 podsítí. NAT66 se v XML zapíná pomoc
 ''<nat ipv6='yes'/>''; podrobnosti jsou v
 [[https://libvirt.org/formatnetwork.html|dokumentaci formátu sítí libvirt]].
 
-ULA ''fd5f:6d2e:9c4a::/48'' je příklad pro samostatnou instalaci. Pokud budete
-více privátních sítí později propojovat pomocí VPN nebo směrování, vytvořte pro
-každou z nich vlastní náhodný ULA ''/48'' a změňte ''HOST_IPV6'' i
+ULA ''fd5f:6d2e:9c4a::/48'' je příklad pro samostatnou instalaci. Pokud budeš
+více privátních sítí později propojovat pomocí VPN nebo směrování, vytvoř pro
+každou z nich vlastní náhodný ULA ''/48'' a změň ''HOST_IPV6'' i
 ''GUEST_IPV6'' na adresy ze stejné ''/64''.
 
 Podstatnou část definice sítě tvoří následující XML:
@@ -137,9 +137,9 @@ Podstatnou část definice sítě tvoří následující XML:
 </network>
 </code>
 
-Vytvořenou doménu připojte k ''dualstack-nat'', například volbou
+Vytvořenou doménu připoj k ''dualstack-nat'', například volbou
 ''--network network=dualstack-nat,model=virtio'' ve ''virt-install''. V doméně
-nastavte stabilní adresy a brány:
+nastav stabilní adresy a brány:
 
 <code conf>
 auto ens3
@@ -168,7 +168,7 @@ skript proto vytvoří síť, soubor s přesměrováním a hook, který pravidla
 při spuštění nebo znovupřipojení sítě. Ve výchozím nastavení zveřejní web na
 portu 80 a SSH domény na portu 2222 pro IPv4 i IPv6.
 
-Uložte jej například jako ''/root/configure-nat-port-forwards.sh'' a spusťte
+Ulož jej například jako ''/root/configure-nat-port-forwards.sh'' a spusť
 s jednou veřejnou IPv4 a jednou adresou z IPv6 ''/64'' nakonfigurovanou na VPS:
 
 <code bash>
@@ -370,9 +370,9 @@ fi
 virsh --connect "$connection" net-dumpxml "$network"
 </code>
 
-Další port přidáte do ''/etc/libvirt/port-forwards.conf'' ve tvaru
+Další port přidáš do ''/etc/libvirt/port-forwards.conf'' ve tvaru
 ''RODINA PROTOKOL VEŘEJNÁ_IP VEŘEJNÝ_PORT IP_DOMÉNY PORT_DOMÉNY''. Například
-HTTPS dostupné na portu 8443 přidáte pro oba protokoly takto:
+HTTPS dostupné na portu 8443 přidáš pro oba protokoly takto:
 
 <code conf>
 ipv4 tcp VPS_IPV4 8443 192.168.124.10 443
@@ -380,14 +380,14 @@ ipv6 tcp VPS_IPV6 8443 fd5f:6d2e:9c4a:124::10 443
 </code>
 
 Podporované protokoly jsou ''tcp'' a ''udp''. Řádek s neplatnou syntaxí se
-odmítne dříve, než se změní aktivní pravidla. Po změně souboru pravidla načtěte:
+odmítne dříve, než se změní aktivní pravidla. Po změně souboru pravidla načti:
 
 <code bash>
 /etc/libvirt/hooks/network.d/50-port-forwards   dualstack-nat started begin -
 </code>
 
 Port 2222 byl zvolen proto, aby SSH domény nekolidovalo s SSH samotné VPS.
-Pravidla firewallu VPS dále omezte podle toho, kdo má mít ke službám přístup.
+Pravidla firewallu VPS dále omez podle toho, kdo má mít ke službám přístup.
 
 ==== Privátní IPv4 na VPS a veřejné adresy v doméně ====
 
@@ -397,19 +397,19 @@ V tomto zapojení má VPS privátní IPv4 ''/32'' a svou běžnou veřejnou IPv6
 VPS funguje ve vnitřní síti vpsFree.cz a na internet odchází přes NAT na našich
 routerech; veřejné adresy domény se v libvirt nepřekládají.
 
-Pro IPv4 nejprve požádejte podporu o přidělení privátní IPv4 ''/32'' k VPS.
+Pro IPv4 nejprve požádej podporu o přidělení privátní IPv4 ''/32'' k VPS.
 
 <vpsadmin-nav id="networking.routable-addresses.open">
-V části **Síť → Routované adresy** pak vyberte veřejnou ''/32'' v poli
+V části **Síť → Routované adresy** pak vyber veřejnou ''/32'' v poli
 **Adresa**, privátní adresu VPS v poli **Přes** a cílové rozhraní VPS. Veřejná
 adresa se tím nenastaví na žádném rozhraní uvnitř VPS; vpsAdminOS ji k VPS
 směruje přes privátní adresu.
 </vpsadmin-nav>
 
 <vpsadmin-nav id="networking.routable-addresses.open">
-Pro IPv6 použijte další ''/64'', kterou máte v části **Síť → Routované adresy**
-k dispozici, a nastavte její směrování přes adresu z běžné ''/64'' VPS. Pokud už
-máte směrovanou větší síť, například ''/48'', vyberte z ní pro doménu
+Pro IPv6 použij další ''/64'', kterou máš v části **Síť → Routované adresy**
+k dispozici, a nastav její směrování přes adresu z běžné ''/64'' VPS. Pokud už
+máš směrovanou větší síť, například ''/48'', vyber z ní pro doménu
 samostatnou ''/64''. První adresu této druhé ''/64'' použijeme jako bránu na
 bridge libvirt; například pro ''ROUTED_IPV6_PREFIX::/64'' to bude
 ''ROUTED_IPV6_PREFIX::1''.
@@ -446,8 +446,8 @@ sysctl -w net.ipv6.conf.all.forwarding=1
 </code>
 
 Následující skript vytvoří tuto síť a uloží forwarding do
-''/etc/sysctl.d/90-libvirt-routing.conf''. Uložte jej například jako
-''/root/configure-routed-network.sh'' a spusťte jej s routovanou IPv4 a první
+''/etc/sysctl.d/90-libvirt-routing.conf''. Ulož jej například jako
+''/root/configure-routed-network.sh'' a spusť jej s routovanou IPv4 a první
 adresou routované IPv6 ''/64'':
 
 <code bash>
@@ -513,13 +513,13 @@ virsh --connect "$connection" net-start "$network"
 virsh --connect "$connection" net-dumpxml "$network"
 </code>
 
-Pokud je síť již aktivní, skript ji nezmění. Vypněte připojené domény, zastavte
-síť příkazem ''virsh net-destroy public-routed'', skript spusťte znovu a domény
-opět zapněte. Skript zachová UUID existující sítě.
+Pokud je síť již aktivní, skript ji nezmění. Vypni připojené domény, zastav
+síť příkazem ''virsh net-destroy public-routed'', skript spusť znovu a domény
+opět zapni. Skript zachová UUID existující sítě.
 
-Doménu připojte k ''public-routed''. V Debianu v doméně pak například uložte
+Doménu připoj k ''public-routed''. V Debianu v doméně pak například ulož
 následující konfiguraci do ''/etc/network/interfaces.d/public-routed'';
-''ens3'', ''PUBLIC_IPV4'', ''GUEST_IPV6'' a ''IPV6_GATEWAY'' nahraďte
+''ens3'', ''PUBLIC_IPV4'', ''GUEST_IPV6'' a ''IPV6_GATEWAY'' nahraď
 skutečnými hodnotami:
 
 <code conf>
@@ -536,7 +536,7 @@ iface ens3 inet6 static
 </code>
 
 ''forward mode='open''' nechává filtrování forwardovaného provozu na firewallu
-VPS. Povolte jen provoz, který má být doméně dostupný, a nezapomeňte pravidla
+VPS. Povol jen provoz, který má být doméně dostupný, a nezapomeň na pravidla
 pro IPv4 i IPv6. Veřejná IPv4 je nakonfigurovaná pouze v doméně. IPv6 brána a
 adresy domén jsou z druhé, směrované ''/64''; na vnějším rozhraní VPS zůstává
 jen adresa z její běžné ''/64''. Ani jeden protokol v tomto zapojení nepoužívá
@@ -568,6 +568,6 @@ findmnt --noheadings --output FSTYPE,OPTIONS --target "$mountpoint"
 </code>
 
 ''nolock'' vypíná síťové zamykání NLM a ostatní klienti pak nevidí lokální
-zámky. Nikdy jej nepoužívejte pro zapisovatelný nebo sdílený disk virtuálního
+zámky. Nikdy jej nepoužívej pro zapisovatelný nebo sdílený disk virtuálního
 stroje. U NFSv4 je zamykání součástí protokolu a tato volba není řešením. Viz
 [[https://man7.org/linux/man-pages/man5/nfs.5.html|nfs(5)]].

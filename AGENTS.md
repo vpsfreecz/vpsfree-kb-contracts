@@ -30,6 +30,11 @@ Managed pages must retain the invisible `<kb-managed>` source/test marker
 immediately after their language mapping and must be reconciled against direct
 wiki edits before candidate construction.
 
+When authoring or translating Czech KB articles, address the reader using
+informal singular forms (`tykání`), for example `můžeš`, `potřebuješ`,
+`nainstaluj`, and `použij`. Do not use formal `vy` or plural imperatives as a
+polite form; use plural only when genuinely addressing multiple people.
+
 When a vpsAdmin feature changes anything visible in the WebUI, follow
 `docs/webui-change-workflow.md`. It is the canonical cross-repository procedure
 for pinning the feature revision, interpreting contract drift, regenerating

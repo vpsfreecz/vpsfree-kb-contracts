@@ -622,25 +622,25 @@ discoveries:
     výchozím nastavení v sekci **Funkce** v detailu VPS ve vpsAdminu.
   paths:
   - vps.features.open
-- id: 3a0c0f573be765a8
+- id: 35752042426bf16b
   language: cs
   page: navody:vps:kvm
   paragraph: 37
-  text: V části **Síť → Routované adresy** pak vyberte veřejnou ''/32'' v poli **Adresa**,
+  text: V části **Síť → Routované adresy** pak vyber veřejnou ''/32'' v poli **Adresa**,
     privátní adresu VPS v poli **Přes** a cílové rozhraní VPS. Veřejná adresa se tím
     nenastaví na žádném rozhraní uvnitř VPS; vpsAdminOS ji k VPS směruje přes privátní
     adresu.
   paths:
   - networking.routable-addresses.open
-- id: 8c07f1339bd9e542
+- id: ce4ad585dc15df3f
   language: cs
   page: navody:vps:kvm
   paragraph: 38
-  text: Pro IPv6 použijte další ''/64'', kterou máte v části **Síť → Routované adresy**
-    k dispozici, a nastavte její směrování přes adresu z běžné ''/64'' VPS. Pokud už
-    máte směrovanou větší síť, například ''/48'', vyberte z ní pro doménu samostatnou
-    ''/64''. První adresu této druhé ''/64'' použijeme jako bránu na bridge libvirt;
-    například pro ''ROUTED_IPV6_PREFIX::/64'' to bude ''ROUTED_IPV6_PREFIX::1''.
+  text: Pro IPv6 použij další ''/64'', kterou máš v části **Síť → Routované adresy**
+    k dispozici, a nastav její směrování přes adresu z běžné ''/64'' VPS. Pokud už máš
+    směrovanou větší síť, například ''/48'', vyber z ní pro doménu samostatnou ''/64''.
+    První adresu této druhé ''/64'' použijeme jako bránu na bridge libvirt; například
+    pro ''ROUTED_IPV6_PREFIX::/64'' to bude ''ROUTED_IPV6_PREFIX::1''.
   paths:
   - networking.routable-addresses.open
 - id: 320e2111299a2a09
