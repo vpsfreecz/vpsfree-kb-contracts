@@ -197,9 +197,25 @@ fi
 if [ -n "$upstream6" ]; then
   (
     while :; do
-      if wget -q -O /tmp/outbound6 "http://[$upstream6]:18080/source"; then
+      if wget -T 5 -O /tmp/outbound6 "http://[$upstream6]:18080/source" \
+          2>/tmp/outbound6.error; then
         mv /tmp/outbound6 /www/outbound6
+        rm -f /www/outbound6.error
         exit 0
+      else
+        wget_status=$?
+        {
+          printf 'wget status: %s\n' "$wget_status"
+          printf '%s\n' 'IPv6 addresses:'
+          ip -6 address show dev eth0 || :
+          printf '%s\n' 'IPv6 routes:'
+          ip -6 route show || :
+          printf '%s\n' 'IPv6 neighbors:'
+          ip -6 neigh show || :
+          printf '%s\n' 'wget error:'
+          cat /tmp/outbound6.error || :
+        } >/tmp/outbound6.diagnostic
+        mv /tmp/outbound6.diagnostic /www/outbound6.error
       fi
       rm -f /tmp/outbound6
       sleep 1

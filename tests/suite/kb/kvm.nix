@@ -513,7 +513,8 @@ import ../../make-test.nix (
         vps_id,
         domain,
         command,
-        timeout:
+        timeout:,
+        diagnostic_commands: {}
       )
         deadline = Time.now + timeout
         last_probe = nil
@@ -541,8 +542,12 @@ import ../../make-test.nix (
             output_limit:
           )
         end
+        endpoint_diagnostics = diagnostic_commands.to_h do |name, probe_command|
+          [name, machine_probe(services, probe_command, timeout: 30)]
+        end
         diagnostic = {
           endpoint: last_probe,
+          endpoint_diagnostics:,
           domain: vps_probe.call(
             [
               "virsh --connect qemu:///system domstate #{escaped_domain}",
@@ -1625,7 +1630,13 @@ import ../../make-test.nix (
                 'routed-guest',
                 "curl --globoff --fail --silent http://[#{guest_ipv6}]/outbound6 " \
                 "| grep -Fx #{guest_ipv6}",
-                timeout: 180
+                timeout: 180,
+                diagnostic_commands: {
+                  outbound6_response: "curl --globoff --include --silent --show-error " \
+                    "http://[#{guest_ipv6}]/outbound6",
+                  outbound6_probe: "curl --globoff --include --silent --show-error " \
+                    "http://[#{guest_ipv6}]/outbound6.error"
+                }
               )
             end
           end
