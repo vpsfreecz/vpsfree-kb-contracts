@@ -39,7 +39,9 @@ revision in:
 
 - `flake.nix` and `flake.lock`;
 - `captures.json` (`vpsadmin_commit`);
-- `contract/navigation.yml` (`vpsadmin_revision`).
+- `contract/navigation.yml` (`vpsadmin_revision`);
+- `contract/articles.yml` (`revisions.vpsadmin`) when article contracts are
+  present.
 
 Update the flake input with:
 

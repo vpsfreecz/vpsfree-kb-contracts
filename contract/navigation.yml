@@ -1,5 +1,5 @@
 schema: 1
-vpsadmin_revision: 02449a1e0966c00969e98e7267ad68e002123d62
+vpsadmin_revision: 461a3c4bae767b2e3c6dcd91d9d501f76f410841
 languages:
   - cs
   - en
@@ -286,6 +286,44 @@ controls:
       contains: "action=tsig_key_list"
       fingerprint: ba9bbc8bc4c444ff6799c7356c4db2ff9b797d620946a2390edd9877adc01aaa
 
+  - id: dns.tsig-keys.create
+    label: { en: Create TSIG key, cs: Vytvořit klíč TSIG }
+    source:
+      path: webui/forms/dns.forms.php
+      contains: 'data-vpsadmin-doc-id="dns.tsig-keys.create"'
+      fingerprint: 616b26ac0c9c21a6c049fc11f80865414f53a8390171baa44c489d82f856888c
+
+  - id: dns.secondary-zones.create
+    label: { en: Create new secondary zone, cs: Vytvořit novou sekundární zónu }
+    source:
+      path: webui/forms/dns.forms.php
+      contains: 'data-vpsadmin-doc-id="dns.secondary-zones.create"'
+      fingerprint: 0b184de251be470e71c07893cb14e50b1674f0aa8828d7a7a41c8c7b13ed774e
+
+  - id: dns.secondary-zones.add-primary
+    label: { en: Add primary server, cs: Přidat primární server }
+    source:
+      path: webui/forms/dns.forms.php
+      contains: 'data-vpsadmin-doc-id="dns.secondary-zones.add-primary"'
+      related:
+        - path: webui/forms/dns.forms.php
+          contains: "$addText = $zone->source == 'internal_source' ? _('Add secondary server') : _('Add primary server')"
+        - path: webui/forms/dns.forms.php
+          contains: "action=zone_transfer_new"
+      fingerprint: 09a07f6c55af500d36c46b080246a429642bfec6c195216796f157fb7d8db01b
+
+  - id: dns.secondary-zones.primary-tsig
+    label: { en: TSIG key, cs: TSIG klíč }
+    source:
+      path: webui/forms/dns.forms.php
+      contains: "'dns.secondary-zones.primary-tsig'"
+      related:
+        - path: webui/forms/dns.forms.php
+          contains: "$xtpl->table_td(_('TSIG key') . ':')"
+        - path: webui/forms/dns.forms.php
+          contains: "'dns_tsig_key',"
+      fingerprint: ef0f6541a49f290b09bc25ad0b63619c299bfa51a9a13c735804effb6f674141
+
   - id: backups.menu
     label: { en: Backups, cs: Zálohy }
     source:
@@ -530,6 +568,34 @@ paths:
 
   - id: dns.secondary-zones.open
     steps: [dns.menu, dns.secondary-zones]
+    pages:
+      cs: [navody:server:sekundarni_dns]
+      en: [manuals:server:secondary_dns]
+
+  - id: dns.secondary-zones.create
+    steps: [dns.menu, dns.secondary-zones, dns.secondary-zones.create]
+    pages:
+      cs: [navody:server:sekundarni_dns]
+      en: [manuals:server:secondary_dns]
+
+  - id: dns.secondary-zones.add-primary
+    steps: [dns.menu, dns.secondary-zones, dns.secondary-zones.add-primary]
+    pages:
+      cs: [navody:server:sekundarni_dns]
+      en: [manuals:server:secondary_dns]
+
+  - id: dns.secondary-zones.primary-tsig.select
+    steps:
+      - dns.menu
+      - dns.secondary-zones
+      - dns.secondary-zones.add-primary
+      - dns.secondary-zones.primary-tsig
+    pages:
+      cs: [navody:server:sekundarni_dns]
+      en: [manuals:server:secondary_dns]
+
+  - id: dns.tsig-keys.create
+    steps: [dns.menu, dns.tsig-keys, dns.tsig-keys.create]
     pages:
       cs: [navody:server:sekundarni_dns]
       en: [manuals:server:secondary_dns]
