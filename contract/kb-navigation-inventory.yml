@@ -406,27 +406,31 @@ discoveries:
     a //ns4.vpsfree.cz//). - DNS záznamy dále nastavuješ přes rozhraní vpsAdminu."
   paths:
   - dns.primary-zones.open
-- id: 31189185490c3ad0
+- id: 265ef84dba182219
   language: cs
   page: navody:server:sekundarni_dns
-  paragraph: 5
-  text: "===== TSIG ===== Přenos zón mezi primárními a sekundárními servery lze dále
-    zabezpečit pomocí TSIG. V menu DNS -> TSIG klíče si nejprve vytvoříme sdílený
+  paragraph: 7
+  text: "===== TSIG ===== Přenos zón mezi primárními a sekundárními servery můžeš
+    dále zabezpečit pomocí TSIG. V menu DNS -> TSIG klíče si nejprve vytvoř sdílený
     klíč. Každý klíč je identifikován libovolným názvem, zvoleným algoritmem a tajným
-    kódem. Tyto hodnoty se musí shodovat na všech serverech. Při přidávání primárních
-    serverů k zóně můžeme nastavit vybraný TSIG klíč. V ukázkové konfiguraci je opět
-    znázorněno, jak TSIG nastavit na primárním serveru."
+    kódem. Tyto hodnoty se musí shodovat na všech serverech. Při přidávání primárního
+    serveru k zóně vyber tento TSIG klíč. V ukázkové konfiguraci uvidíš, jak TSIG
+    nastavit na primárním serveru."
   paths:
   - dns.tsig-keys.open
-- id: d8b4b3a65530cad2
+  - dns.tsig-keys.create
+  - dns.secondary-zones.primary-tsig.select
+- id: a0a3b1ce917a441a
   language: cs
   page: navody:server:sekundarni_dns
   paragraph: 1
-  text: Jednotlivé zóny nastavíš v menu DNS -> Sekundární zóny. Po vytvoření zóny
-    pomocí formuláře „Primární servery“ přidáš adresu svého primárního autoritativního
-    serveru, který ti běží ve VPS.
+  text: Jednotlivé zóny nastavíš v menu DNS -> Sekundární zóny. Nejprve vytvoř zónu.
+    V jejím detailu potom pomocí formuláře „Primární servery“ přidej adresu svého
+    primárního autoritativního serveru, který ti běží ve VPS.
   paths:
   - dns.secondary-zones.open
+  - dns.secondary-zones.create
+  - dns.secondary-zones.add-primary
 - id: 28ea810da301f69f
   language: cs
   page: navody:server:wireguard:openwrt
@@ -1214,27 +1218,31 @@ discoveries:
     add it to the nameservers with your domain registrar."
   reason: Existing WebUI reference outside the localized navigation-label set; inventoried
     for future semantic binding.
-- id: 24ba6c131afba57b
+- id: 56cf53c158cb734f
   language: en
   page: manuals:server:secondary_dns
-  paragraph: 5
+  paragraph: 7
   text: "===== TSIG ===== Zone transfers between primary and secondary servers can
     be further secured using TSIG. First, create a shared key in the menu DNS -> TSIG
     keys. Each key is identified by an arbitrary name, chosen algorithm, and secret
-    code. These values must match on all servers. When adding primary servers to a
-    zone, you can set the selected TSIG key. The sample configuration again shows
-    how to set up TSIG on the primary server."
+    code. These values must match on all servers. When adding a primary server to
+    a zone, select this TSIG key. The sample configuration shows how to set up TSIG
+    on the primary server."
   paths:
   - dns.tsig-keys.open
-- id: f56226a14a5a453b
+  - dns.tsig-keys.create
+  - dns.secondary-zones.primary-tsig.select
+- id: 1997e1b35d8a291c
   language: en
   page: manuals:server:secondary_dns
   paragraph: 1
-  text: You can set up individual zones in the menu DNS -> Secondary zones. After
-    creating a zone using the "Primary Servers" form, you add the address of your
-    primary authoritative server that is running in your VPS.
+  text: You can set up individual zones in the menu DNS -> Secondary zones. First,
+    create the zone. In its details, use the "Primary servers" form to add the address
+    of your primary authoritative server running in your VPS.
   paths:
   - dns.secondary-zones.open
+  - dns.secondary-zones.create
+  - dns.secondary-zones.add-primary
 - id: 76922e3369f90565
   language: en
   page: manuals:vps:api

@@ -43,7 +43,23 @@ bindings:
   count: 1
 - language: cs
   page: navody:server:sekundarni_dns
+  path: dns.secondary-zones.create
+  count: 1
+- language: cs
+  page: navody:server:sekundarni_dns
+  path: dns.secondary-zones.add-primary
+  count: 1
+- language: cs
+  page: navody:server:sekundarni_dns
+  path: dns.secondary-zones.primary-tsig.select
+  count: 1
+- language: cs
+  page: navody:server:sekundarni_dns
   path: dns.tsig-keys.open
+  count: 1
+- language: cs
+  page: navody:server:sekundarni_dns
+  path: dns.tsig-keys.create
   count: 1
 - language: cs
   page: navody:server:ssh
@@ -227,7 +243,23 @@ bindings:
   count: 1
 - language: en
   page: manuals:server:secondary_dns
+  path: dns.secondary-zones.create
+  count: 1
+- language: en
+  page: manuals:server:secondary_dns
+  path: dns.secondary-zones.add-primary
+  count: 1
+- language: en
+  page: manuals:server:secondary_dns
+  path: dns.secondary-zones.primary-tsig.select
+  count: 1
+- language: en
+  page: manuals:server:secondary_dns
   path: dns.tsig-keys.open
+  count: 1
+- language: en
+  page: manuals:server:secondary_dns
+  path: dns.tsig-keys.create
   count: 1
 - language: en
   page: manuals:server:ssh
