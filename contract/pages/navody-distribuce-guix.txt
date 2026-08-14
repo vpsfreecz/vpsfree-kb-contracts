@@ -84,6 +84,110 @@ Výchozí šablona kvůli pohodlnému prvnímu přihlášení povoluje SSH pro '
 Po zprovoznění klíčů můžeš přihlášení zpřísnit podle návodu
 [[navody:server:ssh]].
 
+===== Nasazení pomocí guix deploy =====
+
+Pokud spravuješ více Guix VPS, můžeš jejich konfigurace držet na jednom
+řídicím Guix systému a nasazovat je pomocí
+[[https://guix.gnu.org/manual/en/html_node/Invoking-guix-deploy.html|guix deploy]].
+Následující úplná konfigurace je výchozí bod pro jednu VPS. Ty spravuješ jen
+''deploy.scm''; kontejnerové detaily se dál načítají z udržovaného modulu
+''/etc/config/vpsadminos.scm''.
+
+Na řídicím systému potřebuješ SSH klíč
+''/root/.ssh/id_ed25519'' a jeho veřejnou část musíš před prvním nasazením
+přidat uživateli ''root'' na cílové VPS. Přihlášení klíčem nejdřív vyzkoušej.
+Úplný veřejný klíč SSH serveru bezpečně zjistíš příkazem
+''cat /etc/ssh/ssh_host_ed25519_key.pub'' ve
+[[navody:vps:konzole|vzdálené konzoli]]; jeho otisk porovnej s údajem ve
+vpsAdminu podle [[navody:server:ssh|návodu pro SSH]]. Do konfigurace patří celý
+řádek začínající ''ssh-ed25519'', ne jen otisk.
+
+Ulož tuto konfiguraci jako ''/etc/config/deploy.scm'' na řídicím systému a
+nahraď adresu a hostitelský klíč cílové VPS:
+
+<code scheme>
+;; Load the maintained vpsAdminOS container integration.
+(add-to-load-path "/etc/config")
+(use-modules (vpsadminos)
+             (gnu)
+             (gnu machine)
+             (gnu machine ssh)
+             (gnu services base))
+(use-package-modules nss ssh)
+(use-service-modules ssh)
+
+;; These files belong to the machine from which you run guix deploy.
+(define %controller-signing-key
+  (local-file "/etc/guix/signing-key.pub"))
+(define %root-ssh-key
+  (local-file "/root/.ssh/id_ed25519.pub"))
+
+(define %system
+  (operating-system
+    (host-name "guix-target")
+    (timezone "Etc/UTC")
+    (locale "en_US.utf8")
+    (firmware '())
+    (initrd-modules '())
+    (kernel %ct-dummy-kernel)
+
+    (packages (cons* nss-certs
+                     %base-packages))
+
+    (essential-services
+     (modify-services
+         (operating-system-default-essential-services this-operating-system)
+       (delete firmware-service-type)
+       (delete (service-kind %linux-bare-metal-service))))
+
+    (bootloader %ct-bootloader)
+    (file-systems %ct-file-systems)
+
+    (services
+     (cons* (service openssh-service-type
+                     (openssh-configuration
+                      (openssh openssh-sans-x)
+                      (permit-root-login 'prohibit-password)
+                      (password-authentication? #f)
+                      (authorized-keys
+                       `(("root" ,%root-ssh-key)))))
+            (simple-service 'controller-signing-key
+                            guix-service-type
+                            (guix-extension
+                             (authorized-keys
+                              (list %controller-signing-key))))
+            %ct-services))))
+
+(define %machine
+  (machine
+    (operating-system %system)
+    (environment managed-host-environment-type)
+    (configuration
+     (machine-ssh-configuration
+      ;; Replace the address and host key with those of your target VPS.
+      (host-name "192.0.2.3")
+      (system "x86_64-linux")
+      (user "root")
+      (identity "/root/.ssh/id_ed25519")
+      (host-key "ssh-ed25519 REPLACE_WITH_TARGET_HOST_KEY")
+      (authorize? #t)
+      (allow-downgrades? #f)
+      (safety-checks? #t)))))
+
+(list %machine)
+</code>
+
+Nejdřív konfiguraci načti bez nasazení příkazem ''guix time-machine -C
+/run/current-system/channels.scm -- deploy -L /etc/config
+/etc/config/deploy.scm --dry-run''. Potom spusť stejný příkaz bez
+''--dry-run''. První nasazení automaticky autorizuje podpisový klíč řídicího
+systému na cíli a deklarace jej zachová i v nové generaci.
+
+Konfigurace úmyslně povoluje pro ''root'' jen přihlášení klíčem, ověřuje
+hostitelský klíč cíle a ponechává zapnuté bezpečnostní kontroly i ochranu před
+downgradem. Pokud kontrola selže, oprav její příčinu místo vypnutí
+''safety-checks?'' nebo povolení ''allow-downgrades?''.
+
 ===== Generace a obnova =====
 
 Generace zobrazíš příkazem ''guix system list-generations''. Před odstraněním
@@ -95,8 +199,3 @@ Pokud nová konfigurace nenaběhne nebo ztratíš SSH, postupuj podle návodu pr
 [[navody:vps:konzole|vzdálenou konzoli]]. Obnovení starší generace Guixu
 popisuje návod ke [[navody:vps:start_menu|start menu vpsAdminOS]]. Konfiguraci
 pak oprav a znovu spusť reconfigure.
-
-Pro správu více serverů můžeš použít
-[[https://guix.gnu.org/manual/en/html_node/Invoking-guix-deploy.html|guix deploy]],
-ale kontejnerové části nadále načítej z ''vpsadminos.scm'' místo kopírování
-jejich aktuální implementace do vlastní konfigurace.

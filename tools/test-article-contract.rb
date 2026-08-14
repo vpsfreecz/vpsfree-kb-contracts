@@ -66,6 +66,15 @@ class ArticleContractCheckerTest < Minitest::Test
     assert_match(/install-libvirt: sample SHA-256 differs/, error)
   end
 
+  def test_invalid_sample_code_language_is_rejected
+    _output, error, status = check_mutated_contract do |contract|
+      contract.dig('articles', 'guix', 'samples', 'deploy-system')['language'] = 'scheme bad'
+    end
+
+    refute(status.success?)
+    assert_match(/deploy-system: invalid code language/, error)
+  end
+
   def test_section_drift_is_rejected
     _output, error, status = check_mutated_contract do |contract|
       contract.dig(

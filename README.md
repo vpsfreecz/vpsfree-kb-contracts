@@ -176,7 +176,9 @@ The Guix suite imports a pinned published vpsAdminOS Guix image and preserves
 its shipped `/etc/config/system.scm` and `vpsadminos.scm` integration. It runs
 the documented reconfiguration without an implicit `guix pull`, activates a
 new system generation, restarts the container, and verifies networking and SSH
-against that generation.
+against that generation. It then deploys the complete documented system to a
+second Guix VPS, verifies key-only SSH and signing-key authorization, restarts
+the target, and tests the deployed generation again.
 
 List or run the maintained tests from the repository root:
 
@@ -184,6 +186,7 @@ List or run the maintained tests from the repository root:
 ./test-runner.sh ls --filter 'tag=kb-runtime'
 ./test-runner.sh test --fresh 'kb/kvm#platform-defaults'
 ./test-runner.sh test --fresh 'kb/guix#reconfigure'
+./test-runner.sh test --fresh 'kb/gre#tunnel'
 ./test-runner.sh test --fresh --jobs 1 \
   --filter 'tag=kb-runtime && kbArticle=kvm'
 ```

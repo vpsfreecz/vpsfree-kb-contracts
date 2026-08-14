@@ -234,6 +234,11 @@ articles.each do |article_id, article|
   samples = article.fetch('samples', {})
   sample_ids = samples.keys
   samples.each do |sample_id, sample|
+    code_language = sample.fetch('language', 'bash')
+    unless code_language.is_a?(String) && code_language.match?(/\A[a-zA-Z0-9_+-]+\z/)
+      raise ArticleContractError, "#{article_id}: #{sample_id}: invalid code language"
+    end
+
     path = path_within(root, sample.fetch('path'))
     raise ArticleContractError, "#{article_id}: #{sample_id}: sample file is missing" unless File.file?(path)
 
@@ -289,11 +294,13 @@ articles.each do |article_id, article|
       end
 
       section_samples.each do |sample_id|
+        sample_contract = samples.fetch(sample_id)
         sample = File.read(
-          path_within(root, samples.fetch(sample_id).fetch('path')),
+          path_within(root, sample_contract.fetch('path')),
           encoding: Encoding::UTF_8
         ).strip
-        unless body.include?("<code bash>\n#{sample}\n</code>")
+        code_language = sample_contract.fetch('language', 'bash')
+        unless body.include?("<code #{code_language}>\n#{sample}\n</code>")
           raise ArticleContractError, "#{article_id}: #{language}: #{heading}: exact sample #{sample_id} is missing"
         end
       end

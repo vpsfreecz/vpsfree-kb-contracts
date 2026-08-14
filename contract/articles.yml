@@ -143,6 +143,12 @@ articles:
         sha256: 5382792467c9556cf370843fa0f16394c9aecf571ca532bf8679055b2f88035f
         tests:
         - reconfigure
+      deploy-system:
+        path: tests/fixtures/guix/deploy-system.scm
+        sha256: f0a377cf07bf5cf6c3abd3eefba3cd4de6ea7d6c485db0b2ce5c3641fd56c50e
+        language: scheme
+        tests:
+        - reconfigure
     sections:
       template:
         claims:
@@ -202,17 +208,34 @@ articles:
           en:
             heading: Network and SSH
             fingerprint: 4b5c829a685bcf8a82a43c3f7304e3eaac34c42600738b66eb8c5d9b5329bc23
+      deployment:
+        claims:
+        - deploy-configuration-loads-platform-module
+        - deploy-authenticates-with-pinned-host-key
+        - deploy-keeps-root-ssh-key-only
+        - deploy-authorizes-controller-signing-key
+        - deploy-keeps-safety-checks-and-downgrade-protection
+        tests:
+        - reconfigure
+        samples:
+        - deploy-system
+        localizations:
+          cs:
+            heading: Nasazení pomocí guix deploy
+            fingerprint: e6248c04839dbfc6023230064cd7f9b0754e69d430f27309c7d39ca8422c9a4c
+          en:
+            heading: Deploying with guix deploy
+            fingerprint: 7f9d85f79c403aba6c70927131e195f4586bf85cb4871cec2be17570fe579bd6
       recovery:
         claims:
         - reconfiguration-keeps-older-generations
         - start-menu-can-boot-older-guix-generation
-        - deploy-keeps-platform-module-separate
         tests: []
         samples: []
         localizations:
           cs:
             heading: Generace a obnova
-            fingerprint: e3e648d50158b582b72152fb2e45d2efc7732b9fdfeaa66893ce98ccc5a47aef
+            fingerprint: 3c05e6d5f1b3ed5a8d103e747b0df8b5aad5ea5ac86da7648a428fc3c8e4c1fb
           en:
             heading: Generations and recovery
-            fingerprint: e36fa0b405a302c7c10b93b441c12f143e22af4f36c6801b984b74bf356dcb46
+            fingerprint: 013584fb633f223acd644a8066489882f1ed25350ed722cbf03b9f0eaa62bc3d

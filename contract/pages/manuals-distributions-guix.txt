@@ -86,6 +86,110 @@ For convenient first access, the default template permits SSH login as
 ''root''. Once your keys work, you can harden access as described in
 [[manuals:server:ssh]].
 
+===== Deploying with guix deploy =====
+
+If you manage several Guix VPSes, you can keep their configurations on one
+coordinator Guix system and deploy them with
+[[https://guix.gnu.org/manual/en/html_node/Invoking-guix-deploy.html|guix deploy]].
+The complete configuration below is a starting point for one VPS. You maintain
+only ''deploy.scm''; the container details continue to come from the maintained
+''/etc/config/vpsadminos.scm'' module.
+
+The coordinator needs the SSH key ''/root/.ssh/id_ed25519'', and you must add
+its public part to ''root'' on the target VPS before the first deployment. Test
+key-only login first. Safely obtain the SSH server's complete public key by
+running ''cat /etc/ssh/ssh_host_ed25519_key.pub'' in the
+[[manuals:vps:console|remote console]], then compare its fingerprint with
+vpsAdmin as described in the [[manuals:server:ssh|SSH guide]]. The configuration
+needs the whole line beginning with ''ssh-ed25519'', not just the fingerprint.
+
+Save this configuration as ''/etc/config/deploy.scm'' on the coordinator and
+replace the target VPS address and host key:
+
+<code scheme>
+;; Load the maintained vpsAdminOS container integration.
+(add-to-load-path "/etc/config")
+(use-modules (vpsadminos)
+             (gnu)
+             (gnu machine)
+             (gnu machine ssh)
+             (gnu services base))
+(use-package-modules nss ssh)
+(use-service-modules ssh)
+
+;; These files belong to the machine from which you run guix deploy.
+(define %controller-signing-key
+  (local-file "/etc/guix/signing-key.pub"))
+(define %root-ssh-key
+  (local-file "/root/.ssh/id_ed25519.pub"))
+
+(define %system
+  (operating-system
+    (host-name "guix-target")
+    (timezone "Etc/UTC")
+    (locale "en_US.utf8")
+    (firmware '())
+    (initrd-modules '())
+    (kernel %ct-dummy-kernel)
+
+    (packages (cons* nss-certs
+                     %base-packages))
+
+    (essential-services
+     (modify-services
+         (operating-system-default-essential-services this-operating-system)
+       (delete firmware-service-type)
+       (delete (service-kind %linux-bare-metal-service))))
+
+    (bootloader %ct-bootloader)
+    (file-systems %ct-file-systems)
+
+    (services
+     (cons* (service openssh-service-type
+                     (openssh-configuration
+                      (openssh openssh-sans-x)
+                      (permit-root-login 'prohibit-password)
+                      (password-authentication? #f)
+                      (authorized-keys
+                       `(("root" ,%root-ssh-key)))))
+            (simple-service 'controller-signing-key
+                            guix-service-type
+                            (guix-extension
+                             (authorized-keys
+                              (list %controller-signing-key))))
+            %ct-services))))
+
+(define %machine
+  (machine
+    (operating-system %system)
+    (environment managed-host-environment-type)
+    (configuration
+     (machine-ssh-configuration
+      ;; Replace the address and host key with those of your target VPS.
+      (host-name "192.0.2.3")
+      (system "x86_64-linux")
+      (user "root")
+      (identity "/root/.ssh/id_ed25519")
+      (host-key "ssh-ed25519 REPLACE_WITH_TARGET_HOST_KEY")
+      (authorize? #t)
+      (allow-downgrades? #f)
+      (safety-checks? #t)))))
+
+(list %machine)
+</code>
+
+First load the configuration without deploying it with ''guix time-machine -C
+/run/current-system/channels.scm -- deploy -L /etc/config
+/etc/config/deploy.scm --dry-run''. Then run the same command without
+''--dry-run''. The first deployment automatically authorizes the coordinator's
+signing key on the target, and the declaration keeps it authorized in the new
+generation.
+
+The configuration deliberately allows only key-based ''root'' login, verifies
+the target host key, and keeps safety checks and downgrade protection enabled.
+If a check fails, fix its cause instead of disabling ''safety-checks?'' or
+enabling ''allow-downgrades?''.
+
 ===== Generations and recovery =====
 
 List generations with ''guix system list-generations''. Verify the new system
@@ -97,8 +201,3 @@ If a new configuration does not boot or you lose SSH access, follow the
 [[manuals:vps:console|remote console guide]]. The
 [[manuals:vps:start_menu|vpsAdminOS start menu guide]] explains how to restore
 an older Guix generation. Fix the configuration and reconfigure again.
-
-For multiple systems, you can use
-[[https://guix.gnu.org/manual/en/html_node/Invoking-guix-deploy.html|guix deploy]],
-but continue to load the container-specific parts from ''vpsadminos.scm''
-instead of copying their current implementation into your own configuration.
