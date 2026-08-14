@@ -149,6 +149,7 @@ page_ids:
   - manuals:distributions:nixos
   - manuals:distributions:nixos:impermanence
   - manuals:server:firewall
+  - manuals:server:gre
   - manuals:server:mailserver-nixos
   - manuals:server:nixos-mailserver
   - manuals:server:postfix
@@ -1836,21 +1837,6 @@ discoveries:
   text: -> <- <-> => <= <=> >> << -- --- 640x480 (c) (tm) (r) "He thought 'It's a
     man's world'..."
   reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: 65e364c8a5be722b
-  language: en
-  page: manuals:server:ssh
-  paragraph: 3
-  text: The current VPS addresses are shown in its vpsAdmin details. If SSH listens
-    on a port other than 22, add an option such as ''-p 2222''.
-  reason: Read-only address information in VPS details, not a navigation action.
-- id: 6cbce66c9c5c109a
-  language: en
-  page: manuals:server:ssh
-  paragraph: 13
-  text: Open **Edit profile → Public keys → Add public key** and paste the contents
-    of ''~/.ssh/id_ed25519.pub''.
-  paths:
-  - member.public-keys.add
 - id: 8b7dc2acc847b68d
   language: en
   page: manuals:vps:snap
@@ -1869,91 +1855,6 @@ discoveries:
     k restartu VPS a test zopakuj.
   paths:
   - vps.features.open
-- id: ce354d07114eab41
-  language: cs
-  page: navody:server:ssh
-  paragraph: 15
-  text: 'V detailu běžící VPS je také formulář pro dodatečné nahrání některého z uložených
-    veřejných klíčů:'
-  reason: Screenshot context for the existing deploy-key form, not a navigation instruction.
-- id: e4739a58ab373f35
-  language: cs
-  page: navody:server:ssh
-  paragraph: 13
-  text: Otevři **Upravit profil → Veřejné klíče → Přidat veřejný klíč** a vlož obsah
-    souboru ''~/.ssh/id_ed25519.pub''.
-  paths:
-  - member.public-keys.add
-- id: ed4f81150fed68d0
-  language: en
-  page: manuals:server:ssh
-  paragraph: 15
-  text: 'The details of a running VPS also contain a form for deploying one of the
-    saved public keys later:'
-  reason: Screenshot context for the existing deploy-key form, not a navigation instruction.
-- id: f835416880331f72
-  language: cs
-  page: navody:server:ssh
-  paragraph: 3
-  text: Aktuální IP adresy VPS najdeš v jeho detailu ve vpsAdminu. Pokud SSH naslouchá
-    na jiném portu než 22, přidej například ''-p 2222''.
-  reason: Read-only address information in VPS details, not a navigation action.
-- id: 186f1bc9f87a825f
-  language: en
-  page: manuals:distributions:guix
-  paragraph: 21
-  text: If a new configuration does not boot or you lose SSH access, follow the [[manuals:vps:console|remote
-    console guide]]. The [[manuals:vps:start_menu|vpsAdminOS start menu guide]] explains
-    how to restore an older Guix generation. Fix the configuration and reconfigure
-    again.
-  reason: Recovery delegates remote-console and generation selection to the dedicated
-    console guide rather than naming a WebUI control.
-- id: 2c83adf6dd1fed42
-  language: cs
-  page: navody:server:ssh
-  paragraph: 5
-  text: Při prvním připojení zobrazí SSH otisk hostitelského klíče serveru. Ve vpsAdminu
-    otevři detail své VPS a porovnej otisk s tabulkou **SSH host keys**. Klíč potvrď
-    jen tehdy, když se otisky shodují. Ověření brání tomu, aby ses připojil k jinému
-    serveru, který se za tvoji VPS pouze vydává.
-  paths:
-  - vps.details.open
-- id: 2ffe90b6c6449224
-  language: cs
-  page: navody:distribuce:guix
-  paragraph: 21
-  text: Pokud nová konfigurace nenaběhne nebo ztratíš SSH, postupuj podle návodu pro
-    [[navody:vps:konzole|vzdálenou konzoli]]. Obnovení starší generace Guixu popisuje
-    návod ke [[navody:vps:start_menu|start menu vpsAdminOS]]. Konfiguraci pak oprav
-    a znovu spusť reconfigure.
-  reason: Recovery delegates remote-console and generation selection to the dedicated
-    console guide rather than naming a WebUI control.
-- id: 651499859046ef0b
-  language: en
-  page: manuals:server:ssh
-  paragraph: 5
-  text: On the first connection, SSH displays the fingerprint of the server's host
-    key. Open your VPS details in vpsAdmin and compare the fingerprint with the **SSH
-    host keys** table. Accept the key only when the fingerprints match. This check
-    prevents you from connecting to another server impersonating your VPS.
-  paths:
-  - vps.details.open
-- id: a40cee105a675a95
-  language: en
-  page: manuals:server:ssh
-  paragraph: 17
-  text: Remove a key from your servers when you no longer use it or its private part
-    may have been exposed. Also remove it from **Edit profile → Public keys** in vpsAdmin.
-  paths:
-  - member.public-keys.open
-- id: c1b7abfe47ab7337
-  language: cs
-  page: navody:server:ssh
-  paragraph: 17
-  text: Každý klíč, který už nepoužíváš nebo jehož soukromá část mohla uniknout, odstraň
-    ze serverů. V **Upravit profil → Veřejné klíče** jej odstraň také z vpsAdminu.
-  paths:
-  - member.public-keys.open
 - id: b9dc52b960e82851
   language: en
   page: wiki:trash:navigace
@@ -1965,3 +1866,121 @@ discoveries:
     should I write?]] * [[wiki:todo|To-do list]] * [[information:faq|Frequently asked
     questions]] * [[information:getting_started|Getting started]] * [[home|Home]]'
   reason: Legacy KB link index is not a vpsAdmin WebUI navigation instruction.
+- id: 0126ade968f0c201
+  language: cs
+  page: navody:server:ssh
+  paragraph: 6
+  text: Při prvním připojení zobrazí SSH otisk hostitelského klíče serveru. Ve vpsAdminu
+    otevři detail své VPS a porovnej otisk s tabulkou **Hostitelské klíče SSH**. Klíč
+    potvrď jen tehdy, když se otisky shodují. Ověření brání tomu, aby ses připojil
+    k jinému serveru, který se za tvoji VPS pouze vydává.
+  paths:
+  - vps.details.open
+- id: 0a6db0a4d533926b
+  language: en
+  page: manuals:server:ssh
+  paragraph: 19
+  text: Remove a key from your servers when you no longer use it or its private part
+    may have been exposed. Also remove it from **Edit profile → Public keys** in vpsAdmin.
+  paths:
+  - member.public-keys.open
+- id: 21268d668123b1a7
+  language: en
+  page: manuals:server:ssh
+  paragraph: 3
+  text: 'The current VPS addresses are shown in its vpsAdmin details:'
+  reason: Read-only address information in VPS details, not a navigation action.
+- id: 3c3b56e0ba06340e
+  language: en
+  page: manuals:distributions:guix
+  paragraph: 20
+  text: If you manage several Guix VPSes, you can keep their configurations on one
+    coordinator Guix system and deploy them with [[https://guix.gnu.org/manual/en/html_node/Invoking-guix-deploy.html|guix
+    deploy]]. The complete configuration below is a starting point for one VPS. You
+    maintain only ''deploy.scm''; the container details continue to come from the
+    maintained ''/etc/config/vpsadminos.scm'' module.
+  reason: Upstream guix deploy documentation, not a vpsAdmin WebUI action.
+- id: 45be61985c1f04fd
+  language: en
+  page: manuals:distributions:guix
+  paragraph: 27
+  text: If a new configuration does not boot or you lose SSH access, follow the [[manuals:vps:console|remote
+    console guide]]. The [[manuals:vps:start_menu|vpsAdminOS start menu guide]] explains
+    how to restore an older Guix generation. Fix the configuration and reconfigure
+    again.
+  reason: Recovery delegates remote-console and generation selection to the dedicated
+    console guide rather than naming a WebUI control.
+- id: 5eefb8e7041a3d62
+  language: cs
+  page: navody:server:ssh
+  paragraph: 17
+  text: 'V detailu běžící VPS je také formulář pro dodatečné nahrání některého z uložených
+    veřejných klíčů:'
+  reason: Screenshot context for the existing deploy-key form, not a navigation instruction.
+- id: 6c0615e422526ced
+  language: cs
+  page: navody:server:ssh
+  paragraph: 19
+  text: Každý klíč, který už nepoužíváš nebo jehož soukromá část mohla uniknout, odstraň
+    ze serverů. V **Upravit profil → Veřejné klíče** jej odstraň také z vpsAdminu.
+  paths:
+  - member.public-keys.open
+- id: 7e2598137338f8f0
+  language: cs
+  page: navody:server:ssh
+  paragraph: 15
+  text: Otevři **Upravit profil → Veřejné klíče → Přidat veřejný klíč** a vlož obsah
+    souboru ''~/.ssh/id_ed25519.pub''.
+  paths:
+  - member.public-keys.add
+- id: 86d031dcda47314a
+  language: cs
+  page: navody:server:ssh
+  paragraph: 3
+  text: 'Aktuální IP adresy VPS najdeš v jeho detailu ve vpsAdminu:'
+  reason: Read-only address information in VPS details, not a navigation action.
+- id: 93c2b965dde36f18
+  language: cs
+  page: navody:distribuce:guix
+  paragraph: 27
+  text: Pokud nová konfigurace nenaběhne nebo ztratíš SSH, postupuj podle návodu pro
+    [[navody:vps:konzole|vzdálenou konzoli]]. Obnovení starší generace Guixu popisuje
+    návod ke [[navody:vps:start_menu|start menu vpsAdminOS]]. Konfiguraci pak oprav
+    a znovu spusť reconfigure.
+  reason: Recovery delegates remote-console and generation selection to the dedicated
+    console guide rather than naming a WebUI control.
+- id: b77c05e8c8620d6d
+  language: en
+  page: manuals:server:ssh
+  paragraph: 17
+  text: 'The details of a running VPS also contain a form for deploying one of the
+    saved public keys later:'
+  reason: Screenshot context for the existing deploy-key form, not a navigation instruction.
+- id: c0d0536a257b20bd
+  language: en
+  page: manuals:server:ssh
+  paragraph: 6
+  text: On the first connection, SSH displays the fingerprint of the server's host
+    key. Open your VPS details in vpsAdmin and compare the fingerprint with the **SSH
+    host keys** table. Accept the key only when the fingerprints match. This check
+    prevents you from connecting to another server impersonating your VPS.
+  paths:
+  - vps.details.open
+- id: c271a8ba4e1e10c4
+  language: en
+  page: manuals:server:ssh
+  paragraph: 15
+  text: Open **Edit profile → Public keys → Add public key** and paste the contents
+    of ''~/.ssh/id_ed25519.pub''.
+  paths:
+  - member.public-keys.add
+- id: ee99d5a8dff746c6
+  language: cs
+  page: navody:distribuce:guix
+  paragraph: 20
+  text: Pokud spravuješ více Guix VPS, můžeš jejich konfigurace držet na jednom řídicím
+    Guix systému a nasazovat je pomocí [[https://guix.gnu.org/manual/en/html_node/Invoking-guix-deploy.html|guix
+    deploy]]. Následující úplná konfigurace je výchozí bod pro jednu VPS. Ty spravuješ
+    jen ''deploy.scm''; kontejnerové detaily se dál načítají z udržovaného modulu
+    ''/etc/config/vpsadminos.scm''.
+  reason: Upstream guix deploy documentation, not a vpsAdmin WebUI action.
