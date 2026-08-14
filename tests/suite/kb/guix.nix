@@ -64,6 +64,16 @@ import ../../make-test.nix (
           in_guix(command, container: 'kb-guix-target', timeout:)
         end
 
+        def retry_guix_operation(command, attempts: 3, timeout:)
+          attempts.times do |attempt|
+            return in_guix(command, timeout:)
+          rescue OsVm::CommandFailed
+            raise if attempt == attempts - 1
+
+            sleep(15)
+          end
+        end
+
         def wait_for_guix_network(address = '192.0.2.2')
           machine.wait_until_succeeds(
             "ping -c 1 -W 1 #{address}",
@@ -151,7 +161,10 @@ import ../../make-test.nix (
               "sed -i 's/(host-name \"guix\")/(host-name \"kb-guix\")/' " \
               '/etc/config/system.scm'
             )
-            in_guix(reconfigure_system_script, timeout: 2 * 60 * 60)
+            retry_guix_operation(
+              reconfigure_system_script,
+              timeout: 2 * 60 * 60
+            )
             _, after_generation = in_guix('readlink -f /var/guix/profiles/system')
 
             expect(after_generation.strip).not_to eq(before_generation.strip)
@@ -215,7 +228,7 @@ import ../../make-test.nix (
             _, before_generation = in_guix_target(
               'readlink -f /var/guix/profiles/system'
             )
-            in_guix(
+            retry_guix_operation(
               'guix time-machine -C /run/current-system/channels.scm -- ' \
               'deploy -L /etc/config /etc/config/deploy.scm',
               timeout: 2 * 60 * 60
