@@ -25,10 +25,10 @@ errors << "expected 118 variants, found #{variant_count}" unless variant_count =
 references = languages.to_h do |language|
   [language, assets.sum { |asset| asset.dig('variants', language, 'wiki', 'source_pages')&.length.to_i }]
 end
-errors << "expected 63 Czech page references, found #{references.fetch('cs')}" \
-  unless references.fetch('cs') == 63
-errors << "expected 56 English page references, found #{references.fetch('en')}" \
-  unless references.fetch('en') == 56
+errors << "expected 64 Czech page references, found #{references.fetch('cs')}" \
+  unless references.fetch('cs') == 64
+errors << "expected 59 English page references, found #{references.fetch('en')}" \
+  unless references.fetch('en') == 59
 
 %w[id checkpoint].each do |field|
   duplicates = assets.group_by { |asset| asset.fetch(field) }
@@ -217,8 +217,14 @@ errors << 'vps-action-menu: obsolete capture is still present' \
   if assets.any? { |asset| asset.fetch('id') == 'getting-started/vps-action-menu' }
 
 features = assets.find { |asset| asset.fetch('id') == 'vps-management/feature-settings' }
-unless features&.dig('variants', 'en', 'wiki', 'source_pages') == ['manuals:vps:management']
-  errors << 'en:vps-management/feature-settings: management page binding is missing'
+expected_feature_sources = {
+  'cs' => %w[navody:vps:sprava navody:vps:snap],
+  'en' => %w[manuals:vps:management manuals:vps:snap]
+}
+expected_feature_sources.each do |language, expected_sources|
+  unless features&.dig('variants', language, 'wiki', 'source_pages') == expected_sources
+    errors << "#{language}:vps-management/feature-settings: page bindings differ"
+  end
 end
 
 if errors.empty?

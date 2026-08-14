@@ -53,6 +53,7 @@ page_ids:
   - navody:server:mailgun
   - navody:server:mailserver-nixos
   - navody:server:nginx
+  - navody:server:nixos-mailserver
   - navody:server:openshift_centos
   - navody:server:postfix
   - navody:server:primarni_dns
@@ -71,6 +72,7 @@ page_ids:
   - navody:vps:api:windows
   - navody:vps:cgroups
   - navody:vps:datasety
+  - navody:vps:docker
   - navody:vps:exporty
   - navody:vps:incidenty
   - navody:vps:ip_adresy
@@ -86,6 +88,7 @@ page_ids:
   - navody:vps:prenosy
   - navody:vps:prostredi
   - navody:vps:rdns
+  - navody:vps:snap
   - navody:vps:sprava
   - navody:vps:stagingvps
   - navody:vps:start_menu
@@ -145,10 +148,14 @@ page_ids:
   - manuals:distributions:guix
   - manuals:distributions:nixos
   - manuals:distributions:nixos:impermanence
+  - manuals:server:firewall
   - manuals:server:mailserver-nixos
+  - manuals:server:nixos-mailserver
   - manuals:server:postfix
   - manuals:server:primary_dns
   - manuals:server:secondary_dns
+  - manuals:server:ssh
+  - manuals:server:wireguard
   - manuals:vps:api
   - manuals:vps:api:macos
   - manuals:vps:api:windows
@@ -156,6 +163,7 @@ page_ids:
   - manuals:vps:cgroups
   - manuals:vps:console
   - manuals:vps:datasets
+  - manuals:vps:docker
   - manuals:vps:environment
   - manuals:vps:exports
   - manuals:vps:full_disk
@@ -168,6 +176,7 @@ page_ids:
   - manuals:vps:playgroundvps
   - manuals:vps:rdns
   - manuals:vps:repair
+  - manuals:vps:snap
   - manuals:vps:stagingvps
   - manuals:vps:start_menu
   - manuals:vps:traffic
@@ -229,11 +238,11 @@ discoveries:
   language: cs
   page: informace:jak_psat
   paragraph: 9
-  text: "==== Články spravované v repozitáři ==== Některé články jsou společně se svými
-    automatickými testy spravovány v repozitáři ''vpsfree-kb-contracts''. Poznáte je
-    podle odkazu **Zdroj na GitHubu** v panelu nástrojů stránky. Editor KB navíc zobrazí
-    upozornění s odkazy na zdrojový text, automatický test a návod **Jak přispívat do
-    znalostní báze**. Ruční úpravy takového článku přímo v KB jsou možné, ale automatický
+  text: "==== Články spravované v repozitáři ==== Některé články jsou společně se
+    svými automatickými testy spravovány v repozitáři ''vpsfree-kb-contracts''. Poznáte
+    je podle odkazu **Zdroj na GitHubu** v panelu nástrojů stránky. Editor KB navíc
+    zobrazí upozornění s odkazy na zdrojový text, automatický test a návod **Jak přispívat
+    do znalostní báze**. Ruční úpravy takového článku přímo v KB jsou možné, ale automatický
     test je neověří. Ověřenou změnu je proto potřeba provést také v odkazovaném repozitáři."
   reason: Documentation-authoring instructions, not a member navigation path.
 - id: 310addbc83a73ba5
@@ -382,12 +391,6 @@ discoveries:
     Play]]. Doporučujeme v nastavení (tři čárky vlevo nahoře → settings) změnit server
     na meet.vpsfree.cz.'
   reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: 17cdb2d1b37afe4a
-  language: cs
-  page: navody:server:firewall
-  paragraph: 20
-  text: iptables-save > /etc/iptables.rules
-  reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
 - id: 1a7d63f34a803a97
   language: cs
   page: navody:server:primarni_dns
@@ -442,36 +445,6 @@ discoveries:
     serveru, který ti běží ve VPS.
   paths:
   - dns.secondary-zones.open
-- id: 14b06416efd25863
-  language: cs
-  page: navody:server:ssh
-  paragraph: 23
-  text: U každého klíče si můžeme vybrat, jestli se má do nových/reinstalovaných VPS
-    nahrávat automaticky. Klíče můžeme kdykoliv do běžícího VPS také nahrát pomocí
-    formuláře v detailech VPS, hned pod formulářem na nastavení hesla.
-  reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: 9607cdf26e134018
-  language: cs
-  page: navody:server:ssh
-  paragraph: 21
-  text: vpsAdmin umí do nově vytvořeného VPS vložit klíče automaticky. Nejprve mu
-    jej musíme předat. To uděláme po přihlášení v Upravit profil → Veřejné klíče →
-    vpravo v panelu Přidat veřejný klíč.
-  paths:
-  - member.public-keys.add
-- id: efcdb2c9669acefd
-  language: cs
-  page: navody:server:ssh
-  paragraph: 18
-  text: Nyní se můžeme přihlásit pomocí PuTTY a soukromého klíče, který zadáme v sekci
-    SSH -> Auth.
-  reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: 64e46da4a658533a
-  language: cs
-  page: navody:server:wireguard
-  paragraph: 11
-  text: "# wg genkey | tee wg-private.key | wg pubkey > wg-public.key"
-  reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
 - id: 28ea810da301f69f
   language: cs
   page: navody:server:wireguard:openwrt
@@ -661,10 +634,10 @@ discoveries:
   page: navody:vps:kvm
   paragraph: 40
   text: Pro IPv6 použij další ''/64'', kterou máš v části **Síť → Routované adresy**
-    k dispozici, a nastav její směrování přes adresu z běžné ''/64'' VPS. Pokud už máš
-    směrovanou větší síť, například ''/48'', vyber z ní pro doménu samostatnou ''/64''.
-    První adresu této druhé ''/64'' použijeme jako bránu na bridge libvirt; například
-    pro ''ROUTED_IPV6_PREFIX::/64'' to bude ''ROUTED_IPV6_PREFIX::1''.
+    k dispozici, a nastav její směrování přes adresu z běžné ''/64'' VPS. Pokud už
+    máš směrovanou větší síť, například ''/48'', vyber z ní pro doménu samostatnou
+    ''/64''. První adresu této druhé ''/64'' použijeme jako bránu na bridge libvirt;
+    například pro ''ROUTED_IPV6_PREFIX::/64'' to bude ''ROUTED_IPV6_PREFIX::1''.
   paths:
   - networking.routable-addresses.open
 - id: 320e2111299a2a09
@@ -1040,22 +1013,6 @@ discoveries:
     (nouzový režim)**:'
   paths:
   - vps.boot-rescue.open
-- id: 83568dfa5dd12c17
-  language: cs
-  page: navody:vps:vpsadminos:snap
-  paragraph: 5
-  text: "===== LXD ===== Pokud chcete ve VPS provozovat kontejnery, jednou z možností
-    je [[https://linuxcontainers.org/lxd|LXD]]. Nejprve v detailu VPS povolte feature
-    **LXC nesting**."
-  reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: a2373627deb5f71f
-  language: cs
-  page: navody:vps:vpsadminos:snap
-  paragraph: 1
-  text: "===== Instalace ===== Ve vpsAdminu je potřeba v detailu VPS povolit feature
-    **FUSE**. Potom nainstalujte snapd a [[https://github.com/vasi/squashfuse|squashfuse]]:"
-  reason: Existing WebUI reference outside the localized navigation-label set; inventoried
-    for future semantic binding.
 - id: 4c51e6e9211ead62
   language: cs
   page: navody:vps:zalohy
@@ -1128,10 +1085,10 @@ discoveries:
   text: "==== Repository-managed articles ==== Some articles and their automated tests
     are maintained in the ''vpsfree-kb-contracts'' repository. They have a **Source
     on GitHub** entry in the page toolbar. The KB editor also displays a notice with
-    links to the source text, automated test, and **Contributing to the Knowledge Base**
-    guide. Manual edits to such an article in the KB are possible, but the automated
-    test does not verify them. To make a verified change, update the linked repository
-    as well."
+    links to the source text, automated test, and **Contributing to the Knowledge
+    Base** guide. Manual edits to such an article in the KB are possible, but the
+    automated test does not verify them. To make a verified change, update the linked
+    repository as well."
   reason: Documentation-authoring instructions, not a member navigation path.
 - id: 421fac99a88a8c17
   language: en
@@ -1495,8 +1452,8 @@ discoveries:
   paragraph: 39
   text: Under **Networking → Routable addresses**, select the public ''/32'' in **Address**,
     the VPS private address in **Via**, and the target VPS interface. The public address
-    is not configured on any interface inside the VPS; vpsAdminOS routes it to the VPS
-    via the private address.
+    is not configured on any interface inside the VPS; vpsAdminOS routes it to the
+    VPS via the private address.
   paths:
   - networking.routable-addresses.open
 - id: bd34f7f139b43811
@@ -1504,10 +1461,11 @@ discoveries:
   page: manuals:vps:kvm
   paragraph: 40
   text: For IPv6, use another ''/64'' available to you under **Networking → Routable
-    addresses** and route it through an address in the VPS's ordinary ''/64''. If you
-    already have a larger routed network such as a ''/48'', select a dedicated ''/64''
-    from it for the domain. Use the first address of this second ''/64'' as the gateway
-    on the libvirt bridge; for example, ''ROUTED_IPV6_PREFIX::1'' for ''ROUTED_IPV6_PREFIX::/64''.
+    addresses** and route it through an address in the VPS's ordinary ''/64''. If
+    you already have a larger routed network such as a ''/48'', select a dedicated
+    ''/64'' from it for the domain. Use the first address of this second ''/64'' as
+    the gateway on the libvirt bridge; for example, ''ROUTED_IPV6_PREFIX::1'' for
+    ''ROUTED_IPV6_PREFIX::/64''.
   paths:
   - networking.routable-addresses.open
 - id: 210fa22216ec3c44
@@ -1878,3 +1836,132 @@ discoveries:
   text: -> <- <-> => <= <=> >> << -- --- 640x480 (c) (tm) (r) "He thought 'It's a
     man's world'..."
   reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
+- id: 65e364c8a5be722b
+  language: en
+  page: manuals:server:ssh
+  paragraph: 3
+  text: The current VPS addresses are shown in its vpsAdmin details. If SSH listens
+    on a port other than 22, add an option such as ''-p 2222''.
+  reason: Read-only address information in VPS details, not a navigation action.
+- id: 6cbce66c9c5c109a
+  language: en
+  page: manuals:server:ssh
+  paragraph: 13
+  text: Open **Edit profile → Public keys → Add public key** and paste the contents
+    of ''~/.ssh/id_ed25519.pub''.
+  paths:
+  - member.public-keys.add
+- id: 8b7dc2acc847b68d
+  language: en
+  page: manuals:vps:snap
+  paragraph: 13
+  text: Open **Features** in the VPS detail in vpsAdmin and enable **FUSE**. It is
+    enabled by default on newly created VPSes. After the change, follow the vpsAdmin
+    prompt to restart the VPS and repeat the test.
+  paths:
+  - vps.features.open
+- id: a9348d039bb93688
+  language: cs
+  page: navody:vps:snap
+  paragraph: 13
+  text: V detailu VPS ve vpsAdminu otevři **Funkce** a zapni **FUSE**. U nově vytvořených
+    VPS je zapnuté ve výchozím nastavení. Po změně postupuj podle výzvy vpsAdminu
+    k restartu VPS a test zopakuj.
+  paths:
+  - vps.features.open
+- id: ce354d07114eab41
+  language: cs
+  page: navody:server:ssh
+  paragraph: 15
+  text: 'V detailu běžící VPS je také formulář pro dodatečné nahrání některého z uložených
+    veřejných klíčů:'
+  reason: Screenshot context for the existing deploy-key form, not a navigation instruction.
+- id: e4739a58ab373f35
+  language: cs
+  page: navody:server:ssh
+  paragraph: 13
+  text: Otevři **Upravit profil → Veřejné klíče → Přidat veřejný klíč** a vlož obsah
+    souboru ''~/.ssh/id_ed25519.pub''.
+  paths:
+  - member.public-keys.add
+- id: ed4f81150fed68d0
+  language: en
+  page: manuals:server:ssh
+  paragraph: 15
+  text: 'The details of a running VPS also contain a form for deploying one of the
+    saved public keys later:'
+  reason: Screenshot context for the existing deploy-key form, not a navigation instruction.
+- id: f835416880331f72
+  language: cs
+  page: navody:server:ssh
+  paragraph: 3
+  text: Aktuální IP adresy VPS najdeš v jeho detailu ve vpsAdminu. Pokud SSH naslouchá
+    na jiném portu než 22, přidej například ''-p 2222''.
+  reason: Read-only address information in VPS details, not a navigation action.
+- id: 186f1bc9f87a825f
+  language: en
+  page: manuals:distributions:guix
+  paragraph: 21
+  text: If a new configuration does not boot or you lose SSH access, follow the [[manuals:vps:console|remote
+    console guide]]. The [[manuals:vps:start_menu|vpsAdminOS start menu guide]] explains
+    how to restore an older Guix generation. Fix the configuration and reconfigure
+    again.
+  reason: Recovery delegates remote-console and generation selection to the dedicated
+    console guide rather than naming a WebUI control.
+- id: 2c83adf6dd1fed42
+  language: cs
+  page: navody:server:ssh
+  paragraph: 5
+  text: Při prvním připojení zobrazí SSH otisk hostitelského klíče serveru. Ve vpsAdminu
+    otevři detail své VPS a porovnej otisk s tabulkou **SSH host keys**. Klíč potvrď
+    jen tehdy, když se otisky shodují. Ověření brání tomu, aby ses připojil k jinému
+    serveru, který se za tvoji VPS pouze vydává.
+  paths:
+  - vps.details.open
+- id: 2ffe90b6c6449224
+  language: cs
+  page: navody:distribuce:guix
+  paragraph: 21
+  text: Pokud nová konfigurace nenaběhne nebo ztratíš SSH, postupuj podle návodu pro
+    [[navody:vps:konzole|vzdálenou konzoli]]. Obnovení starší generace Guixu popisuje
+    návod ke [[navody:vps:start_menu|start menu vpsAdminOS]]. Konfiguraci pak oprav
+    a znovu spusť reconfigure.
+  reason: Recovery delegates remote-console and generation selection to the dedicated
+    console guide rather than naming a WebUI control.
+- id: 651499859046ef0b
+  language: en
+  page: manuals:server:ssh
+  paragraph: 5
+  text: On the first connection, SSH displays the fingerprint of the server's host
+    key. Open your VPS details in vpsAdmin and compare the fingerprint with the **SSH
+    host keys** table. Accept the key only when the fingerprints match. This check
+    prevents you from connecting to another server impersonating your VPS.
+  paths:
+  - vps.details.open
+- id: a40cee105a675a95
+  language: en
+  page: manuals:server:ssh
+  paragraph: 17
+  text: Remove a key from your servers when you no longer use it or its private part
+    may have been exposed. Also remove it from **Edit profile → Public keys** in vpsAdmin.
+  paths:
+  - member.public-keys.open
+- id: c1b7abfe47ab7337
+  language: cs
+  page: navody:server:ssh
+  paragraph: 17
+  text: Každý klíč, který už nepoužíváš nebo jehož soukromá část mohla uniknout, odstraň
+    ze serverů. V **Upravit profil → Veřejné klíče** jej odstraň také z vpsAdminu.
+  paths:
+  - member.public-keys.open
+- id: b9dc52b960e82851
+  language: en
+  page: wiki:trash:navigace
+  paragraph: 2
+  text: 'Navigation (sections are in bold): * **Server** * [[manuals:server:ssh|SSH]]
+    * **[[manuals:vps:vpsadmin|vpsAdmin]]** * [[manuals:vps:datasets|Datasets and
+    NAS]] * **vpsFree.cz information** * [[information:new_members|Information for
+    new members]] * [[information:communication|Communication channels]] * [[information:where_to_write|Where
+    should I write?]] * [[wiki:todo|To-do list]] * [[information:faq|Frequently asked
+    questions]] * [[information:getting_started|Getting started]] * [[home|Home]]'
+  reason: Legacy KB link index is not a vpsAdmin WebUI navigation instruction.

@@ -488,6 +488,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
+              "manuals:server:ssh",
               "manuals:vps:management"
             ],
             "media_id": "en:screenshots:vpsadmin:ssh-keys:add-public-key.png"
@@ -561,6 +562,7 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
+              "manuals:server:ssh",
               "manuals:vps:management"
             ],
             "media_id": "en:screenshots:vpsadmin:ssh-keys:deploy-public-key.png"
@@ -3052,7 +3054,8 @@
           },
           "wiki": {
             "source_pages": [
-              "navody:vps:sprava"
+              "navody:vps:sprava",
+              "navody:vps:snap"
             ],
             "media_id": "cs:screenshots:vpsadmin:vps-management:feature-settings.png"
           },
@@ -3079,7 +3082,8 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "manuals:vps:management"
+              "manuals:vps:management",
+              "manuals:vps:snap"
             ],
             "media_id": "en:screenshots:vpsadmin:vps-management:feature-settings.png"
           },

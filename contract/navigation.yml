@@ -418,7 +418,13 @@ paths:
     steps: [member.edit-profile, member.public-keys, member.public-keys.add]
     pages:
       cs: [navody:server:ssh, navody:vps:sprava]
-      en: [manuals:vps:management]
+      en: [manuals:server:ssh, manuals:vps:management]
+
+  - id: member.public-keys.open
+    steps: [member.edit-profile, member.public-keys]
+    pages:
+      cs: [navody:server:ssh]
+      en: [manuals:server:ssh]
 
   - id: member.metrics-access-tokens.open
     steps: [member.edit-profile, member.metrics-access-tokens]
@@ -522,6 +528,12 @@ paths:
       cs: [navody:vps:playgroundvps]
       en: [manuals:vps:playgroundvps]
 
+  - id: vps.details.open
+    steps: [vps.menu]
+    pages:
+      cs: [navody:server:ssh]
+      en: [manuals:server:ssh]
+
   - id: datasets.create.open
     steps: [datasets.create]
     pages:
@@ -543,8 +555,8 @@ paths:
   - id: vps.features.open
     steps: [vps.features]
     pages:
-      cs: [navody:vps:sprava, navody:vps:kvm, navody:distribuce:nixos:impermanence]
-      en: [manuals:vps:management, manuals:vps:kvm, manuals:distributions:nixos:impermanence]
+      cs: [navody:vps:sprava, navody:vps:kvm, navody:vps:snap, navody:distribuce:nixos:impermanence]
+      en: [manuals:vps:management, manuals:vps:kvm, manuals:vps:snap, manuals:distributions:nixos:impermanence]
 
   - id: vps.boot-rescue.open
     steps: [vps.boot-rescue]

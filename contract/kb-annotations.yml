@@ -34,6 +34,18 @@ bindings:
   path: member.public-keys.add
   count: 1
 - language: cs
+  page: navody:server:ssh
+  path: member.public-keys.open
+  count: 1
+- language: cs
+  page: navody:server:ssh
+  path: vps.details.open
+  count: 1
+- language: cs
+  page: navody:vps:snap
+  path: vps.features.open
+  count: 1
+- language: cs
   page: navody:vps:datasety
   path: datasets.create.open
   count: 2
@@ -186,6 +198,18 @@ bindings:
   path: dns.tsig-keys.open
   count: 1
 - language: en
+  page: manuals:server:ssh
+  path: member.public-keys.add
+  count: 1
+- language: en
+  page: manuals:server:ssh
+  path: member.public-keys.open
+  count: 1
+- language: en
+  page: manuals:server:ssh
+  path: vps.details.open
+  count: 1
+- language: en
   page: manuals:vps:backups
   path: backups.vps.open
   count: 2
@@ -256,6 +280,10 @@ bindings:
 - language: en
   page: manuals:vps:repair
   path: datasets.mount.open
+  count: 1
+- language: en
+  page: manuals:vps:snap
+  path: vps.features.open
   count: 1
 - language: en
   page: manuals:vps:traffic
