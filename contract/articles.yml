@@ -124,3 +124,95 @@ articles:
           en:
             heading: Installer ISO on NFS
             fingerprint: 0d66dd29e1c70c0e4aef11615d5af3108b506e5632d003deb736b9c11703fc77
+  guix:
+    test:
+      suite: kb/guix
+      source: tests/suite/kb/guix.nix
+    pages:
+      cs:
+        id: navody:distribuce:guix
+        counterpart: manuals:distributions:guix
+        source: contract/pages/navody-distribuce-guix.txt
+      en:
+        id: manuals:distributions:guix
+        counterpart: navody:distribuce:guix
+        source: contract/pages/manuals-distributions-guix.txt
+    samples:
+      reconfigure-system:
+        path: tests/fixtures/guix/reconfigure-system.sh
+        sha256: 5382792467c9556cf370843fa0f16394c9aecf571ca532bf8679055b2f88035f
+        tests:
+        - reconfigure
+    sections:
+      template:
+        claims:
+        - template-ships-system-and-vpsadminos-module
+        - platform-module-defines-container-boot-filesystems-and-networking
+        - host-supplies-kernel
+        tests:
+        - reconfigure
+        samples: []
+        localizations:
+          cs:
+            heading: Jak funguje šablona
+            fingerprint: 5101e971ca4e0e0d4323f9c9b0f3f21a4702e86ccb1b1e081f6e14061030588d
+          en:
+            heading: How the template works
+            fingerprint: 519ba6c8da06e49f0c8259c018d858867934a40c7b0afa66bab089cc569e06b0
+      configuration:
+        claims:
+        - system-scm-is-member-editable
+        - vpsadminos-module-load-path-is-required
+        - reconfigure-creates-and-activates-generation
+        tests:
+        - reconfigure
+        samples:
+        - reconfigure-system
+        localizations:
+          cs:
+            heading: Úprava konfigurace
+            fingerprint: d89ff486333b162bf9ae53aea709ba3657a7f53d5ae8860041447e9eacdd847b
+          en:
+            heading: Editing the configuration
+            fingerprint: d1c7368e800061055cb5926a026c2daa4c9f17864a3838a640ccc2e74ad98ab9
+      updates:
+        claims:
+        - reconfigure-does-not-require-guix-pull
+        - channel-updates-are-intentional-separate-operations
+        tests: []
+        samples: []
+        localizations:
+          cs:
+            heading: Aktualizace Guixu
+            fingerprint: 125bb4628bdd05382f88599267625ff5445042abc1d615c77d7f506861c79024
+          en:
+            heading: Updating Guix
+            fingerprint: affb1d8b0264942451c62cbafbbe153bb317afa0cf5e5aba353beed655cc813c
+      network-ssh:
+        claims:
+        - networking-is-generated-by-vpsadminos
+        - default-template-permits-root-ssh
+        tests:
+        - reconfigure
+        samples: []
+        localizations:
+          cs:
+            heading: Síť a SSH
+            fingerprint: a0c9c3d4c85dbca4f93ac2b7413e26d1376478d66658d1cd1b3bad6cd52555bb
+          en:
+            heading: Network and SSH
+            fingerprint: 4b5c829a685bcf8a82a43c3f7304e3eaac34c42600738b66eb8c5d9b5329bc23
+      recovery:
+        claims:
+        - reconfiguration-keeps-older-generations
+        - start-menu-can-boot-older-guix-generation
+        - deploy-keeps-platform-module-separate
+        tests: []
+        samples: []
+        localizations:
+          cs:
+            heading: Generace a obnova
+            fingerprint: e3e648d50158b582b72152fb2e45d2efc7732b9fdfeaa66893ce98ccc5a47aef
+          en:
+            heading: Generations and recovery
+            fingerprint: e36fa0b405a302c7c10b93b441c12f143e22af4f36c6801b984b74bf356dcb46

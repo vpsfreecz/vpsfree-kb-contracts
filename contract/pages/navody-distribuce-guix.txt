@@ -1,0 +1,102 @@
+<page>manuals:distributions:guix</page>
+
+<kb-managed
+  source="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/contract/pages/navody-distribuce-guix.txt"
+  test="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/tests/suite/kb/guix.nix"
+/>
+
+====== GNU Guix System ======
+
+[[https://guix.gnu.org/|GNU Guix System]] je distribuce, ve které se systém,
+služby a balíčky popisují deklarativně v jazyce Guile Scheme. Podobně jako
+NixOS vytváří při změnách nové generace systému, ke kterým se můžeš vrátit.
+
+===== Jak funguje šablona =====
+
+Šablona vpsFree obsahuje minimální Guix System s OpenSSH a dvěma soubory:
+
+  * ''/etc/config/system.scm'' je tvoje hlavní konfigurace systému;
+  * ''/etc/config/vpsadminos.scm'' zajišťuje běh Guixu v kontejneru vpsAdminOS.
+
+''system.scm'' načítá modul ''vpsadminos'' z druhého souboru. Toto propojení
+zachovej: definuje kontejnerový bootloader, souborové systémy a službu, která
+při startu spouští síťovou konfiguraci vytvořenou vpsAdminOS. Aktuální podobu
+obou souborů najdeš ve
+[[https://github.com/vpsfreecz/vpsadminos/tree/staging/image-scripts/images/guix|zdrojích šablony Guix]].
+
+Jádro spravuje vpsAdminOS, proto do konfigurace nepřidávej vlastní linuxový
+kernel ani běžný bootloader pro fyzický stroj.
+
+===== Úprava konfigurace =====
+
+Nejdřív uprav ''/etc/config/system.scm''. Můžeš změnit například hostname,
+balíčky a seznam služeb. Strukturu ''%ct-services'', ''%ct-file-systems'' a
+''%ct-bootloader'' ponech z modulu ''vpsadminos''.
+
+Konfiguraci aktivuj jako ''root'':
+
+<code bash>
+#!/usr/bin/env bash
+set -eo pipefail
+
+# Use the Guix revision that built the active system generation.
+export GUIX_PROFILE=/run/current-system/profile
+# shellcheck disable=SC1091
+. "$GUIX_PROFILE/etc/profile"
+hash guix
+
+test -r /etc/config/system.scm
+test -r /etc/config/vpsadminos.scm
+test -r /run/current-system/channels.scm
+guix time-machine -C /run/current-system/channels.scm -- \
+  system reconfigure -L /etc/config /etc/config/system.scm
+</code>
+
+''guix time-machine'' použije kanály zaznamenané v aktivní generaci, takže
+reconfigure nezávisí na pozdějších změnách historie kanálů. Přepínač
+''-L /etc/config'' zpřístupní modul ''vpsadminos''. Příkaz sestaví a rovnou
+aktivuje novou generaci. Před odhlášením ověř, že běží SSH a služby, které
+potřebuješ. Podrobnosti popisují manuály k
+[[https://guix.gnu.org/manual/en/html_node/Invoking-guix-time_002dmachine.html|guix time-machine]]
+a [[https://guix.gnu.org/manual/en/html_node/Invoking-guix-system.html|guix system]].
+
+===== Aktualizace Guixu =====
+
+Ukázka výše vybere revizi Guixu a kanály, které sestavily právě aktivní
+systémovou generaci. Reconfigure proto nevyžaduje před každou změnou
+''guix pull'' a opakované nasazení zůstává předvídatelné.
+
+Když chceš Guix záměrně aktualizovat, nejdřív si pomocí ''guix describe''
+zaznamenej současné kanály. Potom spusť ''guix pull'', načti aktualizovaný profil
+podle pokynů příkazu a znovu proveď reconfigure. Před změnou si přečti novinky a
+počítej s tím, že sestavení může trvat déle a potřebovat více paměti a místa.
+Práci s kanály a připnutými revizemi vysvětluje
+[[https://guix.gnu.org/manual/en/html_node/Channels.html|manuál ke kanálům]].
+
+===== Síť a SSH =====
+
+Síť nenastavuj pomocí ''static-networking-service-type''. vpsAdminOS při
+každém startu vytvoří ''/ifcfg.add'' podle aktuálních adres a služba
+''vpsadminos-networking'' jej spustí. Vlastní síťové služby přidávej až nad
+tuto vrstvu.
+
+Výchozí šablona kvůli pohodlnému prvnímu přihlášení povoluje SSH pro ''root''.
+Po zprovoznění klíčů můžeš přihlášení zpřísnit podle návodu
+[[navody:server:ssh]].
+
+===== Generace a obnova =====
+
+Generace zobrazíš příkazem ''guix system list-generations''. Před odstraněním
+starých generací ověř, že je nový systém funkční. Příkazy pro návrat a práci
+s generacemi popisuje
+[[https://guix.gnu.org/manual/en/html_node/Invoking-guix-system.html|manuál Guixu]].
+
+Pokud nová konfigurace nenaběhne nebo ztratíš SSH, postupuj podle návodu pro
+[[navody:vps:konzole|vzdálenou konzoli]]. Obnovení starší generace Guixu
+popisuje návod ke [[navody:vps:start_menu|start menu vpsAdminOS]]. Konfiguraci
+pak oprav a znovu spusť reconfigure.
+
+Pro správu více serverů můžeš použít
+[[https://guix.gnu.org/manual/en/html_node/Invoking-guix-deploy.html|guix deploy]],
+ale kontejnerové části nadále načítej z ''vpsadminos.scm'' místo kopírování
+jejich aktuální implementace do vlastní konfigurace.

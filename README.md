@@ -151,7 +151,7 @@ the flake's `testsMeta` output, so adding an article does not require an
 article-specific source parser or workflow edit.
 
 Every test script has the common `kb-runtime` tag and a `kbArticle` label. The
-KVM article currently provides these independently runnable scripts:
+managed articles provide these independently runnable scripts:
 
 ```text
 kb/kvm#platform-defaults
@@ -159,6 +159,7 @@ kb/kvm#libvirt
 kb/kvm#storage
 kb/kvm#networking
 kb/kvm#nfs-locking
+kb/guix#reconfigure
 ```
 
 The suite provisions the exact `Debian (latest)` template through vpsAdmin
@@ -171,11 +172,18 @@ narrowly scoped read-only NFSv3 installer-ISO workaround. The networking script
 boots deterministic Nix-built KVM guests and verifies their inbound and
 outbound IPv4 and IPv6 paths from outside the VPS.
 
+The Guix suite imports a pinned published vpsAdminOS Guix image and preserves
+its shipped `/etc/config/system.scm` and `vpsadminos.scm` integration. It runs
+the documented reconfiguration without an implicit `guix pull`, activates a
+new system generation, restarts the container, and verifies networking and SSH
+against that generation.
+
 List or run the maintained tests from the repository root:
 
 ```sh
 ./test-runner.sh ls --filter 'tag=kb-runtime'
 ./test-runner.sh test --fresh 'kb/kvm#platform-defaults'
+./test-runner.sh test --fresh 'kb/guix#reconfigure'
 ./test-runner.sh test --fresh --jobs 1 \
   --filter 'tag=kb-runtime && kbArticle=kvm'
 ```

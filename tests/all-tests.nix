@@ -21,5 +21,6 @@ let
   };
 in
 testLib.makeTests [
+  "kb/guix"
   "kb/kvm"
 ]
