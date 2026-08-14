@@ -10,8 +10,7 @@ import ../../make-test.nix (
     transientB = builtins.readFile ../../fixtures/gre/configure-transient-b.sh;
     interfacesA = builtins.readFile ../../fixtures/gre/interfaces-a;
     interfacesB = builtins.readFile ../../fixtures/gre/interfaces-b;
-    rubySingleQuoted = value:
-      "'${lib.replaceStrings [ "\\" "'" ] [ "\\\\" "\\'" ] value}'";
+    rubySingleQuoted = value: "'${lib.replaceStrings [ "\\" "'" ] [ "\\\\" "\\'" ] value}'";
   in
   {
     name = "kb-gre";
@@ -99,7 +98,7 @@ import ../../make-test.nix (
           in_container('kb-gre-b', 'ping -c 3 -W 2 10.0.0.1')
         end
 
-        def expect_tunnel(container, local:, remote:, address:)
+        def expect_tunnel(container, local:, remote:, address:, peer: nil)
           _, details = in_container(
             container,
             'ip -details tunnel show gre1; ' \
@@ -109,7 +108,13 @@ import ../../make-test.nix (
 
           expect(details).to include("remote #{remote}")
           expect(details).to include("local #{local}")
-          expect(details).to include(address)
+          if peer
+            expect(details).to match(
+              /UNKNOWN\s+#{Regexp.escape(address)} peer #{Regexp.escape(peer)}/
+            )
+          else
+            expect(details).to include(address)
+          end
           expect(details.lines.last.strip).to eq('1476')
         end
 
@@ -223,6 +228,20 @@ import ../../make-test.nix (
 
             in_container('kb-gre-a', 'ifup gre1')
             in_container('kb-gre-b', 'ifup gre1')
+            expect_tunnel(
+              'kb-gre-a',
+              local: '192.0.2.10',
+              remote: '198.51.100.20',
+              address: '10.0.0.1',
+              peer: '10.0.0.2/32'
+            )
+            expect_tunnel(
+              'kb-gre-b',
+              local: '198.51.100.20',
+              remote: '192.0.2.10',
+              address: '10.0.0.2',
+              peer: '10.0.0.1/32'
+            )
             expect_bidirectional_ping
 
             in_container('kb-gre-a', 'ifdown gre1 && ifup gre1')
@@ -240,13 +259,15 @@ import ../../make-test.nix (
               'kb-gre-a',
               local: '192.0.2.10',
               remote: '198.51.100.20',
-              address: '10.0.0.1/30'
+              address: '10.0.0.1',
+              peer: '10.0.0.2/32'
             )
             expect_tunnel(
               'kb-gre-b',
               local: '198.51.100.20',
               remote: '192.0.2.10',
-              address: '10.0.0.2/30'
+              address: '10.0.0.2',
+              peer: '10.0.0.1/32'
             )
             expect_bidirectional_ping
           end
