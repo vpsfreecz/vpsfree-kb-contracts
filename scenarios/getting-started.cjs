@@ -13,6 +13,7 @@ async function run({ fixtures, language, page, session }) {
   await goto(page, `/?page=adminvps&action=info&veid=${vps}`);
   await session.titleAndFirstTable(page, 'getting-started/vps-details');
   await session.section(page, 'getting-started/ssh-connection', label(language, 'sshConnection'));
+  await session.section(page, 'ssh-keys/host-key-fingerprints', label(language, 'sshHostKeys'));
   await session.section(
     page,
     'getting-started/deploy-public-key',

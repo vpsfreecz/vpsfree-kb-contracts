@@ -14,6 +14,11 @@ const {
   submitLast,
 } = require('../lib/webui.cjs');
 
+const DOCUMENTATION_HOST_PUBLIC_KEY =
+  'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIC docs-host@example.test';
+const DOCUMENTATION_HOST_KEY_FINGERPRINT =
+  'SHA256:baqJQcVDEweKmw1OiZxGooCG2MGxYtwsQQzzOstxmiA';
+
 function idFromUrl(raw, name) {
   const value = new URL(raw).searchParams.get(name);
   return value ? Number(value) : null;
@@ -114,16 +119,16 @@ async function createVpsIn(
 
 async function waitForRunning(page, vpsId) {
   const deadline = Date.now() + 10 * 60_000;
-  let startRequested = false;
+  let lastStartRequest = 0;
   while (Date.now() < deadline) {
     await goto(page, `/?page=adminvps&action=info&veid=${vpsId}`);
     const text = await page.locator('#content-in').innerText();
     if (/Běží|Running/i.test(text)) return;
-    if (!startRequested && /Vypnuto|Stopped/i.test(text)) {
+    if (/Vypnuto|Stopped/i.test(text) && Date.now() - lastStartRequest >= 15_000) {
       const start = page.locator(`a[href*="run=start"][href*="veid=${vpsId}"]`).first();
       if ((await start.count()) > 0) {
         await start.click();
-        startRequested = true;
+        lastStartRequest = Date.now();
       }
     }
     await page.waitForTimeout(3_000);
@@ -344,6 +349,50 @@ async function ensurePublicKey(page, publicKeyLabel) {
   await page.waitForLoadState('domcontentloaded');
 }
 
+async function ensureSshHostKey(cluster, page, node, vpsId) {
+  const script = [
+    'set -eu',
+    'root=$(osctl ct show -H -o rootfs "$1")',
+    'test -n "$root"',
+    'find "$root/etc/ssh" -maxdepth 1 -type f -name "ssh_host_*.pub" -delete',
+    'key=$(printf "%s" "$2" | base64 -d)',
+    'printf "%s\\n" "$key" > "$root/etc/ssh/ssh_host_ed25519_key.pub"',
+  ].join('\n');
+  const encodedPublicKey = Buffer.from(DOCUMENTATION_HOST_PUBLIC_KEY).toString('base64');
+  execFileSync(
+    cluster.commandPath,
+    cluster.sshArgs(node, [
+      'bash', '-s', '--', String(vpsId), encodedPublicKey,
+    ]),
+    { input: `${script}\n`, stdio: ['pipe', 'pipe', 'pipe'] },
+  );
+  execFileSync(
+    cluster.commandPath,
+    cluster.sshArgs(node, [
+      'nodectl', 'update', 'ssh-host-keys', String(vpsId),
+    ]),
+    { stdio: ['ignore', 'pipe', 'pipe'] },
+  );
+
+  const route = `/?page=adminvps&action=info&veid=${vpsId}`;
+  const deadline = Date.now() + 2 * 60_000;
+  while (Date.now() < deadline) {
+    await goto(page, route);
+    const matches = await page.getByText(
+      DOCUMENTATION_HOST_KEY_FINGERPRINT,
+      { exact: true },
+    ).count();
+    if (matches === 1) return;
+    if (matches > 1) {
+      throw new Error('Documentation SSH host-key fingerprint is not unique');
+    }
+    await page.waitForTimeout(2_000);
+  }
+  throw new Error(
+    `VPS #${vpsId} did not publish the documentation SSH host-key fingerprint`,
+  );
+}
+
 async function ensureSnapshot(page, datasetId, snapshotLabel) {
   await goto(page, '/?page=backup&action=vps');
   let rows = page.locator('#content-in tr', { hasText: snapshotLabel });
@@ -434,6 +483,7 @@ async function prepareFixtures({ cluster, language, page, required, repoRoot }) 
     'nixos-generations',
     'second-vps',
     'snapshot',
+    'ssh-host-key',
     'traffic-samples',
   ].some((name) => requiredSet.has(name));
 
@@ -484,6 +534,9 @@ async function prepareFixtures({ cluster, language, page, required, repoRoot }) 
       );
   }
   if (requiredSet.has('public-key')) await ensurePublicKey(page, fixtureLabels.publicKey);
+  if (requiredSet.has('ssh-host-key')) {
+    await ensureSshHostKey(cluster, page, node, vpsId);
+  }
   if (requiredSet.has('snapshot')) {
     fixtures.snapshot = await ensureSnapshot(page, datasetId, fixtureLabels.snapshot);
   }

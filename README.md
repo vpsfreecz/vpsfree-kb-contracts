@@ -67,11 +67,12 @@ example `cs:screenshots:vpsadmin:console:web-console.png`. Display-order
 prefixes and revision suffixes are deliberately absent: scenario code defines
 capture order, while Git and DokuWiki provide revision history.
 
-`captures.json` contains 59 language-neutral screenshot concepts. Every
-concept has Czech and English variants with independent legacy/source-page
-bindings, canonical media ID, output, dimensions, SHA-256, review state, and
-capture provenance. Topic, scenario/checkpoint, driver, fixtures, viewport,
-and the pinned vpsAdmin commit are shared. A scenario can emit several related
+`captures.json` contains 60 language-neutral screenshot concepts. Every
+concept has Czech and English variants with independent source-page bindings,
+canonical media ID, output, dimensions, SHA-256, review state, and capture
+provenance; migrated screenshots also retain their legacy identities. Topic,
+scenario/checkpoint, driver, fixtures, viewport, and the pinned vpsAdmin commit
+are shared. A scenario can emit several related
 screenshots, but every bitmap has an independently addressable semantic
 checkpoint and language variant.
 

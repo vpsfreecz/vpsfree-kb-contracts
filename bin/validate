@@ -19,16 +19,16 @@ languages = %w[cs en]
 errors << "expected schema 5, found #{manifest['schema'].inspect}" unless manifest['schema'] == 5
 errors << "invalid top-level vpsAdmin commit" \
   unless manifest.fetch('vpsadmin_commit', '').match?(/\A[0-9a-f]{40}\z/)
-errors << "expected 59 concepts, found #{assets.length}" unless assets.length == 59
+errors << "expected 60 concepts, found #{assets.length}" unless assets.length == 60
 variant_count = assets.sum { |asset| asset.fetch('variants').length }
-errors << "expected 118 variants, found #{variant_count}" unless variant_count == 118
+errors << "expected 120 variants, found #{variant_count}" unless variant_count == 120
 references = languages.to_h do |language|
   [language, assets.sum { |asset| asset.dig('variants', language, 'wiki', 'source_pages')&.length.to_i }]
 end
-errors << "expected 64 Czech page references, found #{references.fetch('cs')}" \
-  unless references.fetch('cs') == 64
-errors << "expected 59 English page references, found #{references.fetch('en')}" \
-  unless references.fetch('en') == 59
+errors << "expected 66 Czech page references, found #{references.fetch('cs')}" \
+  unless references.fetch('cs') == 66
+errors << "expected 61 English page references, found #{references.fetch('en')}" \
+  unless references.fetch('en') == 61
 
 %w[id checkpoint].each do |field|
   duplicates = assets.group_by { |asset| asset.fetch(field) }
@@ -38,7 +38,7 @@ end
 
 allowed_fixtures = %w[
   account base-vps kvm-storage nixos-generations public-key second-vps snapshot
-  traffic-samples
+  ssh-host-key traffic-samples
 ]
 allowed_statuses = %w[pending reviewed uploaded]
 actual = {}
@@ -81,7 +81,7 @@ assets.each do |asset|
     if language == 'cs' && variant.dig('wiki', 'source_pages')&.empty? != false
       errors << "#{key}: has no source pages"
     end
-    [variant.fetch('legacy'), *variant.fetch('legacy_aliases', [])].each do |legacy|
+    [variant['legacy'], *variant.fetch('legacy_aliases', [])].compact.each do |legacy|
       unless %w[media_id revision md5 sha256].all? { |field| legacy.key?(field) }
         errors << "#{key}: incomplete legacy media identity"
       end

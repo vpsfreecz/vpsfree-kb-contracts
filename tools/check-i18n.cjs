@@ -6,6 +6,8 @@ const { parseArgs } = require('../runner/args.cjs');
 
 assert.strictEqual(label('cs', 'features'), 'Funkce');
 assert.strictEqual(label('en', 'features'), 'Features');
+assert.strictEqual(label('cs', 'sshHostKeys'), 'Hostitelské klíče SSH');
+assert.strictEqual(label('en', 'sshHostKeys'), 'SSH host keys');
 assert.strictEqual(label('en', 'startMenu'), 'Start Menu');
 assert.strictEqual(fixturesFor('cs').publicKey, 'Dokumentační klíč');
 assert.strictEqual(fixturesFor('en').publicKey, 'Documentation key');

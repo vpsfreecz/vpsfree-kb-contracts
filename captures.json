@@ -244,7 +244,8 @@
           },
           "wiki": {
             "source_pages": [
-              "informace:novacci"
+              "informace:novacci",
+              "navody:server:ssh"
             ],
             "media_id": "cs:screenshots:vpsadmin:getting-started:ssh-connection.png"
           },
@@ -271,7 +272,8 @@
           "legacy_aliases": [],
           "wiki": {
             "source_pages": [
-              "information:new_members"
+              "information:new_members",
+              "manuals:server:ssh"
             ],
             "media_id": "en:screenshots:vpsadmin:getting-started:ssh-connection.png"
           },
@@ -287,6 +289,65 @@
           },
           "sha256": "8558d0319d5e3a4274c92d7f85716d16f5735df7392fbd488075d8496f91d3f9",
           "review_status": "pending"
+        }
+      }
+    },
+    {
+      "id": "ssh-keys/host-key-fingerprints",
+      "topic": "ssh-keys",
+      "scenario": "getting-started",
+      "checkpoint": "ssh-keys/host-key-fingerprints",
+      "driver": "webui",
+      "fixtures": [
+        "base-vps",
+        "ssh-host-key"
+      ],
+      "description": "Deterministic SSH host-key fingerprints for first-login verification",
+      "viewport": {
+        "width": 1440,
+        "height": 1100,
+        "device_scale_factor": 1
+      },
+      "variants": {
+        "cs": {
+          "wiki": {
+            "source_pages": [
+              "navody:server:ssh"
+            ],
+            "media_id": "cs:screenshots:vpsadmin:ssh-keys:host-key-fingerprints.png"
+          },
+          "output": "screenshots/cs/ssh-keys/host-key-fingerprints.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 672,
+            "height": 138
+          },
+          "sha256": "6f1c113198ab92f97c9d9f32622212267f605a80ed32c4bf91c263c47d45a652",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=adminvps&action=info&veid=1",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
+        },
+        "en": {
+          "wiki": {
+            "source_pages": [
+              "manuals:server:ssh"
+            ],
+            "media_id": "en:screenshots:vpsadmin:ssh-keys:host-key-fingerprints.png"
+          },
+          "output": "screenshots/en/ssh-keys/host-key-fingerprints.png",
+          "review_status": "pending",
+          "dimensions": {
+            "width": 724,
+            "height": 138
+          },
+          "sha256": "62bcf15f65d05450c9b55c5f38f1b49379fe1a4761aa0fc681f2f613a293db7c",
+          "capture": {
+            "driver": "webui",
+            "page": "/?page=adminvps&action=info&veid=1",
+            "runner": "vpsadmin-kb-captures/schema-5"
+          }
         }
       }
     },
