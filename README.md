@@ -160,6 +160,7 @@ kb/kvm#storage
 kb/kvm#networking
 kb/kvm#nfs-locking
 kb/guix#reconfigure
+kb/gre#tunnel
 ```
 
 The suite provisions the exact `Debian (latest)` template through vpsAdmin
@@ -179,6 +180,11 @@ new system generation, restarts the container, and verifies networking and SSH
 against that generation. It then deploys the complete documented system to a
 second Guix VPS, verifies key-only SSH and signing-key authorization, restarts
 the target, and tests the deployed generation again.
+
+The GRE suite provisions two Debian containers. It tests both the transient
+`iproute2` commands and persistent ifupdown configuration, including endpoint
+addresses, MTU, bidirectional traffic, interface cycling, and container
+restarts.
 
 List or run the maintained tests from the repository root:
 

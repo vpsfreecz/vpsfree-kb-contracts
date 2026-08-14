@@ -239,3 +239,112 @@ articles:
           en:
             heading: Generations and recovery
             fingerprint: 013584fb633f223acd644a8066489882f1ed25350ed722cbf03b9f0eaa62bc3d
+  gre:
+    test:
+      suite: kb/gre
+      source: tests/suite/kb/gre.nix
+    pages:
+      cs:
+        id: navody:server:gre
+        counterpart: manuals:server:gre
+        source: contract/pages/navody-server-gre.txt
+      en:
+        id: manuals:server:gre
+        counterpart: navody:server:gre
+        source: contract/pages/manuals-server-gre.txt
+    samples:
+      transient-a:
+        path: tests/fixtures/gre/configure-transient-a.sh
+        sha256: 608d8a5428e9aa676f80439344c4173c9650e3b29b4ee309b5fdf6e64f9d295b
+        tests:
+        - tunnel
+      transient-b:
+        path: tests/fixtures/gre/configure-transient-b.sh
+        sha256: 72b99cfd28ebcb8e912704a4ed2ddb3ce1e28327d22508128a1812a076aee2d1
+        tests:
+        - tunnel
+      interfaces-a:
+        path: tests/fixtures/gre/interfaces-a
+        sha256: 2bf5e906684dfda5b360e86daaf28b87a9b0723502f784c188b92d9711a2d967
+        tests:
+        - tunnel
+      interfaces-b:
+        path: tests/fixtures/gre/interfaces-b
+        sha256: b666653e4d7e8ea041038e4530a81f39283deee874de1f29aabff853eeaf78a6
+        tests:
+        - tunnel
+    sections:
+      prerequisites:
+        claims:
+        - gre-uses-ip-protocol-47
+        - gre-is-not-encrypted-or-authenticated
+        tests: []
+        samples: []
+        localizations:
+          cs:
+            heading: Než začneš
+            fingerprint: 6615f1b88a97933ef2ff508f38a12a9a68e1cd04518d990c036f9bd55660dcb8
+          en:
+            heading: Before you begin
+            fingerprint: 32b8918bef2324d6e0cbea12dac3d23168b0a819a168079cab545844452b014d
+      transient:
+        claims:
+        - transient-commands-create-matching-gre-endpoints
+        - tunnel-addresses-use-a-private-30
+        - tunnel-mtu-is-1476
+        tests:
+        - tunnel
+        samples:
+        - transient-a
+        - transient-b
+        localizations:
+          cs:
+            heading: Okamžité nastavení
+            fingerprint: d08d6457155427aaf7f0b9a60a77e95dfad6b5d311d6a57098e8ae4ffc7d2589
+          en:
+            heading: Immediate configuration
+            fingerprint: 39f9ae158311a905cbcc9760f959f8ab239d4d1e0d22f8b05665b3ef5fc7bc37
+      debian-ifupdown:
+        claims:
+        - debian-template-uses-ifupdown
+        - ifupdown-tunnel-addresses-are-inner-addresses
+        - ifupdown-local-and-endpoint-are-outer-addresses
+        - ifupdown-configuration-survives-restart
+        tests:
+        - tunnel
+        samples:
+        - interfaces-a
+        - interfaces-b
+        localizations:
+          cs:
+            heading: Trvalé nastavení v Debianu
+            fingerprint: d6e91c89ae9c8f11241cd5d2e61e23b38e99bdd3979a979dea7aa163bbe869b7
+          en:
+            heading: Persistent Debian configuration
+            fingerprint: 744d38af3e236c334e3f17b70a2b4e1c468dae3cc000318da203ce62987653ee
+      other-network-managers:
+        claims:
+        - network-manager-specific-configuration-is-linked-upstream
+        - legacy-rhel-network-scripts-are-not-recommended
+        tests: []
+        samples: []
+        localizations:
+          cs:
+            heading: Jiné správce sítě
+            fingerprint: c37c13e54e7465d99760c3a8cc3bf658159e6c579f9b8bcb8efee55c861f8d4d
+          en:
+            heading: Other network managers
+            fingerprint: 2a363c6d40a08e20004de13b689c5c368a67a9f29032e40fd60493e71d2c384f
+      troubleshooting:
+        claims:
+        - gre-over-ipv4-reduces-mtu
+        - troubleshooting-checks-outer-addresses-firewall-and-endpoints
+        tests: []
+        samples: []
+        localizations:
+          cs:
+            heading: MTU a řešení problémů
+            fingerprint: 831f8af0dceacc65dbf8546c7aec29448c86733c019df4d1aacec3caf9bec5d3
+          en:
+            heading: MTU and troubleshooting
+            fingerprint: 68a0b0fbbe8692a89962c02de804a3bef96f44b804f8ef8d25198f1544196b19

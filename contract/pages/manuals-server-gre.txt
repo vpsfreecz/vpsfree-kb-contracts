@@ -1,0 +1,138 @@
+<page>navody:server:gre</page>
+
+<kb-managed
+  source="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/contract/pages/manuals-server-gre.txt"
+  test="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/tests/suite/kb/gre.nix"
+/>
+
+====== GRE tunnel ======
+
+GRE connects two devices with a tunnel over IPv4. For example, you can use it
+to route a private network between two VPSes. The example below creates a
+simple tunnel between these documentation addresses:
+
+^  ^ VPS A ^ VPS B ^
+| outer VPS address | ''192.0.2.10'' | ''198.51.100.20'' |
+| address inside the tunnel | ''10.0.0.1'' | ''10.0.0.2'' |
+
+The ''192.0.2.0/24'' and ''198.51.100.0/24'' ranges are reserved for
+documentation. Replace them with the real IPv4 addresses of your VPSes. You
+can keep the private tunnel addresses if they do not overlap another network
+you use.
+
+===== Before you begin =====
+
+GRE uses **IP protocol 47**, not TCP or UDP port 47. If traffic is filtered on
+either VPS or along the path, allow protocol 47 from the other endpoint's outer
+address.
+
+GRE itself **does not encrypt traffic or authenticate the peer**. Do not carry
+sensitive data through it without additional protection. If you want a secure
+connection between two servers, [[manuals:server:wireguard|WireGuard]] is
+usually a better fit.
+
+===== Immediate configuration =====
+
+Run this on VPS A:
+
+<code bash>
+#!/usr/bin/env bash
+set -eu
+
+ip tunnel add gre1 mode gre \
+  local 192.0.2.10 remote 198.51.100.20 ttl 255
+ip address add 10.0.0.1/30 dev gre1
+ip link set dev gre1 mtu 1476 up
+</code>
+
+Run this on VPS B:
+
+<code bash>
+#!/usr/bin/env bash
+set -eu
+
+ip tunnel add gre1 mode gre \
+  local 198.51.100.20 remote 192.0.2.10 ttl 255
+ip address add 10.0.0.2/30 dev gre1
+ip link set dev gre1 mtu 1476 up
+</code>
+
+Test the connection in both directions:
+
+<code bash>
+# On VPS A
+ping -c 3 10.0.0.2
+
+# On VPS B
+ping -c 3 10.0.0.1
+</code>
+
+These commands last only until the next restart. You can remove the interface
+with ''ip tunnel del gre1''. See the
+[[https://manpages.debian.org/trixie/iproute2/ip-tunnel.8.en.html|ip-tunnel(8) manual]]
+for additional options.
+
+===== Persistent Debian configuration =====
+
+The default Debian template uses ifupdown. On VPS A, save the following as
+''/etc/network/interfaces.d/gre1'':
+
+<code bash>
+auto gre1
+iface gre1 inet tunnel
+  mode gre
+  address 10.0.0.1
+  netmask 255.255.255.252
+  dstaddr 10.0.0.2
+  local 192.0.2.10
+  endpoint 198.51.100.20
+  ttl 255
+  mtu 1476
+</code>
+
+Use this on VPS B:
+
+<code bash>
+auto gre1
+iface gre1 inet tunnel
+  mode gre
+  address 10.0.0.2
+  netmask 255.255.255.252
+  dstaddr 10.0.0.1
+  local 198.51.100.20
+  endpoint 192.0.2.10
+  ttl 255
+  mtu 1476
+</code>
+
+''address'' and ''dstaddr'' are the addresses **inside** the tunnel. In
+contrast, ''local'' and ''endpoint'' are its **outer** endpoints. Bring the
+interface up on both VPSes:
+
+<code bash>
+ifup gre1
+</code>
+
+See the
+[[https://manpages.debian.org/trixie/ifupdown/interfaces.5.en.html#THE_TUNNEL_METHOD|interfaces(5) manual]]
+for all supported options.
+
+===== Other network managers =====
+
+If your distribution does not use ifupdown, create the same GRE tunnel with
+its network manager. See the current documentation for
+[[https://networkmanager.pages.freedesktop.org/NetworkManager/NetworkManager/settings-ip-tunnel.html|NetworkManager]]
+and [[https://www.freedesktop.org/software/systemd/man/latest/systemd.netdev.html|systemd-networkd]].
+We no longer recommend the old ''/etc/sysconfig/network-scripts/ifcfg-*'' files
+for current RHEL-family distributions.
+
+===== MTU and troubleshooting =====
+
+Basic GRE over IPv4 adds overhead, so the example uses an MTU of 1476 instead
+of the usual 1500 bytes. If the outer path has a lower MTU or larger transfers
+stall, reduce the MTU further at both ends.
+
+If the tunnel does not work, verify the outer addresses with ''ip address'', IP
+protocol 47 in your firewall, and the tunnel state with
+''ip -details tunnel show gre1''. Then check that ''local'' on each side is its
+outer address and ''remote'' or ''endpoint'' is the peer's outer address.

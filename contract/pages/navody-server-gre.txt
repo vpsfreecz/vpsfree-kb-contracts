@@ -1,0 +1,133 @@
+<page>manuals:server:gre</page>
+
+<kb-managed
+  source="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/contract/pages/navody-server-gre.txt"
+  test="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/tests/suite/kb/gre.nix"
+/>
+
+====== GRE tunel ======
+
+GRE propojí dvě zařízení tunelem přes IPv4. Hodí se například pro směrování
+privátní sítě mezi dvěma VPS. Níže je jednoduchý tunel mezi těmito ukázkovými
+adresami:
+
+^  ^ VPS A ^ VPS B ^
+| vnější adresa VPS | ''192.0.2.10'' | ''198.51.100.20'' |
+| adresa uvnitř tunelu | ''10.0.0.1'' | ''10.0.0.2'' |
+
+Adresy ''192.0.2.0/24'' a ''198.51.100.0/24'' jsou vyhrazené pro dokumentaci.
+Nahraď je skutečnými IPv4 adresami svých VPS. Privátní adresy tunelu můžeš
+ponechat, pokud se nekříží s jinou sítí, kterou používáš.
+
+===== Než začneš =====
+
+GRE používá **IP protokol 47**, nikoliv TCP nebo UDP port 47. Pokud na VPS nebo
+po cestě filtruješ provoz, povol protokol 47 z vnější adresy druhého konce.
+
+Samotné GRE provoz **nešifruje ani neověřuje protistranu**. Nepřenášej přes něj
+citlivá data bez dalšího zabezpečení. Pokud chceš bezpečně propojit dva servery,
+obvykle je vhodnější [[navody:server:wireguard|WireGuard]].
+
+===== Okamžité nastavení =====
+
+Na VPS A spusť:
+
+<code bash>
+#!/usr/bin/env bash
+set -eu
+
+ip tunnel add gre1 mode gre \
+  local 192.0.2.10 remote 198.51.100.20 ttl 255
+ip address add 10.0.0.1/30 dev gre1
+ip link set dev gre1 mtu 1476 up
+</code>
+
+Na VPS B spusť:
+
+<code bash>
+#!/usr/bin/env bash
+set -eu
+
+ip tunnel add gre1 mode gre \
+  local 198.51.100.20 remote 192.0.2.10 ttl 255
+ip address add 10.0.0.2/30 dev gre1
+ip link set dev gre1 mtu 1476 up
+</code>
+
+Spojení ověř z obou stran:
+
+<code bash>
+# Na VPS A
+ping -c 3 10.0.0.2
+
+# Na VPS B
+ping -c 3 10.0.0.1
+</code>
+
+Tyto příkazy platí jen do restartu. Rozhraní můžeš odstranit příkazem
+''ip tunnel del gre1''. Další volby popisuje
+[[https://manpages.debian.org/trixie/iproute2/ip-tunnel.8.en.html|manuál ip-tunnel(8)]].
+
+===== Trvalé nastavení v Debianu =====
+
+Výchozí šablona Debianu používá ifupdown. Na VPS A ulož do
+''/etc/network/interfaces.d/gre1'' tuto konfiguraci:
+
+<code bash>
+auto gre1
+iface gre1 inet tunnel
+  mode gre
+  address 10.0.0.1
+  netmask 255.255.255.252
+  dstaddr 10.0.0.2
+  local 192.0.2.10
+  endpoint 198.51.100.20
+  ttl 255
+  mtu 1476
+</code>
+
+Na VPS B použij:
+
+<code bash>
+auto gre1
+iface gre1 inet tunnel
+  mode gre
+  address 10.0.0.2
+  netmask 255.255.255.252
+  dstaddr 10.0.0.1
+  local 198.51.100.20
+  endpoint 192.0.2.10
+  ttl 255
+  mtu 1476
+</code>
+
+''address'' a ''dstaddr'' jsou adresy **uvnitř** tunelu. ''local'' a
+''endpoint'' jsou naopak jeho **vnější** konce. Na obou VPS pak rozhraní
+aktivuj:
+
+<code bash>
+ifup gre1
+</code>
+
+Podporované volby najdeš v
+[[https://manpages.debian.org/trixie/ifupdown/interfaces.5.en.html#THE_TUNNEL_METHOD|manuálu interfaces(5)]].
+
+===== Jiné správce sítě =====
+
+Pokud tvoje distribuce nepoužívá ifupdown, vytvoř stejný GRE tunel správcem
+sítě dané distribuce. Aktuální volby popisuje dokumentace
+[[https://networkmanager.pages.freedesktop.org/NetworkManager/NetworkManager/settings-ip-tunnel.html|NetworkManageru]]
+a [[https://www.freedesktop.org/software/systemd/man/latest/systemd.netdev.html|systemd-networkd]].
+Staré soubory ''/etc/sysconfig/network-scripts/ifcfg-*'' už pro současné
+distribuce rodiny RHEL nedoporučujeme.
+
+===== MTU a řešení problémů =====
+
+Základní GRE přes IPv4 přidává režii, proto příklad používá MTU 1476 místo
+běžných 1500 bajtů. Pokud má vnější cesta nižší MTU nebo se větší přenosy
+zasekávají, MTU na obou koncích dál sniž.
+
+Když tunel nefunguje, ověř vnější adresy příkazem ''ip address'', povolení IP
+protokolu 47 ve firewallu a stav příkazem ''ip -details tunnel show gre1''.
+Pak zkontroluj, že se ''local'' na každé straně rovná její vnější adrese a
+''remote'' nebo ''endpoint'' vnější adrese protistrany.

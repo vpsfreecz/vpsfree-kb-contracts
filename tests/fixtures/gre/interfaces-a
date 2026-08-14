@@ -1,0 +1,10 @@
+auto gre1
+iface gre1 inet tunnel
+  mode gre
+  address 10.0.0.1
+  netmask 255.255.255.252
+  dstaddr 10.0.0.2
+  local 192.0.2.10
+  endpoint 198.51.100.20
+  ttl 255
+  mtu 1476
