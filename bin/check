@@ -40,7 +40,6 @@ ruby -c bin/validate
 ruby -c cluster/seed-production-shape.rb
 ruby -c tools/check-contract.rb
 ruby -c tools/check-kb-annotations.rb
-ruby -c tools/article-runtime-matrix.rb
 ruby -c tools/check-article-contract.rb
 ruby -c tools/check-managed-article-sources.rb
 ruby -c tests/runner/extensions/vpsadmin_services.rb
@@ -53,8 +52,5 @@ ruby tools/test-contract.rb
 ruby tools/test-kb-annotations.rb
 ARTICLE_TESTS_META="$tests_meta" ruby tools/test-article-contract.rb
 ruby tools/test-managed-article-sources.rb
-ruby tools/article-runtime-matrix.rb | jq -e '
-  .include | length > 0 and all(.[]; .article | type == "string")
-' >/dev/null
 node tools/test-browser.cjs
 bin/validate "${validate_args[@]}"

@@ -101,8 +101,9 @@ installed on the capture host.
 
 Captures are intentionally operator-run and this repository contains no
 DokuWiki uploader. GitHub Actions runs static contract checks on changes.
-Registered article suites run as separate jobs on relevant pushes, manually,
-and every week on a self-hosted runner with KVM.
+The integration suite runs in one job on relevant pushes, manually, and every
+week on a self-hosted runner with KVM. The test runner schedules scripts using
+the memory, shared-memory, and CPU available to that invocation.
 
 ## Documentation contract
 
@@ -162,6 +163,11 @@ kb/kvm#networking
 kb/kvm#nfs-locking
 kb/guix#reconfigure
 kb/gre#tunnel
+kb/firewall#iptables
+kb/firewall#nftables
+kb/firewall#ufw
+kb/firewall#firewalld
+kb/firewall#nixos
 ```
 
 The suite provisions the exact `Debian (latest)` template through vpsAdmin
@@ -196,6 +202,7 @@ List or run the maintained tests from the repository root:
 ./test-runner.sh test --fresh 'kb/gre#tunnel'
 ./test-runner.sh test --fresh --jobs 1 \
   --filter 'tag=kb-runtime && kbArticle=kvm'
+./test-runner.sh test --fresh --jobs auto
 ```
 
 Managed pages place an invisible `<kb-managed>` marker immediately after their

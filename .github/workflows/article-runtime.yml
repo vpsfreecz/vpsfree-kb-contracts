@@ -12,7 +12,6 @@ on:
       - flake.nix
       - test-runner.sh
       - tests/**
-      - tools/article-runtime-matrix.rb
       - tools/check-article-contract.rb
       - tools/check-managed-article-sources.rb
       - tools/test-article-contract.rb
@@ -25,26 +24,8 @@ permissions:
   contents: read
 
 jobs:
-  matrix:
-    name: Discover managed articles
-    runs-on: ubuntu-latest
-    outputs:
-      articles: ${{ steps.articles.outputs.matrix }}
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Build article matrix
-        id: articles
-        run: echo "matrix=$(ruby tools/article-runtime-matrix.rb)" >> "$GITHUB_OUTPUT"
-
   test:
-    name: Test ${{ matrix.article }} article
-    needs: matrix
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.matrix.outputs.articles) }}
+    name: Run integration test suite
     runs-on: self-hosted
     if: github.event_name != 'push' || github.event.deleted != true
     timeout-minutes: 480
@@ -58,10 +39,8 @@ jobs:
       - name: Check contracts and test discovery
         run: nix develop --command bin/check --allow-missing
 
-      - name: Preview selected tests
-        run: >-
-          ./test-runner.sh ls
-          --filter 'tag=kb-runtime && kbArticle=${{ matrix.article }}'
+      - name: Preview tests
+        run: ./test-runner.sh ls
 
       - name: Prepare test state
         id: prepare-tests
@@ -75,8 +54,7 @@ jobs:
           ./test-runner.sh test \
             --state-dir "$TEST_RUNNER_STATE_DIR" \
             --fresh \
-            --jobs 1 \
-            --filter 'tag=kb-runtime && kbArticle=${{ matrix.article }}' \
+            --jobs auto \
             | tee "$TEST_RUNNER_STATE_DIR/test.log"
 
       - name: Upload full test logs
@@ -87,7 +65,7 @@ jobs:
           steps.run-tests.outcome != 'skipped'
         uses: vpsfreecz/vpsadminos/.github/actions/upload-test-logs@67fcc17372d175b036706a1459a8b471bfc225e0
         with:
-          name: kb-${{ matrix.article }}-test-logs-${{ github.run_id }}
+          name: kb-test-logs-${{ github.run_id }}
           paths: |
             ${{ steps.prepare-tests.outputs.state-directory }}/**/*.log
             ${{ steps.prepare-tests.outputs.state-directory }}/**/*.txt
