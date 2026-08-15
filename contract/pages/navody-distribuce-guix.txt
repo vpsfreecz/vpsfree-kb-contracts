@@ -172,7 +172,9 @@ nahraď adresu a hostitelský klíč cílové VPS:
       (host-key "ssh-ed25519 REPLACE_WITH_TARGET_HOST_KEY")
       (authorize? #t)
       (allow-downgrades? #f)
-      (safety-checks? #t)))))
+      ;; vpsAdminOS supplies the kernel and exposes a dummy /dev/null root.
+      ;; Guix's bare-metal file-system/initrd checks cannot inspect it.
+      (safety-checks? #f)))))
 
 (list %machine)
 </code>
@@ -183,10 +185,13 @@ Nejdřív konfiguraci načti bez nasazení příkazem ''guix time-machine -C
 ''--dry-run''. První nasazení automaticky autorizuje podpisový klíč řídicího
 systému na cíli a deklarace jej zachová i v nové generaci.
 
-Konfigurace úmyslně povoluje pro ''root'' jen přihlášení klíčem, ověřuje
-hostitelský klíč cíle a ponechává zapnuté bezpečnostní kontroly i ochranu před
-downgradem. Pokud kontrola selže, oprav její příčinu místo vypnutí
-''safety-checks?'' nebo povolení ''allow-downgrades?''.
+Konfigurace úmyslně povoluje pro ''root'' jen přihlášení klíčem a ověřuje
+hostitelský klíč cíle. Nastavení ''safety-checks? #f'' vypíná kontroly fyzických
+souborových systémů a modulů initrd, které v kontejneru nedávají smysl:
+vpsAdminOS poskytuje jádro a integrační modul používá pomocný kořenový systém
+''/dev/null'', který současný Guix neumí zkontrolovat. Ochrana před downgradem
+zůstává zapnutá. Pokud nasazení selže, oprav jeho příčinu místo povolení
+''allow-downgrades?''.
 
 ===== Generace a obnova =====
 

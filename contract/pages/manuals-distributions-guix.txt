@@ -173,7 +173,9 @@ replace the target VPS address and host key:
       (host-key "ssh-ed25519 REPLACE_WITH_TARGET_HOST_KEY")
       (authorize? #t)
       (allow-downgrades? #f)
-      (safety-checks? #t)))))
+      ;; vpsAdminOS supplies the kernel and exposes a dummy /dev/null root.
+      ;; Guix's bare-metal file-system/initrd checks cannot inspect it.
+      (safety-checks? #f)))))
 
 (list %machine)
 </code>
@@ -185,10 +187,13 @@ First load the configuration without deploying it with ''guix time-machine -C
 signing key on the target, and the declaration keeps it authorized in the new
 generation.
 
-The configuration deliberately allows only key-based ''root'' login, verifies
-the target host key, and keeps safety checks and downgrade protection enabled.
-If a check fails, fix its cause instead of disabling ''safety-checks?'' or
-enabling ''allow-downgrades?''.
+The configuration deliberately allows only key-based ''root'' login and
+verifies the target host key. The container-specific ''safety-checks? #f''
+disables Guix checks for physical file systems and initrd modules: vpsAdminOS
+supplies the kernel and its integration module exposes a dummy ''/dev/null''
+root which current Guix cannot inspect. Downgrade protection stays enabled.
+If deployment fails, fix its cause instead of enabling
+''allow-downgrades?''.
 
 ===== Generations and recovery =====
 

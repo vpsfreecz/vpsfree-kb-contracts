@@ -67,8 +67,11 @@ import ../../make-test.nix (
         def retry_guix_operation(command, attempts: 3, timeout:)
           attempts.times do |attempt|
             return in_guix(command, timeout:)
-          rescue OsVm::CommandFailed
-            raise if attempt == attempts - 1
+          rescue OsVm::CommandFailed => e
+            transient_git_error = e.message.match?(
+              /Git error:.*(?:SSL error|Resource temporarily unavailable)/m
+            )
+            raise unless transient_git_error && attempt < attempts - 1
 
             sleep(15)
           end
@@ -219,6 +222,8 @@ import ../../make-test.nix (
               placeholder,
               host_key.strip
             )
+            expect(rendered).to include('(safety-checks? #f)')
+            expect(rendered).to include('(allow-downgrades? #f)')
             encoded = Base64.strict_encode64(rendered)
             in_guix(
               "printf %s #{Shellwords.escape(encoded)} | " \

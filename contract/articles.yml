@@ -145,7 +145,7 @@ articles:
         - reconfigure
       deploy-system:
         path: tests/fixtures/guix/deploy-system.scm
-        sha256: f0a377cf07bf5cf6c3abd3eefba3cd4de6ea7d6c485db0b2ce5c3641fd56c50e
+        sha256: 5fe2c099bd86fc65b96071b82da467712dbb71263362d52f6eac91e69f806afe
         language: scheme
         tests:
         - reconfigure
@@ -214,7 +214,7 @@ articles:
         - deploy-authenticates-with-pinned-host-key
         - deploy-keeps-root-ssh-key-only
         - deploy-authorizes-controller-signing-key
-        - deploy-keeps-safety-checks-and-downgrade-protection
+        - deploy-disables-bare-metal-checks-and-blocks-downgrades
         tests:
         - reconfigure
         samples:
@@ -222,10 +222,10 @@ articles:
         localizations:
           cs:
             heading: Nasazení pomocí guix deploy
-            fingerprint: e6248c04839dbfc6023230064cd7f9b0754e69d430f27309c7d39ca8422c9a4c
+            fingerprint: 1ae1240d77442154491407fbc37566949acdb26bfb1abb7235ffab284006bde7
           en:
             heading: Deploying with guix deploy
-            fingerprint: 7f9d85f79c403aba6c70927131e195f4586bf85cb4871cec2be17570fe579bd6
+            fingerprint: 94b920569629176a8591a72f5ea9a691377521df980316bdcc43a3eb799ab2a5
       recovery:
         claims:
         - reconfiguration-keeps-older-generations

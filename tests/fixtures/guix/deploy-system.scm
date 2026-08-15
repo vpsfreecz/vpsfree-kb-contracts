@@ -64,6 +64,8 @@
       (host-key "ssh-ed25519 REPLACE_WITH_TARGET_HOST_KEY")
       (authorize? #t)
       (allow-downgrades? #f)
-      (safety-checks? #t)))))
+      ;; vpsAdminOS supplies the kernel and exposes a dummy /dev/null root.
+      ;; Guix's bare-metal file-system/initrd checks cannot inspect it.
+      (safety-checks? #f)))))
 
 (list %machine)
