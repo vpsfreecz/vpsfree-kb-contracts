@@ -292,25 +292,6 @@ discoveries:
   text: "* Pavel Šnajdr * IRC: freenode. net -> #vpsfree -> snajpa * E-mail: pavel.snajdr
     zavináč vpsfree.cz * Lokace: Brno * Mobil: +420 720 107 791"
   reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: 4cf82390965e9193
-  language: cs
-  page: informace:novacci
-  paragraph: 17
-  text: "==== Jak zjistím, jaký traffic má moje VPS? ==== V detailu VPS u síťového
-    rozhraní:"
-  reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: 63b62d35b4dafe5b
-  language: cs
-  page: informace:novacci
-  paragraph: 1
-  text: "===== Jaké jsou platební údaje k zaplacení členského příspěvku ===== * Platí
-    se na účet 2200041594/2010 (ČR) nebo 2601502873/8330 (SR-EUR). * IBAN: CZ0420100000002200041594,
-    SK2083300000002601502873 * Variabilní symbol je vždy ID člena, které nalezneš
-    po přihlášení do vpsAdminu v sekci **Členové**. * Ve stejné sekci také nalezneš
-    datum, do kdy máš zaplacené členství. * Preferujeme platby na tři měsíce, tj.
-    900 Kč nebo 36 eur. * Další podrobnosti naleznete v [[platby|sekci o platbách]]."
-  reason: Existing WebUI reference outside the localized navigation-label set; inventoried
-    for future semantic binding.
 - id: c22228f2029235cd
   language: cs
   page: informace:platby
@@ -1110,34 +1091,6 @@ discoveries:
     instructions. It is also sent in email payment reminders."
   paths:
   - member.payment-instructions.open
-- id: 0c8df2fb92eb56b1
-  language: en
-  page: information:new_members
-  paragraph: 6
-  text: Log in to the [[https://vpsadmin.vpsfree.cz/|vpsAdmin interface]], go to the
-    **VPS** section, click the server ID.
-  reason: Existing WebUI reference outside the localized navigation-label set; inventoried
-    for future semantic binding.
-- id: 10a4f439c9651af6
-  language: en
-  page: information:new_members
-  paragraph: 18
-  text: "==== How can I find out what traffic my VPS has? ==== In VPS details:"
-  reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: 7b5a68691fc348b4
-  language: en
-  page: information:new_members
-  paragraph: 1
-  text: "===== The Payment Details to Pay the Membership Fee ===== * Payments are
-    sent to the bank account 2200041594/2010 (Czech Republic) or 2601502873/8330 (Slovakia).
-    * IBAN: CZ0420100000002200041594, SK2083300000002601502873 * Use the member ID
-    as the variable symbol for the payment. You can find the member ID after logging
-    into vpsAdmin in the **Members** section. * The same section also contains the
-    date when your membership payment is due. * We prefer payments for three months
-    in advance – either 900 CZK or 36 euro. * Further details can be found in the
-    [[Membership_Fees|section on payments]]."
-  reason: Existing WebUI reference outside the localized navigation-label set; inventoried
-    for future semantic binding.
 - id: ea064d9d5b891798
   language: en
   page: information:support
@@ -1837,24 +1790,6 @@ discoveries:
   text: -> <- <-> => <= <=> >> << -- --- 640x480 (c) (tm) (r) "He thought 'It's a
     man's world'..."
   reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
-- id: 8b7dc2acc847b68d
-  language: en
-  page: manuals:vps:snap
-  paragraph: 13
-  text: Open **Features** in the VPS detail in vpsAdmin and enable **FUSE**. It is
-    enabled by default on newly created VPSes. After the change, follow the vpsAdmin
-    prompt to restart the VPS and repeat the test.
-  paths:
-  - vps.features.open
-- id: a9348d039bb93688
-  language: cs
-  page: navody:vps:snap
-  paragraph: 13
-  text: V detailu VPS ve vpsAdminu otevři **Funkce** a zapni **FUSE**. U nově vytvořených
-    VPS je zapnuté ve výchozím nastavení. Po změně postupuj podle výzvy vpsAdminu
-    k restartu VPS a test zopakuj.
-  paths:
-  - vps.features.open
 - id: b9dc52b960e82851
   language: en
   page: wiki:trash:navigace
@@ -1984,26 +1919,6 @@ discoveries:
     jen ''deploy.scm''; kontejnerové detaily se dál načítají z udržovaného modulu
     ''/etc/config/vpsadminos.scm''.
   reason: Upstream guix deploy documentation, not a vpsAdmin WebUI action.
-- id: 0b73fa24e83af497
-  language: en
-  page: manuals:server:firewall
-  paragraph: 37
-  text: If no SSH session remains, nothing is lost. The guides to the [[manuals:vps:console|remote
-    console in vpsAdmin]] and the [[manuals:vps:start_menu|start menu]] describe a
-    recovery path that does not depend on working networking or an allowed SSH port.
-    During a restart, **Run shell** provides a shell directly in the VPS file system
-    from which you can repair the rules.
-  reason: Recovery behavior is delegated to the linked console and start-menu guides,
-    not a direct vpsAdmin WebUI navigation action.
-- id: 2073abfecba5ad8c
-  language: cs
-  page: navody:server:firewall
-  paragraph: 39
-  text: V prostředí **Run shell** neběží systemd ani správce firewallu. Obnov v něm
-    trvalou konfiguraci, například ''/etc/iptables/rules.v4'' a ''/etc/iptables/rules.v6''
-    nebo ''/etc/nftables.conf'', ukonči shell a systém spusť normálně. Na NixOS můžeš
-    ve start menu místo toho vybrat předchozí funkční generaci a pak konfiguraci opravit.
-  reason: Start-menu recovery occurs in the console boot menu, not the vpsAdmin WebUI.
 - id: 46195f532d162587
   language: en
   page: manuals:server:ssh
@@ -2026,35 +1941,14 @@ discoveries:
     opravíš bez přihlášení přes SSH.
   reason: Recovery behavior is delegated to the linked console and start-menu guides,
     not a direct vpsAdmin WebUI navigation action.
-- id: b1333749cd0c3d13
-  language: cs
-  page: navody:server:firewall
-  paragraph: 37
-  text: Když už žádné SSH spojení nemáš, nic není ztraceno. Návody ke [[navody:vps:konzole|vzdálené
-    konzoli ve vpsAdminu]] a [[navody:vps:start_menu|start menu]] popisují záchranný
-    postup nezávislý na funkční síti a povoleném portu SSH. Položka **Run shell**
-    při restartu zpřístupní shell přímo v souborovém systému VPS, odkud můžeš pravidla
-    opravit.
-  reason: Recovery behavior is delegated to the linked console and start-menu guides,
-    not a direct vpsAdmin WebUI navigation action.
-- id: d23110ff797f698e
-  language: en
-  page: manuals:server:firewall
-  paragraph: 39
-  text: systemd and the firewall manager are not running in the **Run shell** environment.
-    Restore the persistent configuration there, such as ''/etc/iptables/rules.v4''
-    and ''/etc/iptables/rules.v6'' or ''/etc/nftables.conf'', leave the shell, and
-    start the system normally. On NixOS, you can instead select the previous working
-    generation in the start menu and then repair the configuration.
-  reason: Start-menu recovery occurs in the console boot menu, not the vpsAdmin WebUI.
 - id: 246172e94104bbbc
   language: cs
   page: navody:server:ssh
   paragraph: 34
   text: V prostředí **Run shell** neběží systemd, takže v něm ''systemctl'' nepoužívej.
     Obnov funkční konfiguraci, ukonči shell příkazem ''exit'' a ve start menu zvol
-    **Start system**. Potom vyzkoušej nové SSH spojení. Vzdálená konzole je pro
-    takovou opravu určená, takže se nemusíš bát ji použít.
+    **Start system**. Potom vyzkoušej nové SSH spojení. Vzdálená konzole je pro takovou
+    opravu určená, takže se nemusíš bát ji použít.
   reason: Start-menu recovery occurs in the console boot menu, not the vpsAdmin WebUI.
 - id: b528c6e2dbfa9809
   language: en
@@ -2063,6 +1957,189 @@ discoveries:
   text: systemd is not running in the **Run shell** environment, so do not use ''systemctl''
     there. Restore a working configuration, leave the shell with ''exit'', and select
     **Start system** in the start menu. Then test a new SSH connection. The remote
-    console is intended for exactly this kind of recovery, so do not hesitate to
-    use it.
+    console is intended for exactly this kind of recovery, so do not hesitate to use
+    it.
   reason: Start-menu recovery occurs in the console boot menu, not the vpsAdmin WebUI.
+- id: 077e0764960f9e49
+  language: cs
+  page: informace:novacci
+  paragraph: 18
+  text: "* **SSH klíč:** v **Upravit profil → Veřejné klíče → Přidat veřejný klíč**
+    ulož svůj veřejný klíč. Potom jej ve formuláři v detailu VPS nahraj do běžícího
+    systému. Klíč můžeš také nechat automaticky nahrávat do nových a přeinstalovaných
+    VPS."
+  paths:
+  - member.public-keys.add
+  - vps.details.open
+- id: 10306130ebbce587
+  language: cs
+  page: informace:novacci
+  paragraph: 10
+  text: 'V detailu najdeš stav VPS, její umístění, prostředky a formuláře pro běžnou
+    správu:'
+  reason: Read-only summary and screenshot context for VPS details, not a navigation
+    action.
+- id: 3630d7c44f1cc4ce
+  language: cs
+  page: informace:novacci
+  paragraph: 13
+  text: 'Detail VPS obsahuje adresy a základní příkaz pro připojení:'
+  reason: Read-only address information in VPS details, not a navigation action.
+- id: 39c3276d524026fe
+  language: en
+  page: information:new_members
+  paragraph: 8
+  text: Log in to [[https://vpsadmin.vpsfree.cz/|vpsAdmin]], open **VPS** and click
+    the VPS ID to open its details.
+  paths:
+  - vps.details.open
+- id: 39dca42e5bb8aceb
+  language: cs
+  page: informace:novacci
+  paragraph: 16
+  text: "* **Heslo:** ve formuláři pro heslo uživatele ''root'' v detailu VPS nastav
+    nové, jedinečné heslo. Výchozí šablony přihlášení uživatele ''root'' heslem umožňují."
+  paths:
+  - vps.details.open
+- id: 3a1233dff0252426
+  language: cs
+  page: navody:server:firewall
+  paragraph: 44
+  text: V prostředí **Run shell** neběží systemd ani správce firewallu. Obnov v něm
+    trvalou konfiguraci, například ''/etc/iptables/rules.v4'' a ''/etc/iptables/rules.v6''
+    nebo ''/etc/nftables.conf'', ukonči shell a systém spusť normálně. Na NixOS můžeš
+    ve start menu místo toho vybrat předchozí funkční generaci a pak konfiguraci opravit.
+  reason: Start-menu recovery occurs in the console boot menu, not the vpsAdmin WebUI.
+- id: 404a59757a593f67
+  language: en
+  page: information:new_members
+  paragraph: 13
+  text: 'The VPS details contain its addresses and a basic connection command:'
+  reason: Read-only address information in VPS details, not a navigation action.
+- id: 47306c035b1e9ef3
+  language: cs
+  page: navody:vps:snap
+  paragraph: 13
+  text: Ve formuláři **Funkce**, který je přímo v detailu VPS, zapni **FUSE**. U nově
+    vytvořených VPS je zapnuté ve výchozím nastavení. Při změně funkce se VPS automaticky
+    restartuje; počkej, až znovu naběhne, a test zopakuj.
+  paths:
+  - vps.features.open
+- id: 473ed1e8f76c0cb6
+  language: en
+  page: manuals:server:firewall
+  paragraph: 42
+  text: If no SSH session remains, nothing is lost. The guides to the [[manuals:vps:console|remote
+    console in vpsAdmin]] and the [[manuals:vps:start_menu|start menu]] describe a
+    recovery path that does not depend on working networking or an allowed SSH port.
+    During a restart, **Run shell** provides a shell directly in the VPS file system
+    from which you can repair the rules.
+  reason: Recovery behavior is delegated to the linked console and start-menu guides,
+    not a direct vpsAdmin WebUI navigation action.
+- id: 62082d990a43e0bb
+  language: cs
+  page: informace:novacci
+  paragraph: 24
+  text: "* [[navody:vps:sprava|Vytvoření a správa VPS]] vysvětluje start, zastavení,
+    reinstalaci a další běžné změny. * [[navody:vps:datasety|Datasety]] popisují disky
+    VPS a [[navody:vps:zalohy|zálohy]] vysvětlují snapshoty, obnovu a stažení dat.
+    * [[navody:vps:prenosy|Datové přenosy]] ukazují měsíční přehledy i živý provoz.
+    Přenosy konkrétní VPS vidíš také v jejím detailu:"
+  reason: Read-only traffic summary and screenshot context, not a navigation action.
+- id: 635f629cb9247e21
+  language: en
+  page: information:new_members
+  paragraph: 24
+  text: "* [[manuals:vps:management|Creating and managing a VPS]] covers starting,
+    stopping, reinstalling and other everyday changes. * [[manuals:vps:datasets|Datasets]]
+    describe VPS disks, while [[manuals:vps:backups|backups]] cover snapshots, restoration
+    and downloads. * [[manuals:vps:traffic|Network traffic]] covers monthly reports
+    and live monitoring. Transfers for one VPS are also shown in its details:"
+  reason: Read-only traffic summary and screenshot context, not a navigation action.
+- id: 7605f26e9225f5e2
+  language: en
+  page: manuals:server:firewall
+  paragraph: 44
+  text: systemd and the firewall manager are not running in the **Run shell** environment.
+    Restore the persistent configuration there, such as ''/etc/iptables/rules.v4''
+    and ''/etc/iptables/rules.v6'' or ''/etc/nftables.conf'', leave the shell, and
+    start the system normally. On NixOS, you can instead select the previous working
+    generation in the start menu and then repair the configuration.
+  reason: Start-menu recovery occurs in the console boot menu, not the vpsAdmin WebUI.
+- id: 802632ab39cb25e3
+  language: cs
+  page: informace:novacci
+  paragraph: 22
+  text: Ztráta přístupu přes SSH je opravitelná. Použij [[navody:vps:konzole|vzdálenou
+    konzoli]], která funguje i při rozbité síti, firewallu nebo SSH službě. Návod
+    popisuje běžnou konzoli i prostředí **Run** ze start menu, ve kterém můžeš opravit
+    konfiguraci VPS. Pokud si nevíš rady, [[informace:kam_psat|ozvi se komunitě nebo
+    podpoře]].
+  reason: Recovery delegates to the linked console guide, not a direct vpsAdmin WebUI
+    action.
+- id: 8713282f93f286ba
+  language: en
+  page: information:new_members
+  paragraph: 16
+  text: "* **Password:** set a new, unique ''root'' password using the form in the
+    VPS details. The default templates permit ''root'' password login."
+  paths:
+  - vps.details.open
+- id: 8bd6479513d62f2b
+  language: en
+  page: information:new_members
+  paragraph: 10
+  text: 'The details show the VPS status, location, resources and forms for everyday
+    management:'
+  reason: Read-only summary and screenshot context for VPS details, not a navigation
+    action.
+- id: 96887d7330aeda6f
+  language: cs
+  page: informace:novacci
+  paragraph: 8
+  text: Přihlas se do [[https://vpsadmin.vpsfree.cz/|vpsAdminu]], otevři **VPS** a
+    kliknutím na ID otevři detail své VPS.
+  paths:
+  - vps.details.open
+- id: afc22599c5e31560
+  language: en
+  page: manuals:vps:snap
+  paragraph: 13
+  text: Enable **FUSE** in the **Features** form, which is shown directly in the VPS
+    details. It is enabled by default on newly created VPSes. Changing a VPS feature
+    restarts the VPS automatically; wait for it to start again, then repeat the test.
+  paths:
+  - vps.features.open
+- id: b82cdc3ce74accbb
+  language: cs
+  page: navody:server:firewall
+  paragraph: 42
+  text: Když už žádné SSH spojení nemáš, nic není ztraceno. Návody ke [[navody:vps:konzole|vzdálené
+    konzoli ve vpsAdminu]] a [[navody:vps:start_menu|start menu]] popisují záchranný
+    postup nezávislý na funkční síti a povoleném portu SSH. Položka **Run shell**
+    při restartu zpřístupní shell přímo v souborovém systému VPS, odkud můžeš pravidla
+    opravit.
+  reason: Recovery behavior is delegated to the linked console and start-menu guides,
+    not a direct vpsAdmin WebUI navigation action.
+- id: c98091bb30e45e52
+  language: en
+  page: information:new_members
+  paragraph: 18
+  text: "* **SSH key:** save your public key under **Edit profile → Public keys →
+    Add public key**. Then deploy it to the running system using the form in the VPS
+    details. You can also have the key deployed automatically to new and reinstalled
+    VPSes."
+  paths:
+  - member.public-keys.add
+  - vps.details.open
+- id: c9ae7275431e32c6
+  language: en
+  page: information:new_members
+  paragraph: 22
+  text: Losing SSH access is recoverable. Use the [[manuals:vps:console|remote console]],
+    which remains available when the VPS network, firewall or SSH service is broken.
+    The guide covers the normal console and the start-menu **Run** environment where
+    you can repair the VPS configuration. If you need help, [[information:where_to_write|contact
+    the community or support]].
+  reason: Recovery delegates to the linked console guide, not a direct vpsAdmin WebUI
+    action.

@@ -417,8 +417,8 @@ paths:
   - id: member.public-keys.add
     steps: [member.edit-profile, member.public-keys, member.public-keys.add]
     pages:
-      cs: [navody:server:ssh, navody:vps:sprava]
-      en: [manuals:server:ssh, manuals:vps:management]
+      cs: [informace:novacci, navody:server:ssh, navody:vps:sprava]
+      en: [information:new_members, manuals:server:ssh, manuals:vps:management]
 
   - id: member.public-keys.open
     steps: [member.edit-profile, member.public-keys]
@@ -531,8 +531,8 @@ paths:
   - id: vps.details.open
     steps: [vps.menu]
     pages:
-      cs: [navody:server:ssh]
-      en: [manuals:server:ssh]
+      cs: [informace:novacci, navody:server:ssh]
+      en: [information:new_members, manuals:server:ssh]
 
   - id: datasets.create.open
     steps: [datasets.create]
