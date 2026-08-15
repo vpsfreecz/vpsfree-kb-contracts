@@ -67,7 +67,7 @@ import ../../make-test.nix (
               wantedBy = [ "multi-user.target" ];
               after = [ "network-online.target" ];
               serviceConfig = {
-                ExecStart = "''${pkgs.socat}/bin/socat TCP6-LISTEN:''${toString port},ipv6only=0,reuseaddr,fork EXEC:/bin/cat";
+                ExecStart = "''${pkgs.socat}/bin/socat TCP6-LISTEN:''${toString port},ipv6only=0,reuseaddr,fork EXEC:''${pkgs.coreutils}/bin/cat";
                 Restart = "always";
               };
             };
@@ -172,27 +172,30 @@ import ../../make-test.nix (
       end
 
       def begin_established_connection(address, family)
+        machine.succeeds(
+          "rm -f /tmp/kb-firewall-established-#{family}-ready " \
+          "/tmp/kb-firewall-established-#{family}-continue " \
+          "/tmp/kb-firewall-established-#{family}-result " \
+          "/tmp/kb-firewall-established-#{family}.log"
+        )
         client = <<~SH
-          rm -f /tmp/kb-firewall-established-#{family}-ready \
-            /tmp/kb-firewall-established-#{family}-continue \
-            /tmp/kb-firewall-established-#{family}-result \
-            /tmp/kb-firewall-established-#{family}.log
-          (
-            set -eu
-            exec 3<>/dev/tcp/#{address}/81
-            printf 'before\\n' >&3
-            IFS= read -r reply <&3
-            test "$reply" = before
-            touch /tmp/kb-firewall-established-#{family}-ready
-            while test ! -e /tmp/kb-firewall-established-#{family}-continue; do
-              sleep 0.1
-            done
-            printf 'after\\n' >&3
-            IFS= read -r reply <&3
-            printf '%s\\n' "$reply" > /tmp/kb-firewall-established-#{family}-result
-          ) </dev/null >/tmp/kb-firewall-established-#{family}.log 2>&1 &
+          set -eu
+          exec 3<>/dev/tcp/#{address}/81
+          printf 'before\\n' >&3
+          IFS= read -r reply <&3
+          test "$reply" = before
+          touch /tmp/kb-firewall-established-#{family}-ready
+          while test ! -e /tmp/kb-firewall-established-#{family}-continue; do
+            sleep 0.1
+          done
+          printf 'after\\n' >&3
+          IFS= read -r reply <&3
+          printf '%s\\n' "$reply" > /tmp/kb-firewall-established-#{family}-result
         SH
-        machine.succeeds("bash -c #{Shellwords.escape(client)}")
+        machine.succeeds(
+          "setsid -f bash -c #{Shellwords.escape(client)} " \
+          "</dev/null >/tmp/kb-firewall-established-#{family}.log 2>&1"
+        )
         machine.wait_until_succeeds(
           "test -e /tmp/kb-firewall-established-#{family}-ready",
           timeout: 30
@@ -202,6 +205,27 @@ import ../../make-test.nix (
       def begin_established_connections(ipv4, ipv6)
         begin_established_connection(ipv4, 'ipv4')
         begin_established_connection(ipv6, 'ipv6')
+      end
+
+      def enable_permissive_connection_tracking(ct)
+        in_container(
+          ct,
+          'iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; ' \
+          'ip6tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT'
+        )
+      end
+
+      def remove_permissive_connection_tracking(ct)
+        in_container(
+          ct,
+          'set -eu; ' \
+          'iptables -D INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; ' \
+          'ip6tables -D INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; ' \
+          'if iptables -C INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; ' \
+          'then exit 1; fi; ' \
+          'if ip6tables -C INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT; ' \
+          'then exit 1; fi'
+        )
       end
 
       def expect_established_connections
@@ -223,8 +247,14 @@ import ../../make-test.nix (
             "timeout 5 nc -6 -z #{Shellwords.escape(ipv6)} #{port}"
           )
         end
-        machine.fails("timeout 3 nc -4 -z #{Shellwords.escape(ipv4)} 81")
-        machine.fails("timeout 3 nc -6 -z #{Shellwords.escape(ipv6)} 81")
+        machine.fails(
+          "nc -4 -z -w 3 #{Shellwords.escape(ipv4)} 81",
+          timeout: 10
+        )
+        machine.fails(
+          "nc -6 -z -w 3 #{Shellwords.escape(ipv6)} 81",
+          timeout: 10
+        )
         machine.succeeds("ping -c 1 -W 2 #{Shellwords.escape(ipv4)}")
         machine.succeeds("ping -6 -c 1 -W 2 #{Shellwords.escape(ipv6)}")
         in_container(ct, 'ping -c 1 -W 2 10.0.2.3')
@@ -296,9 +326,10 @@ import ../../make-test.nix (
             prepare_systemd_listeners(
               CT,
               package_command: 'apt-get update && DEBIAN_FRONTEND=noninteractive ' \
-                'apt-get install -y openssh-server socat curl',
+                'apt-get install -y openssh-server socat curl iptables',
               ssh_service: 'ssh.service'
             )
+            enable_permissive_connection_tracking(CT)
             begin_established_connections(IPV4, IPV6)
 
             run_fixture(CT, 'configure-iptables')
@@ -336,10 +367,11 @@ import ../../make-test.nix (
             prepare_systemd_listeners(
               CT,
               package_command: 'apt-get update && DEBIAN_FRONTEND=noninteractive ' \
-                'apt-get install -y openssh-server socat curl',
+                'apt-get install -y openssh-server socat curl nftables iptables',
               ssh_service: 'ssh.service'
             )
             write_container_file(CT, '/etc/nftables.conf', FIXTURES.fetch('nftables-config'))
+            enable_permissive_connection_tracking(CT)
             begin_established_connections(IPV4, IPV6)
 
             run_fixture(CT, 'enable-nftables')
@@ -375,10 +407,12 @@ import ../../make-test.nix (
             prepare_systemd_listeners(
               CT,
               package_command: 'apt-get update && DEBIAN_FRONTEND=noninteractive ' \
-                'apt-get install -y openssh-server socat curl',
+                'apt-get install -y openssh-server socat curl iptables',
               ssh_service: 'ssh.service'
             )
+            enable_permissive_connection_tracking(CT)
             begin_established_connections(IPV4, IPV6)
+            remove_permissive_connection_tracking(CT)
 
             run_fixture(CT, 'configure-ufw')
             in_container(CT, "grep -Fx 'IPV6=yes' /etc/default/ufw")
@@ -414,7 +448,11 @@ import ../../make-test.nix (
               package_command: 'dnf install -y openssh-server socat curl firewalld',
               ssh_service: 'sshd.service'
             )
-            in_container(CT, 'systemctl stop firewalld || true; nft flush ruleset')
+            in_container(
+              CT,
+              'systemctl enable --now firewalld; ' \
+                'firewall-cmd --set-default-zone=trusted; firewall-cmd --reload'
+            )
             begin_established_connections(IPV4, IPV6)
 
             run_fixture(CT, 'configure-firewalld')
@@ -462,11 +500,18 @@ import ../../make-test.nix (
                 { lib, ... }:
                 {
                   imports = [ ./kb-base.nix ./kb-services.nix ];
-                  networking.firewall.enable = lib.mkForce false;
+                  networking.hostName = lib.mkForce "vps";
+                  networking.firewall.enable = lib.mkForce true;
+                  networking.firewall.allowedTCPPorts = lib.mkForce [ 22 80 81 443 ];
                 }
               NIX
             )
-            in_container(CT, 'nixos-rebuild switch', timeout: 1800)
+            in_container(
+              CT,
+              'nixos-rebuild switch --flake /etc/nixos#vps',
+              timeout: 1800
+            )
+            in_container(CT, 'hostname vps; test "$(hostname)" = vps')
             begin_established_connections(IPV4, IPV6)
 
             write_container_file(
@@ -478,17 +523,19 @@ import ../../make-test.nix (
               CT,
               '/etc/nixos/configuration.nix',
               <<~NIX
-                { ... }:
+                { lib, ... }:
                 {
                   imports = [ ./kb-base.nix ./kb-services.nix ./kb-firewall.nix ];
+                  networking.hostName = lib.mkForce "vps";
                 }
               NIX
             )
             run_fixture(CT, 'test-nixos-firewall', timeout: 1800)
             in_container(
               CT,
-              'nixos-option networking.firewall.allowedTCPPorts | ' \
-                'grep -F "[ 22 80 443 ]"'
+              'nix eval --json ' \
+                '/etc/nixos#nixosConfigurations.vps.config.networking.firewall.allowedTCPPorts ' \
+                '| grep -Fx "[22,80,443]"'
             )
             expect_firewall_behaviour(CT, ipv4: IPV4, ipv6: IPV6)
 
@@ -499,8 +546,9 @@ import ../../make-test.nix (
             restart_and_wait(CT)
             in_container(
               CT,
-              'nixos-option networking.firewall.allowedTCPPorts | ' \
-                'grep -F "[ 22 80 443 ]"'
+              'nix eval --json ' \
+                '/etc/nixos#nixosConfigurations.vps.config.networking.firewall.allowedTCPPorts ' \
+                '| grep -Fx "[22,80,443]"'
             )
             expect_firewall_behaviour(CT, ipv4: IPV4, ipv6: IPV6)
           end
