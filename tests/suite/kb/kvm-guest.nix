@@ -135,6 +135,10 @@ for _ in $(seq 1 100); do
   [ -e /sys/class/net/eth0 ] && break
   sleep 0.1
 done
+if [ -n "$ipv6" ] || [ -n "$public6" ]; then
+  echo 0 >/proc/sys/net/ipv6/conf/eth0/accept_ra
+  echo 0 >/proc/sys/net/ipv6/conf/eth0/autoconf
+fi
 ip link set eth0 up
 
 if [ -n "$ipv4" ]; then
@@ -168,7 +172,7 @@ if [ -n "$gateway6" ]; then
   if [ -n "$public6" ]; then
     ip -6 route replace default via "$gateway6" src "$public6"
   else
-    ip -6 route replace default via "$gateway6"
+    ip -6 route replace default via "$gateway6" src "$ipv6"
   fi
 fi
 
