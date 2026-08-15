@@ -9,7 +9,8 @@
 
 [[https://guix.gnu.org/|GNU Guix System]] je distribuce, ve které se systém,
 služby a balíčky popisují deklarativně v jazyce Guile Scheme. Podobně jako
-NixOS vytváří při změnách nové generace systému, ke kterým se můžeš vrátit.
+[[navody:distribuce:nixos|NixOS]] vytváří při změnách nové generace systému, ke
+kterým se můžeš vrátit.
 
 ===== Jak funguje šablona =====
 
@@ -21,8 +22,8 @@ NixOS vytváří při změnách nové generace systému, ke kterým se můžeš 
 ''system.scm'' načítá modul ''vpsadminos'' z druhého souboru. Toto propojení
 zachovej: definuje kontejnerový bootloader, souborové systémy a službu, která
 při startu spouští síťovou konfiguraci vytvořenou vpsAdminOS. Aktuální podobu
-obou souborů najdeš ve
-[[https://github.com/vpsfreecz/vpsadminos/tree/staging/image-scripts/images/guix|zdrojích šablony Guix]].
+obou souborů najdeš v
+[[https://github.com/vpsfreecz/vpsadminos/tree/staging/image-scripts/images/guix|adresáři šablony pro Guix v repozitáři vpsAdminOS]].
 
 Jádro spravuje vpsAdminOS, proto do konfigurace nepřidávej vlastní linuxový
 kernel ani běžný bootloader pro fyzický stroj.

@@ -8,9 +8,9 @@
 ====== GNU Guix System ======
 
 [[https://guix.gnu.org/|GNU Guix System]] is a distribution where the system,
-services, and packages are described declaratively in Guile Scheme. Like NixOS,
-it creates system generations when the configuration changes and lets you
-return to an earlier generation.
+services, and packages are described declaratively in Guile Scheme. Like
+[[manuals:distributions:nixos|NixOS]], it creates system generations when the
+configuration changes and lets you return to an earlier generation.
 
 ===== How the template works =====
 
