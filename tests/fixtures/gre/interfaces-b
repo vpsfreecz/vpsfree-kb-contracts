@@ -4,7 +4,7 @@ iface gre1 inet tunnel
   address 10.0.0.2
   netmask 255.255.255.252
   dstaddr 10.0.0.1
-  local 198.51.100.20
-  endpoint 192.0.2.10
+  local 185.8.164.20
+  endpoint 185.8.164.10
   ttl 255
   mtu 1476

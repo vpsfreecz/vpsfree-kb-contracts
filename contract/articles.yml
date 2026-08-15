@@ -255,22 +255,22 @@ articles:
     samples:
       transient-a:
         path: tests/fixtures/gre/configure-transient-a.sh
-        sha256: 608d8a5428e9aa676f80439344c4173c9650e3b29b4ee309b5fdf6e64f9d295b
+        sha256: d3db14a62f6a2c44489fe0a08ffb081c72b56f2a894031a2fc60f81ecbfc9e83
         tests:
         - tunnel
       transient-b:
         path: tests/fixtures/gre/configure-transient-b.sh
-        sha256: 72b99cfd28ebcb8e912704a4ed2ddb3ce1e28327d22508128a1812a076aee2d1
+        sha256: 711b5485c287d429ea212d18bfd9eeefb083fe29b28414fc0bbef15fea3cba10
         tests:
         - tunnel
       interfaces-a:
         path: tests/fixtures/gre/interfaces-a
-        sha256: 2bf5e906684dfda5b360e86daaf28b87a9b0723502f784c188b92d9711a2d967
+        sha256: 0746ae8457802a9f6b8bbda6c4b6a66d96a84d87c1dd17c23fca106656b948f9
         tests:
         - tunnel
       interfaces-b:
         path: tests/fixtures/gre/interfaces-b
-        sha256: b666653e4d7e8ea041038e4530a81f39283deee874de1f29aabff853eeaf78a6
+        sha256: 7a0365aa5e7dd7050eedf39403d98c0e1c13ccf5c5dc011d6dff5f642bf9f475
         tests:
         - tunnel
     sections:
@@ -278,15 +278,18 @@ articles:
         claims:
         - gre-uses-ip-protocol-47
         - gre-is-not-encrypted-or-authenticated
+        - trusted-vpsfree-internal-only
+        - source-address-ownership-enforced
+        - wireguard-for-public-internet
         tests: []
         samples: []
         localizations:
           cs:
             heading: Než začneš
-            fingerprint: 6615f1b88a97933ef2ff508f38a12a9a68e1cd04518d990c036f9bd55660dcb8
+            fingerprint: f09ade29abd74c57f2b56e77c7264286e26abcf74b0bc716267df662ccf97baa
           en:
             heading: Before you begin
-            fingerprint: 32b8918bef2324d6e0cbea12dac3d23168b0a819a168079cab545844452b014d
+            fingerprint: d23fd237ffdeeb666da5904626b656b178644250499ed86c66fa4b4cbad187e5
       transient:
         claims:
         - transient-commands-create-matching-gre-endpoints
@@ -300,10 +303,10 @@ articles:
         localizations:
           cs:
             heading: Okamžité nastavení
-            fingerprint: d08d6457155427aaf7f0b9a60a77e95dfad6b5d311d6a57098e8ae4ffc7d2589
+            fingerprint: f7dd013b61761c7b2549e48b79afd0797e8a4ba709693152f076bff96f629080
           en:
             heading: Immediate configuration
-            fingerprint: 39f9ae158311a905cbcc9760f959f8ab239d4d1e0d22f8b05665b3ef5fc7bc37
+            fingerprint: 3169e54d4aae2057811a1fdd02557f5daa446d1c92eab172e3afba0c8aa0b323
       debian-ifupdown:
         claims:
         - debian-template-uses-ifupdown
@@ -318,23 +321,22 @@ articles:
         localizations:
           cs:
             heading: Trvalé nastavení v Debianu
-            fingerprint: d6e91c89ae9c8f11241cd5d2e61e23b38e99bdd3979a979dea7aa163bbe869b7
+            fingerprint: ab534614514766977553a74439f84c0fe149e162dbc5c206c8b3906849109c41
           en:
             heading: Persistent Debian configuration
-            fingerprint: 744d38af3e236c334e3f17b70a2b4e1c468dae3cc000318da203ce62987653ee
+            fingerprint: 213704c2a20f8a9c655db740f72598412faef86d702521a4e5df7fcaffe4b30d
       other-network-managers:
         claims:
         - network-manager-specific-configuration-is-linked-upstream
-        - legacy-rhel-network-scripts-are-not-recommended
         tests: []
         samples: []
         localizations:
           cs:
             heading: Jiné správce sítě
-            fingerprint: c37c13e54e7465d99760c3a8cc3bf658159e6c579f9b8bcb8efee55c861f8d4d
+            fingerprint: d5c5e8cfc40b67bcbdb1a81466f1e85323477717333cdd769874675e5b9c133c
           en:
             heading: Other network managers
-            fingerprint: 2a363c6d40a08e20004de13b689c5c368a67a9f29032e40fd60493e71d2c384f
+            fingerprint: b644d8cfbea1eedfc7d71742e69d39a58bbbc211f6bc94a6795b68f2297ef79e
       troubleshooting:
         claims:
         - gre-over-ipv4-reduces-mtu

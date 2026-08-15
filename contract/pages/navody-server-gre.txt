@@ -8,25 +8,26 @@
 ====== GRE tunel ======
 
 GRE propojí dvě zařízení tunelem přes IPv4. Hodí se například pro směrování
-privátní sítě mezi dvěma VPS. Níže je jednoduchý tunel mezi těmito ukázkovými
-adresami:
+privátní sítě mezi dvěma VPS v důvěryhodné interní síti vpsFree. Níže je
+jednoduchý tunel mezi těmito ukázkovými adresami:
 
 ^  ^ VPS A ^ VPS B ^
-| vnější adresa VPS | ''192.0.2.10'' | ''198.51.100.20'' |
+| vnější adresa VPS | ''185.8.164.10/32'' | ''185.8.164.20/32'' |
 | adresa uvnitř tunelu | ''10.0.0.1'' | ''10.0.0.2'' |
 
-Adresy ''192.0.2.0/24'' a ''198.51.100.0/24'' jsou vyhrazené pro dokumentaci.
-Nahraď je skutečnými IPv4 adresami svých VPS. Privátní adresy tunelu můžeš
+Vnější adresy jsou příklady z playground rozsahu vpsFree. Nahraď je adresami
+''/32'', které máš skutečně přidělené ke svým VPS. Privátní adresy tunelu můžeš
 ponechat, pokud se nekříží s jinou sítí, kterou používáš.
 
 ===== Než začneš =====
 
-GRE používá **IP protokol 47**, nikoliv TCP nebo UDP port 47. Pokud na VPS nebo
-po cestě filtruješ provoz, povol protokol 47 z vnější adresy druhého konce.
+GRE používá **IP protokol 47**, nikoliv TCP nebo UDP port 47. Pokud na VPS
+filtruješ provoz, povol protokol 47 z vnější adresy druhého konce.
 
-Samotné GRE provoz **nešifruje ani neověřuje protistranu**. Nepřenášej přes něj
-citlivá data bez dalšího zabezpečení. Pokud chceš bezpečně propojit dva servery,
-obvykle je vhodnější [[navody:server:wireguard|WireGuard]].
+Tento postup používej jen přes důvěryhodnou interní síť vpsFree, kde vpsFree
+vynucuje vlastnictví zdrojových adres. Samotné GRE provoz **nešifruje ani
+neověřuje protistranu**, proto jej neposílej přes veřejný internet. Pro spojení
+přes veřejný internet použij [[navody:server:wireguard|WireGuard]].
 
 ===== Okamžité nastavení =====
 
@@ -37,7 +38,7 @@ Na VPS A spusť:
 set -eu
 
 ip tunnel add gre1 mode gre \
-  local 192.0.2.10 remote 198.51.100.20 ttl 255
+  local 185.8.164.10 remote 185.8.164.20 ttl 255
 ip address add 10.0.0.1/30 dev gre1
 ip link set dev gre1 mtu 1476 up
 </code>
@@ -49,7 +50,7 @@ Na VPS B spusť:
 set -eu
 
 ip tunnel add gre1 mode gre \
-  local 198.51.100.20 remote 192.0.2.10 ttl 255
+  local 185.8.164.20 remote 185.8.164.10 ttl 255
 ip address add 10.0.0.2/30 dev gre1
 ip link set dev gre1 mtu 1476 up
 </code>
@@ -80,8 +81,8 @@ iface gre1 inet tunnel
   address 10.0.0.1
   netmask 255.255.255.252
   dstaddr 10.0.0.2
-  local 192.0.2.10
-  endpoint 198.51.100.20
+  local 185.8.164.10
+  endpoint 185.8.164.20
   ttl 255
   mtu 1476
 </code>
@@ -95,8 +96,8 @@ iface gre1 inet tunnel
   address 10.0.0.2
   netmask 255.255.255.252
   dstaddr 10.0.0.1
-  local 198.51.100.20
-  endpoint 192.0.2.10
+  local 185.8.164.20
+  endpoint 185.8.164.10
   ttl 255
   mtu 1476
 </code>
@@ -118,8 +119,6 @@ Pokud tvoje distribuce nepoužívá ifupdown, vytvoř stejný GRE tunel správce
 sítě dané distribuce. Aktuální volby popisuje dokumentace
 [[https://networkmanager.pages.freedesktop.org/NetworkManager/NetworkManager/settings-ip-tunnel.html|NetworkManageru]]
 a [[https://www.freedesktop.org/software/systemd/man/latest/systemd.netdev.html|systemd-networkd]].
-Staré soubory ''/etc/sysconfig/network-scripts/ifcfg-*'' už pro současné
-distribuce rodiny RHEL nedoporučujeme.
 
 ===== MTU a řešení problémů =====
 
