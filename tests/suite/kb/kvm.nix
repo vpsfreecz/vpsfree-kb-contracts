@@ -93,6 +93,15 @@ import ../../make-test.nix (
         node.succeeds(shell, timeout:)
       end
 
+      def install_libvirt(node, vps_id)
+        run_in_vps(
+          node,
+          vps_id,
+          install_libvirt_script,
+          environment: { 'DEBIAN_FRONTEND' => 'noninteractive' }
+        )
+      end
+
       def run_command_in_vps(node, vps_id, command, timeout: 300)
         node.succeeds(
           "osctl ct exec #{Integer(vps_id)} bash -lc #{Shellwords.escape(command)}",
@@ -911,7 +920,7 @@ import ../../make-test.nix (
         ''
           describe 'the documented Debian libvirt setup' do
             it 'installs and reaches the system libvirt connection' do
-              _, output = run_in_vps(node1, @vps_id, install_libvirt_script)
+              _, output = install_libvirt(node1, @vps_id)
               expect(output).to include('Using API: QEMU')
             end
 
@@ -933,7 +942,7 @@ import ../../make-test.nix (
           describe 'the documented libvirt storage pool' do
             before(:context) do
               @storage = prepare_vm_storage(services, @vps_id)
-              run_in_vps(node1, @vps_id, install_libvirt_script)
+              install_libvirt(node1, @vps_id)
             end
 
             it 'mounts a subdataset with inherited ZFS defaults' do
@@ -1016,7 +1025,7 @@ import ../../make-test.nix (
               label: 'KVM NAT IPv6 /64 fixture'
             )
             @nat_public_ipv6 = @nat_ipv6.fetch('host_ipv6')
-            run_in_vps(node1, @nat_vps_id, install_libvirt_script)
+            install_libvirt(node1, @nat_vps_id)
             run_command_in_vps(node1, @nat_vps_id, <<~'SH')
               virsh --connect qemu:///system net-autostart default
               if ! virsh --connect qemu:///system net-list --name \
@@ -1081,7 +1090,7 @@ import ../../make-test.nix (
               @routed_vps_id,
               via_id: @routed_primary_ipv6.fetch('host_ip_id')
             )
-            run_in_vps(node1, @routed_vps_id, install_libvirt_script)
+            install_libvirt(node1, @routed_vps_id)
             install_guest_appliance(node1, @routed_vps_id)
             run_in_vps(
               node1,

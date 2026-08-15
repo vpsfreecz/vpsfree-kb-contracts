@@ -227,7 +227,7 @@ articles:
     samples:
       install-libvirt:
         path: tests/fixtures/kvm/install-libvirt.sh
-        sha256: a6395dfa25324f3e9b666c7680b2b41b0e7a511cf8868857f3d0d1599b283c83
+        sha256: 1e34d628c256504ad75351579a52680414a677c8d7012eead47995ee388e87c4
         tests:
         - libvirt
       configure-storage-pool:
@@ -267,10 +267,10 @@ articles:
         localizations:
           cs:
             heading: Instalace libvirt
-            fingerprint: c27bcd24bdc1bb18ffd5f1637696b474c1b0a8d58010e072ee422d1ed7a25ff7
+            fingerprint: 1b8659425ab6fff152e2f55cf16a2c7d3f8314769a17cc44a0c5672fc82995ca
           en:
             heading: Installing libvirt
-            fingerprint: 35a21790a9a080b106c9b70a3fa7d2768e554ee17c796f592195bdd1f8a339db
+            fingerprint: 7916133f9aa9a003f71fc4565794f73fba63395c19a349cb1d25e388ffe3d1df
       storage:
         claims:
         - subdataset-recommended-property-boundary
