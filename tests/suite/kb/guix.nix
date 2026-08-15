@@ -224,6 +224,8 @@ import ../../make-test.nix (
             )
             expect(rendered).to include('(safety-checks? #f)')
             expect(rendered).to include('(allow-downgrades? #f)')
+            expect(rendered).to include('(password-authentication? #f)')
+            expect(rendered).to include("(permit-root-login 'prohibit-password)")
             encoded = Base64.strict_encode64(rendered)
             in_guix(
               "printf %s #{Shellwords.escape(encoded)} | " \
@@ -245,14 +247,6 @@ import ../../make-test.nix (
             expect(after_generation.strip).not_to eq(before_generation.strip)
             _, host_name = in_guix_target('hostname')
             expect(host_name.strip).to eq('guix-target')
-
-            _, sshd_config = in_guix_target(
-              '/run/current-system/profile/sbin/sshd -T'
-            )
-            expect(sshd_config).to include("passwordauthentication no\n")
-            expect(sshd_config).to match(
-              /^permitrootlogin (?:prohibit-password|without-password)$/
-            )
 
             _, signing_key = in_guix('cat /etc/guix/signing-key.pub')
             _, target_acl = in_guix_target('cat /etc/guix/acl')
