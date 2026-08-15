@@ -1984,3 +1984,85 @@ discoveries:
     jen ''deploy.scm''; kontejnerové detaily se dál načítají z udržovaného modulu
     ''/etc/config/vpsadminos.scm''.
   reason: Upstream guix deploy documentation, not a vpsAdmin WebUI action.
+- id: 0b73fa24e83af497
+  language: en
+  page: manuals:server:firewall
+  paragraph: 37
+  text: If no SSH session remains, nothing is lost. The guides to the [[manuals:vps:console|remote
+    console in vpsAdmin]] and the [[manuals:vps:start_menu|start menu]] describe a
+    recovery path that does not depend on working networking or an allowed SSH port.
+    During a restart, **Run shell** provides a shell directly in the VPS file system
+    from which you can repair the rules.
+  reason: Recovery behavior is delegated to the linked console and start-menu guides,
+    not a direct vpsAdmin WebUI navigation action.
+- id: 2073abfecba5ad8c
+  language: cs
+  page: navody:server:firewall
+  paragraph: 39
+  text: V prostředí **Run shell** neběží systemd ani správce firewallu. Obnov v něm
+    trvalou konfiguraci, například ''/etc/iptables/rules.v4'' a ''/etc/iptables/rules.v6''
+    nebo ''/etc/nftables.conf'', ukonči shell a systém spusť normálně. Na NixOS můžeš
+    ve start menu místo toho vybrat předchozí funkční generaci a pak konfiguraci opravit.
+  reason: Start-menu recovery occurs in the console boot menu, not the vpsAdmin WebUI.
+- id: 46195f532d162587
+  language: en
+  page: manuals:server:ssh
+  paragraph: 32
+  text: If no SSH session remains, nothing is lost. This is exactly what the [[manuals:vps:console|vpsAdmin
+    remote console]] is for. It works independently of SSH and the network firewall.
+    During a restart it displays the [[manuals:vps:start_menu|start menu]]; **Run
+    shell** starts ''/bin/sh'' directly inside the VPS, so you can repair the configuration
+    without logging in over SSH.
+  reason: Recovery behavior is delegated to the linked console and start-menu guides,
+    not a direct vpsAdmin WebUI navigation action.
+- id: a75508a3d28bc3e4
+  language: cs
+  page: navody:server:ssh
+  paragraph: 32
+  text: Když už žádná SSH relace nezůstala, nic není ztraceno. Právě pro takovou situaci
+    je ve vpsAdminu [[navody:vps:konzole|vzdálená konzole]]. Funguje nezávisle na
+    SSH i síťovém firewallu. Během restartu se v ní objeví [[navody:vps:start_menu|start
+    menu]]; volba **Run shell** spustí ''/bin/sh'' přímo ve VPS, takže konfiguraci
+    opravíš bez přihlášení přes SSH.
+  reason: Recovery behavior is delegated to the linked console and start-menu guides,
+    not a direct vpsAdmin WebUI navigation action.
+- id: b1333749cd0c3d13
+  language: cs
+  page: navody:server:firewall
+  paragraph: 37
+  text: Když už žádné SSH spojení nemáš, nic není ztraceno. Návody ke [[navody:vps:konzole|vzdálené
+    konzoli ve vpsAdminu]] a [[navody:vps:start_menu|start menu]] popisují záchranný
+    postup nezávislý na funkční síti a povoleném portu SSH. Položka **Run shell**
+    při restartu zpřístupní shell přímo v souborovém systému VPS, odkud můžeš pravidla
+    opravit.
+  reason: Recovery behavior is delegated to the linked console and start-menu guides,
+    not a direct vpsAdmin WebUI navigation action.
+- id: d23110ff797f698e
+  language: en
+  page: manuals:server:firewall
+  paragraph: 39
+  text: systemd and the firewall manager are not running in the **Run shell** environment.
+    Restore the persistent configuration there, such as ''/etc/iptables/rules.v4''
+    and ''/etc/iptables/rules.v6'' or ''/etc/nftables.conf'', leave the shell, and
+    start the system normally. On NixOS, you can instead select the previous working
+    generation in the start menu and then repair the configuration.
+  reason: Start-menu recovery occurs in the console boot menu, not the vpsAdmin WebUI.
+- id: 246172e94104bbbc
+  language: cs
+  page: navody:server:ssh
+  paragraph: 34
+  text: V prostředí **Run shell** neběží systemd, takže v něm ''systemctl'' nepoužívej.
+    Obnov funkční konfiguraci, ukonči shell příkazem ''exit'' a ve start menu zvol
+    **Start system**. Potom vyzkoušej nové SSH spojení. Vzdálená konzole je pro
+    takovou opravu určená, takže se nemusíš bát ji použít.
+  reason: Start-menu recovery occurs in the console boot menu, not the vpsAdmin WebUI.
+- id: b528c6e2dbfa9809
+  language: en
+  page: manuals:server:ssh
+  paragraph: 34
+  text: systemd is not running in the **Run shell** environment, so do not use ''systemctl''
+    there. Restore a working configuration, leave the shell with ''exit'', and select
+    **Start system** in the start menu. Then test a new SSH connection. The remote
+    console is intended for exactly this kind of recovery, so do not hesitate to
+    use it.
+  reason: Start-menu recovery occurs in the console boot menu, not the vpsAdmin WebUI.
