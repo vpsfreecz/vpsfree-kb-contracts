@@ -36,11 +36,8 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Check contracts and test discovery
+      - name: Check repository
         run: nix develop --command bin/check --allow-missing
-
-      - name: Preview tests
-        run: ./test-runner.sh ls
 
       - name: Prepare test state
         id: prepare-tests
