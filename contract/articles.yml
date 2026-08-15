@@ -489,10 +489,10 @@ articles:
         localizations:
           cs:
             heading: Než začneš
-            fingerprint: f09ade29abd74c57f2b56e77c7264286e26abcf74b0bc716267df662ccf97baa
+            fingerprint: 9b995be6a53e05fdb081e8fef0e0fa730b055332f483e248e1b7d4bef562b00c
           en:
             heading: Before you begin
-            fingerprint: d23fd237ffdeeb666da5904626b656b178644250499ed86c66fa4b4cbad187e5
+            fingerprint: 07cb89d0a554e0522630c388c4665359616c3d9bcfa443bc88f2a62e940e26a6
       transient:
         claims:
         - transient-commands-create-matching-gre-endpoints

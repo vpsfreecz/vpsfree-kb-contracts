@@ -24,8 +24,8 @@ private tunnel addresses if they do not overlap another network you use.
 GRE uses **IP protocol 47**, not TCP or UDP port 47. If traffic is filtered on
 either VPS, allow protocol 47 from the other endpoint's outer address.
 
-Use this setup only over the trusted vpsFree internal network, where vpsFree
-enforces source-address ownership. GRE itself **does not encrypt traffic or
+Use this setup only over the trusted vpsFree internal network, where
+source-address ownership is enforced. GRE itself **does not encrypt traffic or
 authenticate the peer**, so do not carry it over the public Internet. Use
 [[manuals:server:wireguard|WireGuard]] for public-Internet connections.
 

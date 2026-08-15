@@ -24,8 +24,8 @@ ponechat, pokud se nekříží s jinou sítí, kterou používáš.
 GRE používá **IP protokol 47**, nikoliv TCP nebo UDP port 47. Pokud na VPS
 filtruješ provoz, povol protokol 47 z vnější adresy druhého konce.
 
-Tento postup používej jen přes důvěryhodnou interní síť vpsFree, kde vpsFree
-vynucuje vlastnictví zdrojových adres. Samotné GRE provoz **nešifruje ani
+Tento postup používej jen přes důvěryhodnou interní síť vpsFree, kde je
+vynuceno vlastnictví zdrojových adres. Samotné GRE provoz **nešifruje ani
 neověřuje protistranu**, proto jej neposílej přes veřejný internet. Pro spojení
 přes veřejný internet použij [[navody:server:wireguard|WireGuard]].
 
