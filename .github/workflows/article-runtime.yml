@@ -14,7 +14,9 @@ on:
       - tests/**
       - tools/article-runtime-matrix.rb
       - tools/check-article-contract.rb
+      - tools/check-managed-article-sources.rb
       - tools/test-article-contract.rb
+      - tools/test-managed-article-sources.rb
   workflow_dispatch:
   schedule:
     - cron: "30 3 * * 0"
