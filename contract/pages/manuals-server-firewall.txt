@@ -69,9 +69,11 @@ only at the end:
 #!/usr/bin/env bash
 set -eu
 
+# Install the command-line tools and boot-time persistence.
 apt update
 DEBIAN_FRONTEND=noninteractive apt install -y iptables iptables-persistent
 
+# Keep traffic allowed while replacing the current rules.
 iptables -P INPUT ACCEPT
 iptables -P FORWARD ACCEPT
 iptables -P OUTPUT ACCEPT
@@ -79,32 +81,41 @@ ip6tables -P INPUT ACCEPT
 ip6tables -P FORWARD ACCEPT
 ip6tables -P OUTPUT ACCEPT
 
+# Remove the current filter rules and user-defined chains.
 iptables -F
 iptables -X
 ip6tables -F
 ip6tables -X
 
+# IPv4 input: drop invalid packets, keep established traffic, and open services.
 iptables -A INPUT -m conntrack --ctstate INVALID -j DROP
 iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A INPUT -p icmp -j ACCEPT
 iptables -A INPUT -p tcp -m multiport --dports 22,80,443 -j ACCEPT
 
+# IPv6 input: apply the same policy and keep IPv6 control traffic working.
 ip6tables -A INPUT -m conntrack --ctstate INVALID -j DROP
 ip6tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 ip6tables -A INPUT -i lo -j ACCEPT
 ip6tables -A INPUT -p ipv6-icmp -j ACCEPT
 ip6tables -A INPUT -p tcp -m multiport --dports 22,80,443 -j ACCEPT
 
+# Drop other input and forwarded traffic; keep locally generated output allowed.
 iptables -P INPUT DROP
 iptables -P FORWARD DROP
 ip6tables -P INPUT DROP
 ip6tables -P FORWARD DROP
 
+# Persist the rules and display the resulting input policy.
 netfilter-persistent save
 iptables -L INPUT -n -v
 ip6tables -L INPUT -n -v
 </code>
+
+**Result:** On IPv4 and IPv6, loopback, ICMP, established traffic, and new TCP
+connections to ports 22, 80, and 443 pass. Other input and all forwarded
+traffic are dropped, while traffic originating from the VPS remains allowed.
 
 ''iptables-persistent'' saves rules for both address families and
 ''netfilter-persistent'' loads them again during boot. Run
@@ -123,12 +134,14 @@ and the rule order follows the explanation above:
 <code bash>
 #!/usr/sbin/nft -f
 
+# Replace the complete current ruleset.
 flush ruleset
 
 table inet filter {
   chain input {
     type filter hook input priority filter; policy drop;
 
+    # Handle state first, trust loopback, keep control traffic, and open services.
     ct state invalid drop
     ct state established,related accept
     iifname "lo" accept
@@ -137,14 +150,21 @@ table inet filter {
   }
 
   chain forward {
+    # This simple host firewall does not forward traffic.
     type filter hook forward priority filter; policy drop;
   }
 
   chain output {
+    # Locally generated traffic is unrestricted.
     type filter hook output priority filter; policy accept;
   }
 }
 </code>
+
+**Result:** One ''inet'' table applies the same policy as the previous example
+to IPv4 and IPv6: it permits loopback, ICMP, established connections, and new
+TCP connections to ports 22, 80, and 443; drops other input and forwarding;
+and permits outgoing traffic.
 
 First validate the configuration without applying it by using ''nft -c''.
 Then enable the service that loads it now and on subsequent boots:
@@ -153,9 +173,14 @@ Then enable the service that loads it now and on subsequent boots:
 #!/usr/bin/env bash
 set -eu
 
+# Install nftables.
 apt update
 DEBIAN_FRONTEND=noninteractive apt install -y nftables
+
+# Validate the complete configuration before applying it.
 nft -c -f /etc/nftables.conf
+
+# Load the configuration now and at boot, then display the result.
 systemctl enable --now nftables
 nft list ruleset
 </code>
@@ -168,10 +193,13 @@ details.
 
 ===== UFW on Debian and Ubuntu =====
 
-UFW provides a simpler interface to a stateful firewall. This example permits
-SSH and web traffic and drops other new incoming connections. The default
-installation manages IPv4 and IPv6; before activation, the script verifies
-that ''/etc/default/ufw'' contains ''IPV6=yes'':
+UFW provides a simpler interface to a stateful firewall. This example adds
+rules that permit SSH and web traffic. Existing user rules remain in place,
+and built-in rules continue to handle loopback and required network control
+traffic. For traffic not matched by those rules, the defaults drop new
+incoming connections and allow outgoing traffic. The default installation
+manages IPv4 and IPv6; before activation, the script verifies that
+''/etc/default/ufw'' contains ''IPV6=yes'':
 
 <code bash>
 #!/usr/bin/env bash
@@ -189,6 +217,11 @@ grep -Fx 'IPV6=yes' /etc/default/ufw
 ufw --force enable
 ufw status verbose
 </code>
+
+**Result:** On IPv4 and IPv6, UFW permits established connections and new TCP
+connections to ports 22, 80, and 443. Existing user rules and UFW's built-in
+rules remain in effect. For otherwise-unmatched traffic, the defaults drop new
+incoming connections and allow outgoing traffic.
 
 If the ''IPV6=yes'' check fails, UFW is not enabled; fix the setting first.
 For example, remove a rule with ''ufw delete allow 80/tcp''. The command ''ufw
@@ -217,6 +250,11 @@ firewall-cmd --get-active-zones
 firewall-cmd --zone=public --list-all
 </code>
 
+**Result:** On IPv4 and IPv6, the ''public'' zone permits the ''ssh'', ''http'',
+and ''https'' services in addition to services and rules already present in
+the zone. All other incoming traffic remains governed by the zone's existing
+rules and target. This setup does not restrict outgoing traffic from the VPS.
+
 Use the zone that ''firewall-cmd --get-active-zones'' reports for the VPS
 interface; it is not always named ''public''. A change without ''--permanent''
 lasts only until a restart or configuration reload, while a permanent change
@@ -240,6 +278,12 @@ declaratively. You can save the following module as
   };
 }
 </code>
+
+**Result:** On IPv4 and IPv6, the module adds TCP ports 22, 80, and 443 to the
+allowed new connections. The firewall continues to permit established
+connections and built-in network control traffic. Its default policy drops
+other new incoming traffic not allowed by this or another module. The module
+does not restrict outgoing traffic.
 
 Some services have an ''openFirewall'' option that opens the required ports
 automatically. Check what the module configures before making a change. Apply

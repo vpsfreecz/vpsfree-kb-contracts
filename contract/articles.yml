@@ -21,17 +21,17 @@ articles:
     samples:
       configure-iptables:
         path: tests/fixtures/firewall/configure-iptables.sh
-        sha256: 5e00f20e6f005e9b8d195a03805a8e073bf62a1bd55c07a9e556d89159e5ca2f
+        sha256: cda474b1f053dd63fc625e2ff741ac62bbd124e3062248c62af2a1e2c780a530
         tests:
         - iptables
       nftables-config:
         path: tests/fixtures/firewall/nftables.conf
-        sha256: 2c46998a5caf9034757a41dcda2786f301894632f6023d373a74359ac80c7339
+        sha256: 0f7945f4de309994250de65e10928a213407086b6597316f5ae143ab060dd3a3
         tests:
         - nftables
       enable-nftables:
         path: tests/fixtures/firewall/enable-nftables.sh
-        sha256: 0fafa343702cf4c2ff1be06967ab8261b077c546a1d45e7d7f32df9d5b353e4c
+        sha256: 874427f2b6f06ebc935b0b96a6e02d18ac9f7321d8905e6095ba7d87537a1d03
         tests:
         - nftables
       configure-ufw:
@@ -96,14 +96,15 @@ articles:
         localizations:
           cs:
             heading: Jednoduchý firewall pomocí iptables
-            fingerprint: 3c373a92cfcc55c1a05acab06e23f9234af837bd4db7cef1542145338ffed46e
+            fingerprint: f6b80215b06e900390b0d739d7a0c7189749fe17f7c229e2d7d08c5624474822
           en:
             heading: A simple firewall with iptables
-            fingerprint: 9b1c7a63eeaa330a9eb89a3d58482fc67c09c2b81e93d445d08cb2a9c229c4c0
+            fingerprint: a22558fce092dc45366d1fefc02952a250d8403f705d32752c0ed22c2bae335b
       nftables:
         claims:
         - inet-table-filters-ipv4-and-ipv6
         - nftables-input-and-forward-default-to-drop
+        - nftables-output-defaults-to-accept
         - nft-check-validates-before-application
         - nftables-service-loads-rules-at-boot
         tests:
@@ -114,14 +115,17 @@ articles:
         localizations:
           cs:
             heading: Nativní nftables
-            fingerprint: 951a80a05f30b23dd5020a0eec62d520dc90df866f5e59b750f05b4e3aae3408
+            fingerprint: 7a78adfa8c3dc37e2d97dec99142023541e8d343e1f41300788b5de63b18baf0
           en:
             heading: Native nftables
-            fingerprint: 75acd88e4d50a87fb782bd6fb8a2c84ce9879eab988054260fa8e24b97ffc020
+            fingerprint: 3af055a83602e1762f2d9f1fd8db48948d5a04c3b3d1cce793590fbee6b99c99
       ufw:
         claims:
         - ufw-manages-dual-stack-stateful-filtering
-        - ufw-allows-selected-services-and-denies-other-new-input
+        - ufw-allows-selected-tcp-services
+        - ufw-retains-built-in-loopback-and-control-traffic-rules
+        - ufw-existing-user-rules-remain-in-effect
+        - ufw-defaults-apply-to-otherwise-unmatched-traffic
         - ufw-policy-persists-after-restart
         tests:
         - ufw
@@ -130,15 +134,17 @@ articles:
         localizations:
           cs:
             heading: UFW na Debianu a Ubuntu
-            fingerprint: e874752516f85bc631e0598b1011302932fce0cc275f4a0448b6b8bdc0cf5947
+            fingerprint: 0baf9e7cc115721878b511204da5e5a8257058aac34c58f58ecf52f87e5f3caf
           en:
             heading: UFW on Debian and Ubuntu
-            fingerprint: 810fe223f819d2a0b2b77824feb36df0a6106e5d41e28fff004e0e9cce3f5472
+            fingerprint: ada90ed786659537d840454e10bacde01ef75bf702b81ddc5782c3f8a7f93f4a
       firewalld:
         claims:
         - firewalld-zones-bind-rules-to-interfaces
         - firewalld-permanent-services-require-reload
         - public-zone-allows-ssh-http-and-https
+        - firewalld-example-preserves-existing-zone-target-and-rules
+        - firewalld-example-leaves-outgoing-traffic-unrestricted
         - firewalld-policy-persists-after-restart
         tests:
         - firewalld
@@ -147,14 +153,18 @@ articles:
         localizations:
           cs:
             heading: firewalld na Fedoře a distribucích rodiny RHEL
-            fingerprint: d5c1670430b3922cef13bea6ab5eb75fcbed8e67156573a05d576297fa48a079
+            fingerprint: a0006b16c68a5f55a118a03f3f14bdc688b3a4a32ec5475c286405012d756067
           en:
             heading: firewalld on Fedora and the RHEL family
-            fingerprint: a107a019aedd60695acff0f86c97233624633f642b195d42632cd8bba400b0ca
+            fingerprint: 5feaa1a8cad0e5450330393a0d03e66f5b860b3382badbfe7291476fb7af70e8
       nixos:
         claims:
         - nixos-firewall-is-enabled-by-default
         - nixos-open-ports-are-declarative
+        - nixos-example-allows-selected-tcp-and-established-connections
+        - nixos-built-in-rules-retain-control-traffic
+        - nixos-default-policy-drops-other-new-input
+        - nixos-example-leaves-outgoing-traffic-unrestricted
         - nixos-test-activation-is-not-the-persistent-generation
         - nixos-switch-persists-firewall-policy
         tests:
@@ -166,10 +176,10 @@ articles:
         localizations:
           cs:
             heading: NixOS
-            fingerprint: 27dbe25a57776043afdbfbed50565ff892f8ccc051b6812d556e1638cc6dbea8
+            fingerprint: 52925bf596ff152a461d7eb5db9fda9824d9d5df2caf82883246f88f4686f8bd
           en:
             heading: NixOS
-            fingerprint: 570669396c4f9fa2daeb0b92bd46fa2418261c94c50caa022e3f7870abb7b106
+            fingerprint: 9cc707707ec31f81c3a990c082a8329643ccabffc4267fee8c341e93b29ec756
       containers:
         claims:
         - container-published-ports-may-bypass-frontend-expectations

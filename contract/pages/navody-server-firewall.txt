@@ -67,9 +67,11 @@ politiky, pak vytvoří pravidla a blokující politiky zapne až nakonec:
 #!/usr/bin/env bash
 set -eu
 
+# Install the command-line tools and boot-time persistence.
 apt update
 DEBIAN_FRONTEND=noninteractive apt install -y iptables iptables-persistent
 
+# Keep traffic allowed while replacing the current rules.
 iptables -P INPUT ACCEPT
 iptables -P FORWARD ACCEPT
 iptables -P OUTPUT ACCEPT
@@ -77,32 +79,41 @@ ip6tables -P INPUT ACCEPT
 ip6tables -P FORWARD ACCEPT
 ip6tables -P OUTPUT ACCEPT
 
+# Remove the current filter rules and user-defined chains.
 iptables -F
 iptables -X
 ip6tables -F
 ip6tables -X
 
+# IPv4 input: drop invalid packets, keep established traffic, and open services.
 iptables -A INPUT -m conntrack --ctstate INVALID -j DROP
 iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A INPUT -p icmp -j ACCEPT
 iptables -A INPUT -p tcp -m multiport --dports 22,80,443 -j ACCEPT
 
+# IPv6 input: apply the same policy and keep IPv6 control traffic working.
 ip6tables -A INPUT -m conntrack --ctstate INVALID -j DROP
 ip6tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 ip6tables -A INPUT -i lo -j ACCEPT
 ip6tables -A INPUT -p ipv6-icmp -j ACCEPT
 ip6tables -A INPUT -p tcp -m multiport --dports 22,80,443 -j ACCEPT
 
+# Drop other input and forwarded traffic; keep locally generated output allowed.
 iptables -P INPUT DROP
 iptables -P FORWARD DROP
 ip6tables -P INPUT DROP
 ip6tables -P FORWARD DROP
 
+# Persist the rules and display the resulting input policy.
 netfilter-persistent save
 iptables -L INPUT -n -v
 ip6tables -L INPUT -n -v
 </code>
+
+**Výsledek:** Na IPv4 i IPv6 projde loopback, ICMP, provoz navázaných spojení
+a nová TCP spojení na porty 22, 80 a 443. Ostatní příchozí a veškerý
+předávaný provoz se zahodí, odchozí provoz z VPS zůstane povolený.
 
 ''iptables-persistent'' uloží pravidla pro obě rodiny adres a služba
 ''netfilter-persistent'' je znovu načte při startu. Při další změně spusť
@@ -119,12 +130,14 @@ rodiny adres a pořadí pravidel odpovídá výkladu výše:
 <code bash>
 #!/usr/sbin/nft -f
 
+# Replace the complete current ruleset.
 flush ruleset
 
 table inet filter {
   chain input {
     type filter hook input priority filter; policy drop;
 
+    # Handle state first, trust loopback, keep control traffic, and open services.
     ct state invalid drop
     ct state established,related accept
     iifname "lo" accept
@@ -133,14 +146,21 @@ table inet filter {
   }
 
   chain forward {
+    # This simple host firewall does not forward traffic.
     type filter hook forward priority filter; policy drop;
   }
 
   chain output {
+    # Locally generated traffic is unrestricted.
     type filter hook output priority filter; policy accept;
   }
 }
 </code>
+
+**Výsledek:** Jedna tabulka ''inet'' uplatní pro IPv4 i IPv6 stejnou politiku
+jako předchozí příklad: povolí loopback, ICMP, navázaná spojení a nová TCP
+spojení na porty 22, 80 a 443, ostatní vstup a předávání zahodí a odchozí
+provoz povolí.
 
 Konfiguraci nejprve zkontroluj bez aplikování pomocí ''nft -c''. Pak zapni
 službu, která ji načte nyní i při dalších startech:
@@ -149,9 +169,14 @@ službu, která ji načte nyní i při dalších startech:
 #!/usr/bin/env bash
 set -eu
 
+# Install nftables.
 apt update
 DEBIAN_FRONTEND=noninteractive apt install -y nftables
+
+# Validate the complete configuration before applying it.
 nft -c -f /etc/nftables.conf
+
+# Load the configuration now and at boot, then display the result.
 systemctl enable --now nftables
 nft list ruleset
 </code>
@@ -163,10 +188,13 @@ ho příkazem ''systemctl reload nftables''. Podrobnosti najdeš na
 
 ===== UFW na Debianu a Ubuntu =====
 
-UFW nabízí jednodušší rozhraní ke stavovému firewallu. Tento příklad povolí
-SSH a web a ostatní nová příchozí spojení zahodí. Výchozí instalace spravuje
-IPv4 i IPv6; skript před zapnutím ověří, že ''/etc/default/ufw'' obsahuje
-''IPV6=yes'':
+UFW nabízí jednodušší rozhraní ke stavovému firewallu. Tento příklad přidá
+pravidla, která povolí SSH a web. Stávající uživatelská pravidla zůstanou
+platná a vestavěná pravidla dál obslouží loopback a nezbytný síťový řídicí
+provoz. Pro provoz, na který se žádné z těchto pravidel nevztahuje, výchozí
+politiky zahodí nová příchozí spojení a povolí odchozí provoz. Výchozí
+instalace spravuje IPv4 i IPv6; skript před zapnutím ověří, že
+''/etc/default/ufw'' obsahuje ''IPV6=yes'':
 
 <code bash>
 #!/usr/bin/env bash
@@ -184,6 +212,11 @@ grep -Fx 'IPV6=yes' /etc/default/ufw
 ufw --force enable
 ufw status verbose
 </code>
+
+**Výsledek:** UFW na IPv4 i IPv6 povolí navázaná spojení a nová TCP spojení
+na porty 22, 80 a 443. Stávající uživatelská pravidla i vestavěná pravidla UFW
+zůstanou platná. Pro provoz, na který se žádné pravidlo nevztahuje, výchozí
+politiky zahodí nová příchozí spojení a povolí odchozí provoz.
 
 Pokud kontrola ''IPV6=yes'' selže, UFW se nezapne a nejprve musíš nastavení
 opravit. Pravidlo smažeš například příkazem ''ufw delete allow 80/tcp''.
@@ -211,6 +244,11 @@ firewall-cmd --get-active-zones
 firewall-cmd --zone=public --list-all
 </code>
 
+**Výsledek:** Zóna ''public'' na IPv4 i IPv6 povolí služby ''ssh'', ''http'' a
+''https'' vedle služeb a pravidel, které už v zóně máš. Veškerý další příchozí
+provoz se dál řídí existujícími pravidly a cílem zóny. Toto nastavení neomezuje
+odchozí provoz z VPS.
+
 Použij zónu, kterou pro rozhraní VPS ukáže ''firewall-cmd
 --get-active-zones''; nemusí se vždy jmenovat ''public''. Změna bez
 ''--permanent'' platí jen do restartu nebo načtení konfigurace, zatímco trvalá
@@ -233,6 +271,11 @@ porty popiš deklarativně. Následující modul můžeš uložit jako
   };
 }
 </code>
+
+**Výsledek:** Modul na IPv4 i IPv6 přidá mezi povolené nové TCP porty 22, 80
+a 443. Firewall dál povolí navázaná spojení a vestavěný síťový řídicí provoz.
+Výchozí politika zahodí ostatní nový příchozí provoz, který nepovolí tento ani
+jiný modul. Odchozí provoz modul neomezuje.
 
 Některé služby mají vlastní volbu ''openFirewall'', která potřebné porty
 otevře automaticky. Před změnou si ověř, co daný modul nastavuje. První
