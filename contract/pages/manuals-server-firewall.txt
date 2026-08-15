@@ -1,0 +1,308 @@
+<page>navody:server:firewall</page>
+
+<kb-managed
+  source="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/contract/pages/manuals-server-firewall.txt"
+  test="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/tests/suite/kb/firewall.nix"
+/>
+
+====== Firewall ======
+
+A firewall decides which network traffic may enter a VPS, leave it, or be
+forwarded through it. vpsFree does not enable a shared firewall in front of
+your VPS. The initial state therefore depends on the distribution: NixOS, for
+example, enables its firewall by default, while a clean Debian or Ubuntu
+installation usually has no restrictive local rules.
+
+Running your own firewall is **not mandatory**. It can be reasonable to run
+only the required, regularly updated services and leave the rest stopped. A
+firewall adds another layer of protection, but it does not replace secure
+configuration, updates, or SSH key authentication.
+
+===== How rules work =====
+
+A network program listens on a combination of an address, a protocol (usually
+TCP or UDP) and a port. The web commonly uses TCP ports 80 and 443; SSH uses
+TCP port 22. The command ''ss -lntup'' shows which services are listening.
+''0.0.0.0'' means every IPv4 address, ''[::]'' every IPv6 address, while
+''127.0.0.1'' and ''[::1]'' are reachable only inside the VPS.
+
+When filtering on the VPS itself, you will encounter three basic chains:
+
+  * **INPUT** processes incoming packets addressed to the VPS.
+  * **OUTPUT** processes packets sent by the VPS.
+  * **FORWARD** processes packets routed through the VPS, for example by a VPN, router, or some container setups.
+
+Rules in a chain are evaluated from top to bottom. Once a packet matches a
+rule with a terminal action such as ''ACCEPT'', ''DROP'', or ''REJECT'', no
+later rules are tried. If no rule decides, the chain's default policy applies.
+A stateful firewall can also recognise packets belonging to an established
+connection, allowing replies before rules for new connections are considered.
+
+IPv4 and IPv6 are separate address families. A firewall must protect both;
+allowing a service only for IPv4 does not hide it on a public IPv6 address.
+
+Choose **one** firewall management method. Do not combine hand-written
+''iptables'' or ''nftables'' rules with UFW or firewalld unless you understand
+how they interact. The simple rules below assume a VPS without Docker, a VPN,
+routing, or another service that creates its own firewall rules.
+
+<note important>
+Before enabling a blocking policy, allow TCP port 22, keep the current SSH
+connection open, and test a login from a second terminal. Repeat this after
+every substantial change.
+</note>
+
+===== A simple firewall with iptables =====
+
+The ''iptables'' syntax is often approachable for a first low-level setup. On
+current Debian systems, the ''iptables'' commands normally use the nftables
+backend; ''iptables -V'' reports ''nf_tables''. The ''iptables'' command
+handles IPv4 and the separate ''ip6tables'' command handles IPv6.
+
+The following script for a clean VPS permits loopback, ICMP, established
+connections, and new TCP connections on ports 22, 80, and 443. INPUT and
+FORWARD end with a ''DROP'' policy, while OUTPUT remains ''ACCEPT''. It first
+sets accepting policies, builds the rules, and enables the blocking policies
+only at the end:
+
+<code bash>
+#!/usr/bin/env bash
+set -eu
+
+apt update
+DEBIAN_FRONTEND=noninteractive apt install -y iptables iptables-persistent
+
+iptables -P INPUT ACCEPT
+iptables -P FORWARD ACCEPT
+iptables -P OUTPUT ACCEPT
+ip6tables -P INPUT ACCEPT
+ip6tables -P FORWARD ACCEPT
+ip6tables -P OUTPUT ACCEPT
+
+iptables -F
+iptables -X
+ip6tables -F
+ip6tables -X
+
+iptables -A INPUT -m conntrack --ctstate INVALID -j DROP
+iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A INPUT -p icmp -j ACCEPT
+iptables -A INPUT -p tcp -m multiport --dports 22,80,443 -j ACCEPT
+
+ip6tables -A INPUT -m conntrack --ctstate INVALID -j DROP
+ip6tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+ip6tables -A INPUT -i lo -j ACCEPT
+ip6tables -A INPUT -p ipv6-icmp -j ACCEPT
+ip6tables -A INPUT -p tcp -m multiport --dports 22,80,443 -j ACCEPT
+
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+ip6tables -P INPUT DROP
+ip6tables -P FORWARD DROP
+
+netfilter-persistent save
+iptables -L INPUT -n -v
+ip6tables -L INPUT -n -v
+</code>
+
+''iptables-persistent'' saves rules for both address families and
+''netfilter-persistent'' loads them again during boot. Run
+''netfilter-persistent save'' after later changes. See the
+[[https://manpages.debian.org/trixie/iptables/iptables.8.en.html|iptables(8)]]
+and
+[[https://manpages.debian.org/trixie/netfilter-persistent/netfilter-persistent.8.en.html|netfilter-persistent(8)]]
+manuals for more options.
+
+===== Native nftables =====
+
+nftables manages IPv4 and IPv6 in one rules language. Save the following as
+''/etc/nftables.conf''. The ''inet'' family table handles both address families
+and the rule order follows the explanation above:
+
+<code bash>
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table inet filter {
+  chain input {
+    type filter hook input priority filter; policy drop;
+
+    ct state invalid drop
+    ct state established,related accept
+    iifname "lo" accept
+    meta l4proto { icmp, ipv6-icmp } accept
+    tcp dport { 22, 80, 443 } accept
+  }
+
+  chain forward {
+    type filter hook forward priority filter; policy drop;
+  }
+
+  chain output {
+    type filter hook output priority filter; policy accept;
+  }
+}
+</code>
+
+First validate the configuration without applying it by using ''nft -c''.
+Then enable the service that loads it now and on subsequent boots:
+
+<code bash>
+#!/usr/bin/env bash
+set -eu
+
+apt update
+DEBIAN_FRONTEND=noninteractive apt install -y nftables
+nft -c -f /etc/nftables.conf
+systemctl enable --now nftables
+nft list ruleset
+</code>
+
+After an edit, validate the file again with ''nft -c -f
+/etc/nftables.conf'' and load it with ''systemctl reload nftables''. See the
+[[https://wiki.debian.org/nftables|Debian wiki]] and the
+[[https://manpages.debian.org/trixie/nftables/nft.8.en.html|nft(8) manual]] for
+details.
+
+===== UFW on Debian and Ubuntu =====
+
+UFW provides a simpler interface to a stateful firewall. This example permits
+SSH and web traffic and drops other new incoming connections. The default
+installation manages IPv4 and IPv6; before activation, the script verifies
+that ''/etc/default/ufw'' contains ''IPV6=yes'':
+
+<code bash>
+#!/usr/bin/env bash
+set -eu
+
+apt update
+DEBIAN_FRONTEND=noninteractive apt install -y ufw
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow 22/tcp comment 'SSH'
+ufw allow 80/tcp comment 'HTTP'
+ufw allow 443/tcp comment 'HTTPS'
+ufw show added
+grep -Fx 'IPV6=yes' /etc/default/ufw
+ufw --force enable
+ufw status verbose
+</code>
+
+If the ''IPV6=yes'' check fails, UFW is not enabled; fix the setting first.
+For example, remove a rule with ''ufw delete allow 80/tcp''. The command ''ufw
+status numbered'' displays a numbered list. See the
+[[https://documentation.ubuntu.com/server/how-to/security/firewalls/|Ubuntu firewall documentation]]
+for details.
+
+===== firewalld on Fedora and the RHEL family =====
+
+firewalld groups interfaces and rules into zones and can refer to services by
+name. The following setup uses the default ''public'' zone, permanently permits
+SSH and web traffic in it, and then loads the permanent configuration:
+
+<code bash>
+#!/usr/bin/env bash
+set -eu
+
+dnf install -y firewalld
+systemctl enable --now firewalld
+firewall-cmd --set-default-zone=public
+firewall-cmd --permanent --zone=public --add-service=ssh
+firewall-cmd --permanent --zone=public --add-service=http
+firewall-cmd --permanent --zone=public --add-service=https
+firewall-cmd --reload
+firewall-cmd --get-active-zones
+firewall-cmd --zone=public --list-all
+</code>
+
+Use the zone that ''firewall-cmd --get-active-zones'' reports for the VPS
+interface; it is not always named ''public''. A change without ''--permanent''
+lasts only until a restart or configuration reload, while a permanent change
+becomes active only after ''firewall-cmd --reload''. The
+[[https://firewalld.org/documentation/howto/open-a-port-or-service.html|firewalld documentation]]
+contains more examples.
+
+===== NixOS =====
+
+NixOS enables ''networking.firewall.enable'' by default. Declare open ports
+declaratively. You can save the following module as
+''/etc/nixos/firewall.nix'' and add ''./firewall.nix'' to the existing
+''imports'' list in ''/etc/nixos/configuration.nix'':
+
+<code nix>
+{ ... }:
+{
+  networking.firewall = {
+    enable = true;
+    allowedTCPPorts = [ 22 80 443 ];
+  };
+}
+</code>
+
+Some services have an ''openFirewall'' option that opens the required ports
+automatically. Check what the module configures before making a change. Apply
+the first change with ''nixos-rebuild test'':
+
+<code bash>
+#!/usr/bin/env bash
+set -eu
+
+nixos-rebuild test
+</code>
+
+Test a new SSH connection. Only after it works, persist the configuration in a
+new boot generation:
+
+<code bash>
+#!/usr/bin/env bash
+set -eu
+
+nixos-rebuild switch
+</code>
+
+See the [[https://nixos.org/manual/nixos/stable/#sec-firewall|firewall section of the NixOS manual]].
+
+===== Docker and other containers =====
+
+A port published by Docker may pass through rules that Docker creates and may
+not behave as expected from UFW or firewalld. Do not assume that ''deny
+incoming'' by itself protects every container. Publish only ports intended to
+be public; for example, bind a service used by a local reverse proxy to
+''127.0.0.1:8080:80''. Also test reachability from another machine after
+deployment.
+
+The
+[[https://docs.docker.com/engine/network/packet-filtering-firewalls/|Docker Engine firewall documentation]]
+describes the packet-filtering behaviour and available controls.
+
+===== If you lock yourself out =====
+
+If a new SSH connection fails after a firewall change, **do not close the
+original session**. Use it to inspect ''ss -lntp'' and the manager you chose:
+''iptables -L -n'', ''nft list ruleset'', ''ufw status verbose'', or
+''firewall-cmd --get-active-zones''.
+
+If no SSH session remains, nothing is lost. The guides to the
+[[manuals:vps:console|remote console in vpsAdmin]] and the
+[[manuals:vps:start_menu|start menu]] describe a recovery path that does not
+depend on working networking or an allowed SSH port. During a restart, **Run
+shell** provides a shell directly in the VPS file system from which you can
+repair the rules.
+
+In a normally running system, temporarily disable UFW with ''ufw disable'',
+firewalld with ''systemctl stop firewalld'', or nftables with ''systemctl stop
+nftables''. With hand-written iptables, first set the IPv4 and IPv6 INPUT
+policies to ''ACCEPT'' and only then repair the rules.
+
+systemd and the firewall manager are not running in the **Run shell**
+environment. Restore the persistent configuration there, such as
+''/etc/iptables/rules.v4'' and ''/etc/iptables/rules.v6'' or
+''/etc/nftables.conf'', leave the shell, and start the system normally. On
+NixOS, you can instead select the previous working generation in the start menu
+and then repair the configuration.
+
+Temporarily disabling the firewall removes a protective layer. Enable it
+again afterward and test a new SSH connection. Do not blindly delete low-level
+rules when they may belong to Docker, a VPN, or another service.

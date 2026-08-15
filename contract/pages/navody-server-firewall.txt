@@ -1,0 +1,297 @@
+<page>manuals:server:firewall</page>
+
+<kb-managed
+  source="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/contract/pages/navody-server-firewall.txt"
+  test="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/tests/suite/kb/firewall.nix"
+/>
+
+====== Firewall ======
+
+Firewall rozhoduje, který síťový provoz smí projít do VPS, z VPS nebo přes
+VPS. vpsFree před VPS žádný společný firewall nezapíná. Výchozí stav proto
+záleží na distribuci: například NixOS má firewall standardně zapnutý, zatímco
+čistý Debian nebo Ubuntu obvykle žádná vlastní omezující pravidla nemají.
+
+Vlastní firewall **není povinnost**. Může být rozumné provozovat jen potřebné
+a pravidelně aktualizované služby a ostatní vůbec nespouštět. Firewall přidává
+další ochrannou vrstvu, ale nenahrazuje bezpečnou konfiguraci, aktualizace ani
+přihlašování pomocí SSH klíčů.
+
+===== Jak pravidla fungují =====
+
+Síťový program naslouchá na kombinaci adresy, protokolu (nejčastěji TCP nebo
+UDP) a portu. Web běžně používá TCP porty 80 a 443, SSH TCP port 22. Příkaz
+''ss -lntup'' ukáže, které služby právě naslouchají. Adresa ''0.0.0.0'' znamená
+všechny IPv4 adresy, ''[::]'' všechny IPv6 adresy a ''127.0.0.1'' nebo ''[::1]''
+je dostupná jen uvnitř VPS.
+
+Při filtrování na samotné VPS se setkáš se třemi základními řetězci:
+
+  * **INPUT** zpracovává příchozí pakety určené VPS.
+  * **OUTPUT** zpracovává pakety odesílané z VPS.
+  * **FORWARD** zpracovává pakety směrované přes VPS, například pro VPN, router nebo některé kontejnery.
+
+Pravidla v řetězci se vyhodnocují shora dolů. Jakmile paket odpovídá pravidlu
+s konečnou akcí, například ''ACCEPT'', ''DROP'' nebo ''REJECT'', další pravidla
+se už nezkoušejí. Pokud žádné pravidlo nerozhodne, použije se výchozí politika
+řetězce. Stavový firewall navíc pozná pakety patřící k navázanému spojení, takže
+odpovědi může povolit dříve než pravidla pro nová spojení.
+
+IPv4 a IPv6 jsou dvě samostatné rodiny adres. Firewall musí chránit obě;
+povolení služby jen pro IPv4 ji neschová na veřejné IPv6 adrese.
+
+Vyber si **jeden** způsob správy firewallu. Nekombinuj ruční pravidla
+''iptables'' nebo ''nftables'' s UFW či firewalld, pokud přesně nevíš, jak se
+budou ovlivňovat. Jednoduchá pravidla níže počítají s VPS bez Dockeru, VPN,
+směrování a jiné služby, která si vytváří vlastní firewallová pravidla.
+
+<note important>
+Než zapneš blokující politiku, povol TCP port 22, nech otevřené současné SSH
+spojení a přihlášení ověř v druhém terminálu. Stejný postup opakuj po každé
+větší změně.
+</note>
+
+===== Jednoduchý firewall pomocí iptables =====
+
+Syntaxe ''iptables'' bývá pro první nízkoúrovňové nastavení přehledná. Na
+současném Debianu příkazy ''iptables'' běžně používají backend nftables; ověříš
+to pomocí ''iptables -V'', kde je uvedeno ''nf_tables''. IPv4 obsluhuje
+''iptables'' a IPv6 samostatný příkaz ''ip6tables''.
+
+Následující skript pro čistou VPS povolí loopback, ICMP, navázaná spojení a
+nová TCP spojení na porty 22, 80 a 443. INPUT a FORWARD mají nakonec politiku
+''DROP'', OUTPUT zůstává ''ACCEPT''. Skript nejprve nastaví přijímající
+politiky, pak vytvoří pravidla a blokující politiky zapne až nakonec:
+
+<code bash>
+#!/usr/bin/env bash
+set -eu
+
+apt update
+DEBIAN_FRONTEND=noninteractive apt install -y iptables iptables-persistent
+
+iptables -P INPUT ACCEPT
+iptables -P FORWARD ACCEPT
+iptables -P OUTPUT ACCEPT
+ip6tables -P INPUT ACCEPT
+ip6tables -P FORWARD ACCEPT
+ip6tables -P OUTPUT ACCEPT
+
+iptables -F
+iptables -X
+ip6tables -F
+ip6tables -X
+
+iptables -A INPUT -m conntrack --ctstate INVALID -j DROP
+iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A INPUT -p icmp -j ACCEPT
+iptables -A INPUT -p tcp -m multiport --dports 22,80,443 -j ACCEPT
+
+ip6tables -A INPUT -m conntrack --ctstate INVALID -j DROP
+ip6tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+ip6tables -A INPUT -i lo -j ACCEPT
+ip6tables -A INPUT -p ipv6-icmp -j ACCEPT
+ip6tables -A INPUT -p tcp -m multiport --dports 22,80,443 -j ACCEPT
+
+iptables -P INPUT DROP
+iptables -P FORWARD DROP
+ip6tables -P INPUT DROP
+ip6tables -P FORWARD DROP
+
+netfilter-persistent save
+iptables -L INPUT -n -v
+ip6tables -L INPUT -n -v
+</code>
+
+''iptables-persistent'' uloží pravidla pro obě rodiny adres a služba
+''netfilter-persistent'' je znovu načte při startu. Při další změně spusť
+''netfilter-persistent save'' znovu. Další možnosti popisují manuály
+[[https://manpages.debian.org/trixie/iptables/iptables.8.en.html|iptables(8)]] a
+[[https://manpages.debian.org/trixie/netfilter-persistent/netfilter-persistent.8.en.html|netfilter-persistent(8)]].
+
+===== Nativní nftables =====
+
+nftables spravuje IPv4 i IPv6 v jednom pravidlovém jazyce. Ulož následující
+konfiguraci do ''/etc/nftables.conf''. Tabulka rodiny ''inet'' obslouží obě
+rodiny adres a pořadí pravidel odpovídá výkladu výše:
+
+<code bash>
+#!/usr/sbin/nft -f
+
+flush ruleset
+
+table inet filter {
+  chain input {
+    type filter hook input priority filter; policy drop;
+
+    ct state invalid drop
+    ct state established,related accept
+    iifname "lo" accept
+    meta l4proto { icmp, ipv6-icmp } accept
+    tcp dport { 22, 80, 443 } accept
+  }
+
+  chain forward {
+    type filter hook forward priority filter; policy drop;
+  }
+
+  chain output {
+    type filter hook output priority filter; policy accept;
+  }
+}
+</code>
+
+Konfiguraci nejprve zkontroluj bez aplikování pomocí ''nft -c''. Pak zapni
+službu, která ji načte nyní i při dalších startech:
+
+<code bash>
+#!/usr/bin/env bash
+set -eu
+
+apt update
+DEBIAN_FRONTEND=noninteractive apt install -y nftables
+nft -c -f /etc/nftables.conf
+systemctl enable --now nftables
+nft list ruleset
+</code>
+
+Po úpravě soubor znovu ověř pomocí ''nft -c -f /etc/nftables.conf'' a načti
+ho příkazem ''systemctl reload nftables''. Podrobnosti najdeš na
+[[https://wiki.debian.org/nftables|wiki Debianu]] a v manuálu
+[[https://manpages.debian.org/trixie/nftables/nft.8.en.html|nft(8)]].
+
+===== UFW na Debianu a Ubuntu =====
+
+UFW nabízí jednodušší rozhraní ke stavovému firewallu. Tento příklad povolí
+SSH a web a ostatní nová příchozí spojení zahodí. Výchozí instalace spravuje
+IPv4 i IPv6; skript před zapnutím ověří, že ''/etc/default/ufw'' obsahuje
+''IPV6=yes'':
+
+<code bash>
+#!/usr/bin/env bash
+set -eu
+
+apt update
+DEBIAN_FRONTEND=noninteractive apt install -y ufw
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow 22/tcp comment 'SSH'
+ufw allow 80/tcp comment 'HTTP'
+ufw allow 443/tcp comment 'HTTPS'
+ufw show added
+grep -Fx 'IPV6=yes' /etc/default/ufw
+ufw --force enable
+ufw status verbose
+</code>
+
+Pokud kontrola ''IPV6=yes'' selže, UFW se nezapne a nejprve musíš nastavení
+opravit. Pravidlo smažeš například příkazem ''ufw delete allow 80/tcp''.
+Číslovaný seznam zobrazí ''ufw status numbered''. Podrobnosti najdeš v
+[[https://documentation.ubuntu.com/server/how-to/security/firewalls/|dokumentaci firewallu pro Ubuntu]].
+
+===== firewalld na Fedoře a distribucích rodiny RHEL =====
+
+firewalld sdružuje rozhraní a pravidla do zón a umí služby pojmenovat.
+Následující nastavení použije výchozí zónu ''public'', trvale v ní povolí SSH a
+web a pak trvalou konfiguraci načte:
+
+<code bash>
+#!/usr/bin/env bash
+set -eu
+
+dnf install -y firewalld
+systemctl enable --now firewalld
+firewall-cmd --set-default-zone=public
+firewall-cmd --permanent --zone=public --add-service=ssh
+firewall-cmd --permanent --zone=public --add-service=http
+firewall-cmd --permanent --zone=public --add-service=https
+firewall-cmd --reload
+firewall-cmd --get-active-zones
+firewall-cmd --zone=public --list-all
+</code>
+
+Použij zónu, kterou pro rozhraní VPS ukáže ''firewall-cmd
+--get-active-zones''; nemusí se vždy jmenovat ''public''. Změna bez
+''--permanent'' platí jen do restartu nebo načtení konfigurace, zatímco trvalá
+změna se projeví až po ''firewall-cmd --reload''. Více příkladů obsahuje
+[[https://firewalld.org/documentation/howto/open-a-port-or-service.html|dokumentace firewalld]].
+
+===== NixOS =====
+
+NixOS má ''networking.firewall.enable'' ve výchozím nastavení zapnuté. Otevřené
+porty popiš deklarativně. Následující modul můžeš uložit jako
+''/etc/nixos/firewall.nix'' a přidat ''./firewall.nix'' do existujícího seznamu
+''imports'' v ''/etc/nixos/configuration.nix'':
+
+<code nix>
+{ ... }:
+{
+  networking.firewall = {
+    enable = true;
+    allowedTCPPorts = [ 22 80 443 ];
+  };
+}
+</code>
+
+Některé služby mají vlastní volbu ''openFirewall'', která potřebné porty
+otevře automaticky. Před změnou si ověř, co daný modul nastavuje. První
+aktivaci proveď pomocí ''nixos-rebuild test'':
+
+<code bash>
+#!/usr/bin/env bash
+set -eu
+
+nixos-rebuild test
+</code>
+
+Ověř nové SSH spojení. Teprve když funguje, ulož konfiguraci do nové bootovací
+generace:
+
+<code bash>
+#!/usr/bin/env bash
+set -eu
+
+nixos-rebuild switch
+</code>
+
+Viz [[https://nixos.org/manual/nixos/stable/#sec-firewall|firewall v manuálu NixOS]].
+
+===== Docker a jiné kontejnery =====
+
+Port publikovaný Dockerem může procházet pravidly, která vytvoří Docker, a
+nemusí se řídit očekáváním z UFW nebo firewalld. Nepovažuj proto ''deny
+incoming'' samo o sobě za ochranu všech kontejnerů. Publikuj jen porty, které
+mají být opravdu veřejné; službu pro místní reverzní proxy navaž například na
+''127.0.0.1:8080:80''. Po nasazení ověř dostupnost také z jiného stroje.
+
+Podrobnosti a možnosti filtrování popisuje
+[[https://docs.docker.com/engine/network/packet-filtering-firewalls/|dokumentace firewallu Docker Engine]].
+
+===== Když se odřízneš =====
+
+Pokud nové SSH spojení po změně firewallu nefunguje, **nezavírej původní
+relaci**. Z ní zkontroluj ''ss -lntp'' a stav správce, který sis vybral:
+''iptables -L -n'', ''nft list ruleset'', ''ufw status verbose'' nebo
+''firewall-cmd --get-active-zones''.
+
+Když už žádné SSH spojení nemáš, nic není ztraceno. Návody ke
+[[navody:vps:konzole|vzdálené konzoli ve vpsAdminu]] a
+[[navody:vps:start_menu|start menu]] popisují záchranný postup nezávislý na
+funkční síti a povoleném portu SSH. Položka **Run shell** při restartu zpřístupní
+shell přímo v souborovém systému VPS, odkud můžeš pravidla opravit.
+
+V normálně spuštěném systému UFW dočasně vypne ''ufw disable'', firewalld
+''systemctl stop firewalld'' a nftables ''systemctl stop nftables''. U ručních
+iptables nejdřív nastav politiku INPUT pro IPv4 i IPv6 na ''ACCEPT'' a teprve
+potom pravidla opravuj.
+
+V prostředí **Run shell** neběží systemd ani správce firewallu. Obnov v něm
+trvalou konfiguraci, například ''/etc/iptables/rules.v4'' a
+''/etc/iptables/rules.v6'' nebo ''/etc/nftables.conf'', ukonči shell a systém
+spusť normálně. Na NixOS můžeš ve start menu místo toho vybrat předchozí
+funkční generaci a pak konfiguraci opravit.
+
+Dočasné vypnutí odstraňuje ochrannou vrstvu. Firewall potom znovu zapni a nové
+SSH spojení ověř. Nemaž naslepo nízkoúrovňová pravidla, pokud mohou patřit
+Dockeru, VPN nebo jiné službě.

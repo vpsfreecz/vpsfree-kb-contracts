@@ -21,6 +21,7 @@ let
   };
 in
 testLib.makeTests [
+  "kb/firewall"
   "kb/gre"
   "kb/guix"
   "kb/kvm"

@@ -5,6 +5,199 @@ revisions:
   vpsadmin: 02449a1e0966c00969e98e7267ad68e002123d62
   vpsadminos: 67fcc17372d175b036706a1459a8b471bfc225e0
 articles:
+  firewall:
+    test:
+      suite: kb/firewall
+      source: tests/suite/kb/firewall.nix
+    pages:
+      cs:
+        id: navody:server:firewall
+        counterpart: manuals:server:firewall
+        source: contract/pages/navody-server-firewall.txt
+      en:
+        id: manuals:server:firewall
+        counterpart: navody:server:firewall
+        source: contract/pages/manuals-server-firewall.txt
+    samples:
+      configure-iptables:
+        path: tests/fixtures/firewall/configure-iptables.sh
+        sha256: 5e00f20e6f005e9b8d195a03805a8e073bf62a1bd55c07a9e556d89159e5ca2f
+        tests:
+        - iptables
+      nftables-config:
+        path: tests/fixtures/firewall/nftables.conf
+        sha256: 2c46998a5caf9034757a41dcda2786f301894632f6023d373a74359ac80c7339
+        tests:
+        - nftables
+      enable-nftables:
+        path: tests/fixtures/firewall/enable-nftables.sh
+        sha256: 0fafa343702cf4c2ff1be06967ab8261b077c546a1d45e7d7f32df9d5b353e4c
+        tests:
+        - nftables
+      configure-ufw:
+        path: tests/fixtures/firewall/configure-ufw.sh
+        sha256: 52d170018b76e390b492f3df5fb83a2195f2c9cd5d1e3b38deab17f5eae60e9e
+        tests:
+        - ufw
+      configure-firewalld:
+        path: tests/fixtures/firewall/configure-firewalld.sh
+        sha256: 4dfc3a7695aac36d2b850e75d835368f7a31164ac3df37664d1e1ff572f0616f
+        tests:
+        - firewalld
+      nixos-firewall:
+        path: tests/fixtures/firewall/nixos-firewall.nix
+        sha256: f4a7b9acb4d42fac175ed7865ab8073b3ceb645baa6bc29f927c61201ce01ebb
+        language: nix
+        tests:
+        - nixos
+      test-nixos-firewall:
+        path: tests/fixtures/firewall/test-nixos-firewall.sh
+        sha256: 73d35ce2970db6341700c21d1ae44f78f49d8832ce0145b3bdca911963650cd7
+        tests:
+        - nixos
+      switch-nixos-firewall:
+        path: tests/fixtures/firewall/switch-nixos-firewall.sh
+        sha256: 63f91d83b244565b993afc7373f108bb4f9b402fcd84a148b8df78a524019c45
+        tests:
+        - nixos
+    sections:
+      basics:
+        claims:
+        - platform-does-not-add-shared-vps-firewall
+        - distribution-defaults-differ
+        - firewall-is-optional-defense-in-depth
+        - input-output-and-forward-process-distinct-traffic
+        - terminal-rules-are-evaluated-in-order-before-default-policy
+        - state-tracking-preserves-established-connections
+        - ipv4-and-ipv6-both-require-policy
+        - use-exactly-one-firewall-manager
+        - simple-rules-exclude-docker-vpn-and-routing
+        tests: []
+        samples: []
+        localizations:
+          cs:
+            heading: Jak pravidla fungují
+            fingerprint: dcef86947c0a6c54886749eb00670239d5aa65fd87fd097d50f61e60d81c87c4
+          en:
+            heading: How rules work
+            fingerprint: 50280702be06a396463068724113e76542f613c5aaab79733668cca6fa1d38a7
+      iptables:
+        claims:
+        - current-debian-iptables-uses-nftables-backend
+        - iptables-and-ip6tables-manage-separate-address-families
+        - accepting-policies-precede-rule-replacement
+        - loopback-icmp-established-and-selected-tcp-services-are-accepted
+        - input-and-forward-default-to-drop-output-to-accept
+        - netfilter-persistent-restores-both-address-families
+        tests:
+        - iptables
+        samples:
+        - configure-iptables
+        localizations:
+          cs:
+            heading: Jednoduchý firewall pomocí iptables
+            fingerprint: 3c373a92cfcc55c1a05acab06e23f9234af837bd4db7cef1542145338ffed46e
+          en:
+            heading: A simple firewall with iptables
+            fingerprint: 9b1c7a63eeaa330a9eb89a3d58482fc67c09c2b81e93d445d08cb2a9c229c4c0
+      nftables:
+        claims:
+        - inet-table-filters-ipv4-and-ipv6
+        - nftables-input-and-forward-default-to-drop
+        - nft-check-validates-before-application
+        - nftables-service-loads-rules-at-boot
+        tests:
+        - nftables
+        samples:
+        - nftables-config
+        - enable-nftables
+        localizations:
+          cs:
+            heading: Nativní nftables
+            fingerprint: 951a80a05f30b23dd5020a0eec62d520dc90df866f5e59b750f05b4e3aae3408
+          en:
+            heading: Native nftables
+            fingerprint: 75acd88e4d50a87fb782bd6fb8a2c84ce9879eab988054260fa8e24b97ffc020
+      ufw:
+        claims:
+        - ufw-manages-dual-stack-stateful-filtering
+        - ufw-allows-selected-services-and-denies-other-new-input
+        - ufw-policy-persists-after-restart
+        tests:
+        - ufw
+        samples:
+        - configure-ufw
+        localizations:
+          cs:
+            heading: UFW na Debianu a Ubuntu
+            fingerprint: e874752516f85bc631e0598b1011302932fce0cc275f4a0448b6b8bdc0cf5947
+          en:
+            heading: UFW on Debian and Ubuntu
+            fingerprint: 810fe223f819d2a0b2b77824feb36df0a6106e5d41e28fff004e0e9cce3f5472
+      firewalld:
+        claims:
+        - firewalld-zones-bind-rules-to-interfaces
+        - firewalld-permanent-services-require-reload
+        - public-zone-allows-ssh-http-and-https
+        - firewalld-policy-persists-after-restart
+        tests:
+        - firewalld
+        samples:
+        - configure-firewalld
+        localizations:
+          cs:
+            heading: firewalld na Fedoře a distribucích rodiny RHEL
+            fingerprint: d5c1670430b3922cef13bea6ab5eb75fcbed8e67156573a05d576297fa48a079
+          en:
+            heading: firewalld on Fedora and the RHEL family
+            fingerprint: a107a019aedd60695acff0f86c97233624633f642b195d42632cd8bba400b0ca
+      nixos:
+        claims:
+        - nixos-firewall-is-enabled-by-default
+        - nixos-open-ports-are-declarative
+        - nixos-test-activation-is-not-the-persistent-generation
+        - nixos-switch-persists-firewall-policy
+        tests:
+        - nixos
+        samples:
+        - nixos-firewall
+        - test-nixos-firewall
+        - switch-nixos-firewall
+        localizations:
+          cs:
+            heading: NixOS
+            fingerprint: 27dbe25a57776043afdbfbed50565ff892f8ccc051b6812d556e1638cc6dbea8
+          en:
+            heading: NixOS
+            fingerprint: 570669396c4f9fa2daeb0b92bd46fa2418261c94c50caa022e3f7870abb7b106
+      containers:
+        claims:
+        - container-published-ports-may-bypass-frontend-expectations
+        - publish-only-intentionally-public-container-ports
+        tests: []
+        samples: []
+        localizations:
+          cs:
+            heading: Docker a jiné kontejnery
+            fingerprint: 7ca03dbdd69856d4e72c4c727873aab9a2f76bdd8971c9215be09f3dcc200a57
+          en:
+            heading: Docker and other containers
+            fingerprint: 71d60174819f9fe2ea7e65f75d073f30583d4d49cbcedbe1b7118797130280d5
+      recovery:
+        claims:
+        - keep-original-ssh-session-open
+        - remote-console-does-not-depend-on-vps-networking
+        - start-menu-run-shell-allows-offline-repair
+        - manager-specific-temporary-disable-is-preferred-to-blind-flush
+        tests: []
+        samples: []
+        localizations:
+          cs:
+            heading: Když se odřízneš
+            fingerprint: 16ab7f5b1533f35afeeef9b36b8d43b8737189451d29f7fecb74b626e495a412
+          en:
+            heading: If you lock yourself out
+            fingerprint: e03e9fbfe8e9367c177a51a0ca2d24956bb8814344c867e227c8178340a4940c
   kvm:
     test:
       suite: kb/kvm
