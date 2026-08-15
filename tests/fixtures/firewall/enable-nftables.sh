@@ -3,7 +3,7 @@ set -eu
 
 # Install nftables.
 apt update
-DEBIAN_FRONTEND=noninteractive apt install -y nftables
+apt install -y nftables
 
 # Validate the complete configuration before applying it.
 nft -c -f /etc/nftables.conf

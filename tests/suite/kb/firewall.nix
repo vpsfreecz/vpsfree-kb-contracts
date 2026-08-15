@@ -146,11 +146,21 @@ import ../../make-test.nix (
         )
       end
 
-      def run_fixture(ct, name, timeout: 1200)
+      def run_fixture(ct, name, environment: {}, timeout: 1200)
         encoded = Base64.strict_encode64(FIXTURES.fetch(name))
+        command = ['env'] + environment.map { |key, value| "#{key}=#{value}" } + ['bash', '-s']
         machine.succeeds(
           "printf %s #{Shellwords.escape(encoded)} | base64 -d | " \
-          "osctl ct exec #{Shellwords.escape(ct)} bash -s",
+          "osctl ct exec #{Shellwords.escape(ct)} #{Shellwords.join(command)}",
+          timeout:
+        )
+      end
+
+      def run_apt_fixture(ct, name, timeout: 1200)
+        run_fixture(
+          ct,
+          name,
+          environment: { 'DEBIAN_FRONTEND' => 'noninteractive' },
           timeout:
         )
       end
@@ -332,7 +342,7 @@ import ../../make-test.nix (
             enable_permissive_connection_tracking(CT)
             begin_established_connections(IPV4, IPV6)
 
-            run_fixture(CT, 'configure-iptables')
+            run_apt_fixture(CT, 'configure-iptables')
             in_container(CT, "iptables -V | grep -F '(nf_tables)'")
             in_container(CT, 'iptables -S INPUT | grep -F -- "-P INPUT DROP"')
             in_container(CT, 'ip6tables -S INPUT | grep -F -- "-P INPUT DROP"')
@@ -374,7 +384,7 @@ import ../../make-test.nix (
             enable_permissive_connection_tracking(CT)
             begin_established_connections(IPV4, IPV6)
 
-            run_fixture(CT, 'enable-nftables')
+            run_apt_fixture(CT, 'enable-nftables')
             in_container(CT, 'nft -c -f /etc/nftables.conf')
             in_container(CT, 'nft list table inet filter | grep -F "policy drop"')
             expect_established_connections
@@ -414,7 +424,7 @@ import ../../make-test.nix (
             begin_established_connections(IPV4, IPV6)
             remove_permissive_connection_tracking(CT)
 
-            run_fixture(CT, 'configure-ufw')
+            run_apt_fixture(CT, 'configure-ufw')
             in_container(CT, "grep -Fx 'IPV6=yes' /etc/default/ufw")
             in_container(CT, "ufw status | grep -F 'Status: active'")
             expect_established_connections

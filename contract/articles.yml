@@ -21,7 +21,7 @@ articles:
     samples:
       configure-iptables:
         path: tests/fixtures/firewall/configure-iptables.sh
-        sha256: cda474b1f053dd63fc625e2ff741ac62bbd124e3062248c62af2a1e2c780a530
+        sha256: 9838eaf0e7ae0ef636c7903e6ed3893632d16330408d096e36fa46ecc5f34d51
         tests:
         - iptables
       nftables-config:
@@ -31,12 +31,12 @@ articles:
         - nftables
       enable-nftables:
         path: tests/fixtures/firewall/enable-nftables.sh
-        sha256: 874427f2b6f06ebc935b0b96a6e02d18ac9f7321d8905e6095ba7d87537a1d03
+        sha256: cc0e9b385c8027a5b2430f1a2ebbbacd302e502a5d094c3e0b6483cd48dffbb1
         tests:
         - nftables
       configure-ufw:
         path: tests/fixtures/firewall/configure-ufw.sh
-        sha256: 52d170018b76e390b492f3df5fb83a2195f2c9cd5d1e3b38deab17f5eae60e9e
+        sha256: f8ff59a953019b195fc7aa2e4664412a88ebb586258fa48b8f29e911baa01cd5
         tests:
         - ufw
       configure-firewalld:
@@ -96,10 +96,10 @@ articles:
         localizations:
           cs:
             heading: Jednoduchý firewall pomocí iptables
-            fingerprint: f6b80215b06e900390b0d739d7a0c7189749fe17f7c229e2d7d08c5624474822
+            fingerprint: 3d8328b97065a2995542daff3d6a5fe73a80149e9e2b15da5f935cab7a5a4194
           en:
             heading: A simple firewall with iptables
-            fingerprint: a22558fce092dc45366d1fefc02952a250d8403f705d32752c0ed22c2bae335b
+            fingerprint: 2ca5735169dd49d121dc4c3b5817c484364b9c11d8284a62b558c57e7693734d
       nftables:
         claims:
         - inet-table-filters-ipv4-and-ipv6
@@ -115,10 +115,10 @@ articles:
         localizations:
           cs:
             heading: Nativní nftables
-            fingerprint: 7a78adfa8c3dc37e2d97dec99142023541e8d343e1f41300788b5de63b18baf0
+            fingerprint: 4560d37aa9e586dc326bf5e0ac4cbd0bb5f29e10357933b7d2aff96f8bcae61f
           en:
             heading: Native nftables
-            fingerprint: 3af055a83602e1762f2d9f1fd8db48948d5a04c3b3d1cce793590fbee6b99c99
+            fingerprint: 9b9726989d157a0d7b84d05ce52413a695855bc4b6c86d53c9ceda83ff3d17e8
       ufw:
         claims:
         - ufw-manages-dual-stack-stateful-filtering
@@ -134,10 +134,10 @@ articles:
         localizations:
           cs:
             heading: UFW na Debianu a Ubuntu
-            fingerprint: 0baf9e7cc115721878b511204da5e5a8257058aac34c58f58ecf52f87e5f3caf
+            fingerprint: c90cbc4aaca6a5a8f1767716fab12a67d3a161f925feb8644723620ac3a82ce9
           en:
             heading: UFW on Debian and Ubuntu
-            fingerprint: ada90ed786659537d840454e10bacde01ef75bf702b81ddc5782c3f8a7f93f4a
+            fingerprint: b62d3d37936ac66579ac131bc75e17a2152ca1588f50878a8da852f99090ad77
       firewalld:
         claims:
         - firewalld-zones-bind-rules-to-interfaces

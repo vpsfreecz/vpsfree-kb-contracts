@@ -2,7 +2,7 @@
 set -eu
 
 apt update
-DEBIAN_FRONTEND=noninteractive apt install -y ufw
+apt install -y ufw
 ufw default deny incoming
 ufw default allow outgoing
 ufw allow 22/tcp comment 'SSH'

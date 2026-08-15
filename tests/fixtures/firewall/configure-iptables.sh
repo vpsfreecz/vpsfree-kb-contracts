@@ -3,7 +3,7 @@ set -eu
 
 # Install the command-line tools and boot-time persistence.
 apt update
-DEBIAN_FRONTEND=noninteractive apt install -y iptables iptables-persistent
+apt install -y iptables iptables-persistent
 
 # Keep traffic allowed while replacing the current rules.
 iptables -P INPUT ACCEPT

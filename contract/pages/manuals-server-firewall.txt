@@ -71,7 +71,7 @@ set -eu
 
 # Install the command-line tools and boot-time persistence.
 apt update
-DEBIAN_FRONTEND=noninteractive apt install -y iptables iptables-persistent
+apt install -y iptables iptables-persistent
 
 # Keep traffic allowed while replacing the current rules.
 iptables -P INPUT ACCEPT
@@ -175,7 +175,7 @@ set -eu
 
 # Install nftables.
 apt update
-DEBIAN_FRONTEND=noninteractive apt install -y nftables
+apt install -y nftables
 
 # Validate the complete configuration before applying it.
 nft -c -f /etc/nftables.conf
@@ -206,7 +206,7 @@ manages IPv4 and IPv6; before activation, the script verifies that
 set -eu
 
 apt update
-DEBIAN_FRONTEND=noninteractive apt install -y ufw
+apt install -y ufw
 ufw default deny incoming
 ufw default allow outgoing
 ufw allow 22/tcp comment 'SSH'
