@@ -76,12 +76,36 @@ controls:
           contains: L_EDIT_PROFILE
       fingerprint: 2d14b2163811f698eb2c0e4900424014dcd52a7f24aa87f467c4458eebdc0a6b
 
+  - id: session.login
+    label: { en: Log in, cs: Přihlásit se }
+    source:
+      path: webui/template/template.html
+      contains: "?page=login&action=login"
+      related:
+        - path: webui/template/template.html
+          contains: '<form action="?page=login&action=login"'
+      fingerprint: 56ea44e32361d913c3f8244c3551a7212278cd7650ec4d4336671aec377a1c0b
+
+  - id: member.menu
+    label: { en: Members, cs: Členové }
+    source:
+      path: webui/public/index.php
+      contains: "?page=adminm"
+      related:
+        - path: webui/public/index.php
+          contains: 'menu_add(_("Members"), ''?page=adminm'''
+      fingerprint: a83859155c66df8a7dfc1fee3a9f73608fa4fe18b3b7b5556eb8b5b68ba39c39
+    captures:
+      - getting-started/members-list
+
   - id: vps.menu
     label: { en: VPS, cs: VPS }
     source:
       path: webui/public/index.php
       contains: "?page=adminvps"
       fingerprint: 780cff337602656a3feac47e2f02c3f929ad98e9b7bb5018fbd0bd021676d41e
+    captures:
+      - getting-started/vps-list
 
   - id: userdata.menu
     label: { en: User data, cs: User data }
@@ -402,6 +426,18 @@ semantic_selectors:
         );
 
 paths:
+  - id: session.login.open
+    steps: [session.login]
+    pages:
+      cs: [informace:novacci]
+      en: [information:new_members]
+
+  - id: member.list.open
+    steps: [member.menu]
+    pages:
+      cs: [informace:novacci]
+      en: [information:new_members]
+
   - id: member.edit-profile.open
     steps: [member.edit-profile]
     pages:

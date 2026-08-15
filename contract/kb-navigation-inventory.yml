@@ -1960,47 +1960,6 @@ discoveries:
     console is intended for exactly this kind of recovery, so do not hesitate to use
     it.
   reason: Start-menu recovery occurs in the console boot menu, not the vpsAdmin WebUI.
-- id: 077e0764960f9e49
-  language: cs
-  page: informace:novacci
-  paragraph: 18
-  text: "* **SSH klíč:** v **Upravit profil → Veřejné klíče → Přidat veřejný klíč**
-    ulož svůj veřejný klíč. Potom jej ve formuláři v detailu VPS nahraj do běžícího
-    systému. Klíč můžeš také nechat automaticky nahrávat do nových a přeinstalovaných
-    VPS."
-  paths:
-  - member.public-keys.add
-  - vps.details.open
-- id: 10306130ebbce587
-  language: cs
-  page: informace:novacci
-  paragraph: 10
-  text: 'V detailu najdeš stav VPS, její umístění, prostředky a formuláře pro běžnou
-    správu:'
-  reason: Read-only summary and screenshot context for VPS details, not a navigation
-    action.
-- id: 3630d7c44f1cc4ce
-  language: cs
-  page: informace:novacci
-  paragraph: 13
-  text: 'Detail VPS obsahuje adresy a základní příkaz pro připojení:'
-  reason: Read-only address information in VPS details, not a navigation action.
-- id: 39c3276d524026fe
-  language: en
-  page: information:new_members
-  paragraph: 8
-  text: Log in to [[https://vpsadmin.vpsfree.cz/|vpsAdmin]], open **VPS** and click
-    the VPS ID to open its details.
-  paths:
-  - vps.details.open
-- id: 39dca42e5bb8aceb
-  language: cs
-  page: informace:novacci
-  paragraph: 16
-  text: "* **Heslo:** ve formuláři pro heslo uživatele ''root'' v detailu VPS nastav
-    nové, jedinečné heslo. Výchozí šablony přihlášení uživatele ''root'' heslem umožňují."
-  paths:
-  - vps.details.open
 - id: 3a1233dff0252426
   language: cs
   page: navody:server:firewall
@@ -2010,12 +1969,6 @@ discoveries:
     nebo ''/etc/nftables.conf'', ukonči shell a systém spusť normálně. Na NixOS můžeš
     ve start menu místo toho vybrat předchozí funkční generaci a pak konfiguraci opravit.
   reason: Start-menu recovery occurs in the console boot menu, not the vpsAdmin WebUI.
-- id: 404a59757a593f67
-  language: en
-  page: information:new_members
-  paragraph: 13
-  text: 'The VPS details contain its addresses and a basic connection command:'
-  reason: Read-only address information in VPS details, not a navigation action.
 - id: 47306c035b1e9ef3
   language: cs
   page: navody:vps:snap
@@ -2036,26 +1989,6 @@ discoveries:
     from which you can repair the rules.
   reason: Recovery behavior is delegated to the linked console and start-menu guides,
     not a direct vpsAdmin WebUI navigation action.
-- id: 62082d990a43e0bb
-  language: cs
-  page: informace:novacci
-  paragraph: 24
-  text: "* [[navody:vps:sprava|Vytvoření a správa VPS]] vysvětluje start, zastavení,
-    reinstalaci a další běžné změny. * [[navody:vps:datasety|Datasety]] popisují disky
-    VPS a [[navody:vps:zalohy|zálohy]] vysvětlují snapshoty, obnovu a stažení dat.
-    * [[navody:vps:prenosy|Datové přenosy]] ukazují měsíční přehledy i živý provoz.
-    Přenosy konkrétní VPS vidíš také v jejím detailu:"
-  reason: Read-only traffic summary and screenshot context, not a navigation action.
-- id: 635f629cb9247e21
-  language: en
-  page: information:new_members
-  paragraph: 24
-  text: "* [[manuals:vps:management|Creating and managing a VPS]] covers starting,
-    stopping, reinstalling and other everyday changes. * [[manuals:vps:datasets|Datasets]]
-    describe VPS disks, while [[manuals:vps:backups|backups]] cover snapshots, restoration
-    and downloads. * [[manuals:vps:traffic|Network traffic]] covers monthly reports
-    and live monitoring. Transfers for one VPS are also shown in its details:"
-  reason: Read-only traffic summary and screenshot context, not a navigation action.
 - id: 7605f26e9225f5e2
   language: en
   page: manuals:server:firewall
@@ -2066,41 +1999,6 @@ discoveries:
     start the system normally. On NixOS, you can instead select the previous working
     generation in the start menu and then repair the configuration.
   reason: Start-menu recovery occurs in the console boot menu, not the vpsAdmin WebUI.
-- id: 802632ab39cb25e3
-  language: cs
-  page: informace:novacci
-  paragraph: 22
-  text: Ztráta přístupu přes SSH je opravitelná. Použij [[navody:vps:konzole|vzdálenou
-    konzoli]], která funguje i při rozbité síti, firewallu nebo SSH službě. Návod
-    popisuje běžnou konzoli i prostředí **Run** ze start menu, ve kterém můžeš opravit
-    konfiguraci VPS. Pokud si nevíš rady, [[informace:kam_psat|ozvi se komunitě nebo
-    podpoře]].
-  reason: Recovery delegates to the linked console guide, not a direct vpsAdmin WebUI
-    action.
-- id: 8713282f93f286ba
-  language: en
-  page: information:new_members
-  paragraph: 16
-  text: "* **Password:** set a new, unique ''root'' password using the form in the
-    VPS details. The default templates permit ''root'' password login."
-  paths:
-  - vps.details.open
-- id: 8bd6479513d62f2b
-  language: en
-  page: information:new_members
-  paragraph: 10
-  text: 'The details show the VPS status, location, resources and forms for everyday
-    management:'
-  reason: Read-only summary and screenshot context for VPS details, not a navigation
-    action.
-- id: 96887d7330aeda6f
-  language: cs
-  page: informace:novacci
-  paragraph: 8
-  text: Přihlas se do [[https://vpsadmin.vpsfree.cz/|vpsAdminu]], otevři **VPS** a
-    kliknutím na ID otevři detail své VPS.
-  paths:
-  - vps.details.open
 - id: afc22599c5e31560
   language: en
   page: manuals:vps:snap
@@ -2121,21 +2019,72 @@ discoveries:
     opravit.
   reason: Recovery behavior is delegated to the linked console and start-menu guides,
     not a direct vpsAdmin WebUI navigation action.
-- id: c98091bb30e45e52
+- id: 0dd3054a8b34f780
   language: en
   page: information:new_members
-  paragraph: 18
-  text: "* **SSH key:** save your public key under **Edit profile → Public keys →
-    Add public key**. Then deploy it to the running system using the form in the VPS
-    details. You can also have the key deployed automatically to new and reinstalled
-    VPSes."
+  paragraph: 4
+  text: Open [[https://vpsadmin.vpsfree.cz/|vpsadmin.vpsfree.cz]] and use the vpsAdmin
+    login form with the username and temporary password from your welcome email. Both
+    are case-sensitive, and you have to change the password when you first log in.
+  paths:
+  - session.login.open
+- id: 186d79efbd20b273
+  language: cs
+  page: informace:novacci
+  paragraph: 4
+  text: Na [[https://vpsadmin.vpsfree.cz/|vpsadmin.vpsfree.cz]] použij přihlašovací
+    formulář s přihlašovacím jménem a dočasným heslem z uvítacího e-mailu. Oboje rozlišuje
+    malá a velká písmena a při prvním přihlášení si musíš heslo změnit.
+  paths:
+  - session.login.open
+- id: 20548e0faff124c8
+  language: cs
+  page: informace:novacci
+  paragraph: 26
+  text: Potom jej ve formuláři v detailu VPS nahraj do běžícího systému.
+  paths:
+  - vps.details.open
+- id: 22f69df85957de6c
+  language: cs
+  page: informace:novacci
+  paragraph: 7
+  text: V horním menu vpsAdminu otevři **Členové**.
+  paths:
+  - member.list.open
+- id: 2729a2da3d65d758
+  language: cs
+  page: informace:novacci
+  paragraph: 14
+  text: 'V detailu najdeš stav VPS, její umístění, prostředky a formuláře pro běžnou
+    správu:'
+  reason: Read-only summary and screenshot context for VPS details, not a navigation
+    action.
+- id: 2a8431c28c5283d4
+  language: en
+  page: information:new_members
+  paragraph: 26
+  text: Then deploy it to the running system using the form in the VPS details.
+  paths:
+  - vps.details.open
+- id: 4489edf196c13450
+  language: en
+  page: information:new_members
+  paragraph: 25
+  text: Save your public key under **Edit profile → Public keys → Add public key**.
   paths:
   - member.public-keys.add
-  - vps.details.open
-- id: c9ae7275431e32c6
+- id: 47b3e94f85ccce6d
   language: en
   page: information:new_members
-  paragraph: 22
+  paragraph: 23
+  text: The default templates permit ''root'' password login. Then use the connection
+    command shown in the VPS details.
+  reason: SSH command execution occurs in the member terminal; the VPS details are
+    read-only context, not WebUI navigation.
+- id: 4d0c358d5289b2b0
+  language: en
+  page: information:new_members
+  paragraph: 30
   text: Losing SSH access is recoverable. Use the [[manuals:vps:console|remote console]],
     which remains available when the VPS network, firewall or SSH service is broken.
     The guide covers the normal console and the start-menu **Run** environment where
@@ -2143,3 +2092,86 @@ discoveries:
     the community or support]].
   reason: Recovery delegates to the linked console guide, not a direct vpsAdmin WebUI
     action.
+- id: 55ea04bc4d0dd196
+  language: cs
+  page: informace:novacci
+  paragraph: 23
+  text: Výchozí šablony umožňují přihlášení uživatele ''root'' heslem. Potom použij
+    příkaz pro připojení z detailu VPS.
+  reason: SSH command execution occurs in the member terminal; the VPS details are
+    read-only context, not WebUI navigation.
+- id: 56f1b64a94377271
+  language: cs
+  page: informace:novacci
+  paragraph: 30
+  text: Ztráta přístupu přes SSH je opravitelná. Použij [[navody:vps:konzole|vzdálenou
+    konzoli]], která funguje i při rozbité síti, firewallu nebo SSH službě. Návod
+    popisuje běžnou konzoli i prostředí **Run** ze start menu, ve kterém můžeš opravit
+    konfiguraci VPS. Pokud si nevíš rady, [[informace:kam_psat|ozvi se komunitě nebo
+    podpoře]].
+  reason: Recovery delegates to the linked console guide, not a direct vpsAdmin WebUI
+    action.
+- id: 57e4e6aff082e39e
+  language: cs
+  page: informace:novacci
+  paragraph: 25
+  text: V **Upravit profil → Veřejné klíče → Přidat veřejný klíč** ulož svůj veřejný
+    klíč.
+  paths:
+  - member.public-keys.add
+- id: 5b6923bb528c4f39
+  language: en
+  page: information:new_members
+  paragraph: 14
+  text: 'The details show the VPS status, location, resources and forms for everyday
+    management:'
+  reason: Read-only summary and screenshot context for VPS details, not a navigation
+    action.
+- id: 63e0a80a2484574d
+  language: en
+  page: information:new_members
+  paragraph: 21
+  text: Set a new, unique ''root'' password using the form in the VPS details.
+  paths:
+  - vps.details.open
+- id: 77e8094cdc5335a4
+  language: en
+  page: information:new_members
+  paragraph: 7
+  text: Open **Members** in the top vpsAdmin menu.
+  paths:
+  - member.list.open
+- id: a1e750138a11d22c
+  language: en
+  page: information:new_members
+  paragraph: 17
+  text: 'The VPS details contain its addresses and a basic connection command:'
+  reason: Read-only address information in VPS details, not a navigation action.
+- id: be9ac00421058dd9
+  language: cs
+  page: informace:novacci
+  paragraph: 12
+  text: V horním menu otevři **VPS** a kliknutím na ID otevři detail své VPS.
+  paths:
+  - vps.details.open
+- id: c699869d287edc67
+  language: cs
+  page: informace:novacci
+  paragraph: 17
+  text: 'Detail VPS obsahuje adresy a základní příkaz pro připojení:'
+  reason: Read-only address information in VPS details, not a navigation action.
+- id: e9a557aa2ff4bbfe
+  language: cs
+  page: informace:novacci
+  paragraph: 21
+  text: Ve formuláři pro heslo uživatele ''root'' v detailu VPS nastav nové, jedinečné
+    heslo.
+  paths:
+  - vps.details.open
+- id: fc897f150267bca1
+  language: en
+  page: information:new_members
+  paragraph: 12
+  text: Open **VPS** in the top menu and click the VPS ID to open its details.
+  paths:
+  - vps.details.open

@@ -3,7 +3,15 @@ schema: 1
 bindings:
 - language: cs
   page: informace:novacci
+  path: member.list.open
+  count: 1
+- language: cs
+  page: informace:novacci
   path: member.public-keys.add
+  count: 1
+- language: cs
+  page: informace:novacci
+  path: session.login.open
   count: 1
 - language: cs
   page: informace:novacci
@@ -187,7 +195,15 @@ bindings:
   count: 1
 - language: en
   page: information:new_members
+  path: member.list.open
+  count: 1
+- language: en
+  page: information:new_members
   path: member.public-keys.add
+  count: 1
+- language: en
+  page: information:new_members
+  path: session.login.open
   count: 1
 - language: en
   page: information:new_members
