@@ -41,6 +41,13 @@ informal singular forms (`tykání`), for example `můžeš`, `potřebuješ`,
 `nainstaluj`, and `použij`. Do not use formal `vy` or plural imperatives as a
 polite form; use plural only when genuinely addressing multiple people.
 
+Write KB articles as documentation of the current supported state. Do not
+mention obsolete distributions, former defaults, superseded commands, or
+historical workarounds unless readers of a still-supported installation need
+that history to migrate or recover. Record removal rationale in commit
+messages, DokuWiki revision summaries, or initiative notes instead of article
+prose.
+
 When a vpsAdmin feature changes anything visible in the WebUI, follow
 `docs/webui-change-workflow.md`. It is the canonical cross-repository procedure
 for pinning the feature revision, interpreting contract drift, regenerating
