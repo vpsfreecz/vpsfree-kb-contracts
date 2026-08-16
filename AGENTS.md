@@ -41,6 +41,17 @@ informal singular forms (`tykání`), for example `můžeš`, `potřebuješ`,
 `nainstaluj`, and `použij`. Do not use formal `vy` or plural imperatives as a
 polite form; use plural only when genuinely addressing multiple people.
 
+Before writing or editing user-facing prose, read and apply the workspace skill
+at `../../../skills/vpsfree-user-facing-writing/SKILL.md` from this initiative
+worktree. The standard workspace layout defined by the top-level `AGENTS.md`
+makes that the canonical copy; if it is unavailable, stop and report the
+missing workspace dependency instead of silently skipping it. Apply the skill
+directly after technical facts are settled and before committing. Do not hand
+the main rewrite to a context-poor subagent; use a fresh agent only to review
+the finished result. In Czech pages, translate human-readable comments in
+scripts and configuration examples while preserving executable lines,
+directives, identifiers, and values.
+
 Write KB articles as documentation of the current supported state. Do not
 mention obsolete distributions, former defaults, superseded commands, or
 historical workarounds unless readers of a still-supported installation need
