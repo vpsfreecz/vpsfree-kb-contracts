@@ -75,6 +75,115 @@ class ArticleContractCheckerTest < Minitest::Test
     assert_match(/deploy-system: invalid code language/, error)
   end
 
+  def test_display_variants_require_both_languages
+    _output, error, status = check_mutated_contract do |contract|
+      sample = contract.dig('articles', 'guix', 'samples', 'reconfigure-system')
+      sample.fetch('display_variants').delete('en')
+    end
+
+    refute(status.success?)
+    assert_match(/display variants must contain exactly cs and en/, error)
+  end
+
+  def test_human_readable_comments_require_display_variants
+    _output, error, status = check_mutated_contract do |contract|
+      sample = contract.dig('articles', 'guix', 'samples', 'reconfigure-system')
+      sample.delete('display_variants')
+    end
+
+    refute(status.success?)
+    assert_match(/display variants must contain exactly cs and en/, error)
+  end
+
+  def test_display_variant_must_bind_every_human_readable_comment
+    _output, error, status = check_mutated_contract do |contract|
+      comments = contract.dig(
+        'articles', 'guix', 'samples', 'reconfigure-system',
+        'display_variants', 'cs', 'comments'
+      )
+      comments.delete(4)
+    end
+
+    refute(status.success?)
+    assert_match(/missing display comment for line 4/, error)
+  end
+
+  def test_display_variant_cannot_override_a_shebang
+    _output, error, status = check_mutated_contract do |contract|
+      comments = contract.dig(
+        'articles', 'guix', 'samples', 'reconfigure-system',
+        'display_variants', 'cs', 'comments'
+      )
+      comments[1] = '#!/bin/sh'
+    end
+
+    refute(status.success?)
+    assert_match(/line 1 is not a human-readable comment/, error)
+  end
+
+  def test_display_variant_cannot_override_a_tool_directive
+    _output, error, status = check_mutated_contract do |contract|
+      comments = contract.dig(
+        'articles', 'guix', 'samples', 'reconfigure-system',
+        'display_variants', 'cs', 'comments'
+      )
+      comments[6] = '# shellcheck disable=SC1090'
+    end
+
+    refute(status.success?)
+    assert_match(/line 6 is not a human-readable comment/, error)
+  end
+
+  def test_display_variant_cannot_override_an_executable_line
+    _output, error, status = check_mutated_contract do |contract|
+      comments = contract.dig(
+        'articles', 'guix', 'samples', 'reconfigure-system',
+        'display_variants', 'cs', 'comments'
+      )
+      comments[5] = 'export GUIX_PROFILE=/tmp/profile'
+    end
+
+    refute(status.success?)
+    assert_match(/line 5 is not a human-readable comment/, error)
+  end
+
+  def test_display_variant_must_preserve_comment_line_structure
+    _output, error, status = check_mutated_contract do |contract|
+      comments = contract.dig(
+        'articles', 'guix', 'samples', 'reconfigure-system',
+        'display_variants', 'cs', 'comments'
+      )
+      comments[4] = '  # Použij revizi Guixu.'
+    end
+
+    refute(status.success?)
+    assert_match(/comment line structure differs at line 4/, error)
+  end
+
+  def test_human_readable_display_comments_must_be_localized
+    _output, error, status = check_mutated_contract do |contract|
+      variants = contract.dig(
+        'articles', 'guix', 'samples', 'reconfigure-system', 'display_variants'
+      )
+      variants.fetch('cs').fetch('comments')[4] = variants.fetch('en').fetch('comments').fetch(4)
+    end
+
+    refute(status.success?)
+    assert_match(/human-readable comment is not localized at line 4/, error)
+  end
+
+  def test_page_must_include_its_matching_language_display_variant
+    _output, error, status = check_mutated_contract do |contract|
+      variants = contract.dig(
+        'articles', 'guix', 'samples', 'reconfigure-system', 'display_variants'
+      )
+      variants['cs'], variants['en'] = variants.fetch('en'), variants.fetch('cs')
+    end
+
+    refute(status.success?)
+    assert_match(/guix: cs: Úprava konfigurace: exact sample reconfigure-system is missing/, error)
+  end
+
   def test_section_drift_is_rejected
     _output, error, status = check_mutated_contract do |contract|
       contract.dig(

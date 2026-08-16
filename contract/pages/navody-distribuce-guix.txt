@@ -40,7 +40,7 @@ Konfiguraci aktivuj jako ''root'':
 #!/usr/bin/env bash
 set -eo pipefail
 
-# Use the Guix revision that built the active system generation.
+# Použij revizi Guixu, která sestavila aktivní systémovou generaci.
 export GUIX_PROFILE=/run/current-system/profile
 # shellcheck disable=SC1091
 . "$GUIX_PROFILE/etc/profile"
@@ -107,7 +107,7 @@ Ulož tuto konfiguraci jako ''/etc/config/deploy.scm'' na řídicím systému a
 nahraď adresu a hostitelský klíč cílové VPS:
 
 <code scheme>
-;; Load the maintained vpsAdminOS container integration.
+;; Načti udržovanou integraci kontejnerů vpsAdminOS.
 (add-to-load-path "/etc/config")
 (use-modules (vpsadminos)
              (gnu)
@@ -117,7 +117,7 @@ nahraď adresu a hostitelský klíč cílové VPS:
 (use-package-modules nss ssh)
 (use-service-modules ssh)
 
-;; These files belong to the machine from which you run guix deploy.
+;; Tyto soubory se nacházejí na stroji, ze kterého spouštíš guix deploy.
 (define %controller-signing-key
   (local-file "/etc/guix/signing-key.pub"))
 (define %root-ssh-key
@@ -165,7 +165,7 @@ nahraď adresu a hostitelský klíč cílové VPS:
     (environment managed-host-environment-type)
     (configuration
      (machine-ssh-configuration
-      ;; Replace the address and host key with those of your target VPS.
+      ;; Nahraď adresu a hostitelský klíč údaji cílové VPS.
       (host-name "192.0.2.3")
       (system "x86_64-linux")
       (user "root")
@@ -173,8 +173,8 @@ nahraď adresu a hostitelský klíč cílové VPS:
       (host-key "ssh-ed25519 REPLACE_WITH_TARGET_HOST_KEY")
       (authorize? #t)
       (allow-downgrades? #f)
-      ;; vpsAdminOS supplies the kernel and exposes a dummy /dev/null root.
-      ;; Guix's bare-metal file-system/initrd checks cannot inspect it.
+      ;; vpsAdminOS poskytuje jádro a používá zástupný kořen /dev/null.
+      ;; Guix proto nemůže provést kontroly souborového systému a initrd určené pro fyzický stroj.
       (safety-checks? #f)))))
 
 (list %machine)

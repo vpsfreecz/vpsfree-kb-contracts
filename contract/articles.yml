@@ -22,16 +22,59 @@ articles:
       configure-iptables:
         path: tests/fixtures/firewall/configure-iptables.sh
         sha256: 9838eaf0e7ae0ef636c7903e6ed3893632d16330408d096e36fa46ecc5f34d51
+        display_variants:
+          cs:
+            comments:
+              4: '# Nainstaluj nástroje pro příkazovou řádku a trvalé ukládání pravidel.'
+              8: '# Při nahrazování současných pravidel ponech provoz povolený.'
+              16: '# Odstraň současná pravidla filtru a uživatelsky definované řetězce.'
+              22: '# Vstup IPv4: zahoď neplatné pakety, zachovej navázaný provoz a otevři služby.'
+              29: '# Vstup IPv6: použij stejná pravidla a zachovej funkční řídicí provoz IPv6.'
+              36: '# Zahoď ostatní vstupní a předávaný provoz, místní odchozí provoz ponech povolený.'
+              42: '# Ulož pravidla a zobraz výslednou politiku vstupu.'
+          en:
+            comments:
+              4: '# Install the command-line tools and boot-time persistence.'
+              8: '# Keep traffic allowed while replacing the current rules.'
+              16: '# Remove the current filter rules and user-defined chains.'
+              22: '# IPv4 input: drop invalid packets, keep established traffic, and open services.'
+              29: '# IPv6 input: apply the same policy and keep IPv6 control traffic working.'
+              36: '# Drop other input and forwarded traffic; keep locally generated output allowed.'
+              42: '# Persist the rules and display the resulting input policy.'
         tests:
         - iptables
       nftables-config:
         path: tests/fixtures/firewall/nftables.conf
         sha256: 0f7945f4de309994250de65e10928a213407086b6597316f5ae143ab060dd3a3
+        display_variants:
+          cs:
+            comments:
+              3: '# Nahraď celou současnou sadu pravidel.'
+              10: '    # Nejprve zpracuj stav, povol loopback, zachovej řídicí provoz a otevři služby.'
+              19: '    # Tento jednoduchý firewall nepředává žádný provoz.'
+              24: '    # Povol veškerý provoz vytvořený na VPS.'
+          en:
+            comments:
+              3: '# Replace the complete current ruleset.'
+              10: '    # Handle state first, trust loopback, keep control traffic, and open services.'
+              19: '    # This simple host firewall does not forward traffic.'
+              24: '    # Locally generated traffic is unrestricted.'
         tests:
         - nftables
       enable-nftables:
         path: tests/fixtures/firewall/enable-nftables.sh
         sha256: cc0e9b385c8027a5b2430f1a2ebbbacd302e502a5d094c3e0b6483cd48dffbb1
+        display_variants:
+          cs:
+            comments:
+              4: '# Nainstaluj nftables.'
+              8: '# Před použitím zkontroluj celou konfiguraci.'
+              11: '# Načti konfiguraci nyní i při startu a pak zobraz výsledek.'
+          en:
+            comments:
+              4: '# Install nftables.'
+              8: '# Validate the complete configuration before applying it.'
+              11: '# Load the configuration now and at boot, then display the result.'
         tests:
         - nftables
       configure-ufw:
@@ -96,7 +139,7 @@ articles:
         localizations:
           cs:
             heading: Jednoduchý firewall pomocí iptables
-            fingerprint: 3d8328b97065a2995542daff3d6a5fe73a80149e9e2b15da5f935cab7a5a4194
+            fingerprint: 2a3e3d5e8be4c68ed14428fae53df2526e86fcae7d39080ea1afa47862c8cef2
           en:
             heading: A simple firewall with iptables
             fingerprint: 2ca5735169dd49d121dc4c3b5817c484364b9c11d8284a62b558c57e7693734d
@@ -115,7 +158,7 @@ articles:
         localizations:
           cs:
             heading: Nativní nftables
-            fingerprint: 4560d37aa9e586dc326bf5e0ac4cbd0bb5f29e10357933b7d2aff96f8bcae61f
+            fingerprint: e09783b02b2680ba920083ad75b6fe61292a117a56d162f28926281f5d5bee53
           en:
             heading: Native nftables
             fingerprint: 9b9726989d157a0d7b84d05ce52413a695855bc4b6c86d53c9ceda83ff3d17e8
@@ -238,6 +281,13 @@ articles:
       configure-nat-port-forwards:
         path: tests/fixtures/kvm/configure-nat-port-forwards.sh
         sha256: 2d3de08932f8f9aa8675b4ba98cd917699ea485617891960604f239853d7ab2d
+        display_variants:
+          cs:
+            comments:
+              172: '# RODINA PROTOKOL VEŘEJNÁ_IP VEŘEJNÝ_PORT IP_DOMÉNY PORT_DOMÉNY'
+          en:
+            comments:
+              172: '# FAMILY PROTOCOL PUBLIC_IP PUBLIC_PORT GUEST_IP GUEST_PORT'
         tests:
         - networking
       configure-routed-network:
@@ -308,7 +358,7 @@ articles:
         localizations:
           cs:
             heading: Síť virtuálních strojů
-            fingerprint: 9840f2f06a24d65d6ced73e9aa9bc55e033b9dd19826eda092ae90917aebb2f3
+            fingerprint: 8b7ef93de74e5e0ab822fe9c655568576b1a7fb5f4366385278422d1cad03a83
           en:
             heading: Virtual-machine networking
             fingerprint: 33bb85537af3d518aaed35382d700ba9697cf2b436ac2bc4d4604a0011b81c0d
@@ -344,12 +394,34 @@ articles:
       reconfigure-system:
         path: tests/fixtures/guix/reconfigure-system.sh
         sha256: 5382792467c9556cf370843fa0f16394c9aecf571ca532bf8679055b2f88035f
+        display_variants:
+          cs:
+            comments:
+              4: '# Použij revizi Guixu, která sestavila aktivní systémovou generaci.'
+          en:
+            comments:
+              4: '# Use the Guix revision that built the active system generation.'
         tests:
         - reconfigure
       deploy-system:
         path: tests/fixtures/guix/deploy-system.scm
         sha256: 5fe2c099bd86fc65b96071b82da467712dbb71263362d52f6eac91e69f806afe
         language: scheme
+        display_variants:
+          cs:
+            comments:
+              1: ';; Načti udržovanou integraci kontejnerů vpsAdminOS.'
+              11: ';; Tyto soubory se nacházejí na stroji, ze kterého spouštíš guix deploy.'
+              59: '      ;; Nahraď adresu a hostitelský klíč údaji cílové VPS.'
+              67: '      ;; vpsAdminOS poskytuje jádro a používá zástupný kořen /dev/null.'
+              68: '      ;; Guix proto nemůže provést kontroly souborového systému a initrd určené pro fyzický stroj.'
+          en:
+            comments:
+              1: ';; Load the maintained vpsAdminOS container integration.'
+              11: ';; These files belong to the machine from which you run guix deploy.'
+              59: '      ;; Replace the address and host key with those of your target VPS.'
+              67: '      ;; vpsAdminOS supplies the kernel and exposes a dummy /dev/null root.'
+              68: "      ;; Guix's bare-metal file-system/initrd checks cannot inspect it."
         tests:
         - reconfigure
     sections:
@@ -380,7 +452,7 @@ articles:
         localizations:
           cs:
             heading: Úprava konfigurace
-            fingerprint: d89ff486333b162bf9ae53aea709ba3657a7f53d5ae8860041447e9eacdd847b
+            fingerprint: ed23905ed56e55bb948b06bf0a9268d4173b3c53b489ed1468c8e7a589895ebb
           en:
             heading: Editing the configuration
             fingerprint: d1c7368e800061055cb5926a026c2daa4c9f17864a3838a640ccc2e74ad98ab9
@@ -425,7 +497,7 @@ articles:
         localizations:
           cs:
             heading: Nasazení pomocí guix deploy
-            fingerprint: 1ae1240d77442154491407fbc37566949acdb26bfb1abb7235ffab284006bde7
+            fingerprint: 4f50352f780be6a70a2115577b77af256d3190ee9263bfe0e287a60677a22379
           en:
             heading: Deploying with guix deploy
             fingerprint: 94b920569629176a8591a72f5ea9a691377521df980316bdcc43a3eb799ab2a5

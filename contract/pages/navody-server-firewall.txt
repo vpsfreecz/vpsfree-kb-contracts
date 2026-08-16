@@ -67,11 +67,11 @@ politiky, pak vytvoří pravidla a blokující politiky zapne až nakonec:
 #!/usr/bin/env bash
 set -eu
 
-# Install the command-line tools and boot-time persistence.
+# Nainstaluj nástroje pro příkazovou řádku a trvalé ukládání pravidel.
 apt update
 apt install -y iptables iptables-persistent
 
-# Keep traffic allowed while replacing the current rules.
+# Při nahrazování současných pravidel ponech provoz povolený.
 iptables -P INPUT ACCEPT
 iptables -P FORWARD ACCEPT
 iptables -P OUTPUT ACCEPT
@@ -79,33 +79,33 @@ ip6tables -P INPUT ACCEPT
 ip6tables -P FORWARD ACCEPT
 ip6tables -P OUTPUT ACCEPT
 
-# Remove the current filter rules and user-defined chains.
+# Odstraň současná pravidla filtru a uživatelsky definované řetězce.
 iptables -F
 iptables -X
 ip6tables -F
 ip6tables -X
 
-# IPv4 input: drop invalid packets, keep established traffic, and open services.
+# Vstup IPv4: zahoď neplatné pakety, zachovej navázaný provoz a otevři služby.
 iptables -A INPUT -m conntrack --ctstate INVALID -j DROP
 iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 iptables -A INPUT -i lo -j ACCEPT
 iptables -A INPUT -p icmp -j ACCEPT
 iptables -A INPUT -p tcp -m multiport --dports 22,80,443 -j ACCEPT
 
-# IPv6 input: apply the same policy and keep IPv6 control traffic working.
+# Vstup IPv6: použij stejná pravidla a zachovej funkční řídicí provoz IPv6.
 ip6tables -A INPUT -m conntrack --ctstate INVALID -j DROP
 ip6tables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
 ip6tables -A INPUT -i lo -j ACCEPT
 ip6tables -A INPUT -p ipv6-icmp -j ACCEPT
 ip6tables -A INPUT -p tcp -m multiport --dports 22,80,443 -j ACCEPT
 
-# Drop other input and forwarded traffic; keep locally generated output allowed.
+# Zahoď ostatní vstupní a předávaný provoz, místní odchozí provoz ponech povolený.
 iptables -P INPUT DROP
 iptables -P FORWARD DROP
 ip6tables -P INPUT DROP
 ip6tables -P FORWARD DROP
 
-# Persist the rules and display the resulting input policy.
+# Ulož pravidla a zobraz výslednou politiku vstupu.
 netfilter-persistent save
 iptables -L INPUT -n -v
 ip6tables -L INPUT -n -v
@@ -130,14 +130,14 @@ rodiny adres a pořadí pravidel odpovídá výkladu výše:
 <code bash>
 #!/usr/sbin/nft -f
 
-# Replace the complete current ruleset.
+# Nahraď celou současnou sadu pravidel.
 flush ruleset
 
 table inet filter {
   chain input {
     type filter hook input priority filter; policy drop;
 
-    # Handle state first, trust loopback, keep control traffic, and open services.
+    # Nejprve zpracuj stav, povol loopback, zachovej řídicí provoz a otevři služby.
     ct state invalid drop
     ct state established,related accept
     iifname "lo" accept
@@ -146,12 +146,12 @@ table inet filter {
   }
 
   chain forward {
-    # This simple host firewall does not forward traffic.
+    # Tento jednoduchý firewall nepředává žádný provoz.
     type filter hook forward priority filter; policy drop;
   }
 
   chain output {
-    # Locally generated traffic is unrestricted.
+    # Povol veškerý provoz vytvořený na VPS.
     type filter hook output priority filter; policy accept;
   }
 }
@@ -169,14 +169,14 @@ službu, která ji načte nyní i při dalších startech:
 #!/usr/bin/env bash
 set -eu
 
-# Install nftables.
+# Nainstaluj nftables.
 apt update
 apt install -y nftables
 
-# Validate the complete configuration before applying it.
+# Před použitím zkontroluj celou konfiguraci.
 nft -c -f /etc/nftables.conf
 
-# Load the configuration now and at boot, then display the result.
+# Načti konfiguraci nyní i při startu a pak zobraz výsledek.
 systemctl enable --now nftables
 nft list ruleset
 </code>

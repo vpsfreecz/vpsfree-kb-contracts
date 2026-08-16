@@ -152,6 +152,14 @@ section claims and fingerprints, and screenshot references. The checker reads
 the flake's `testsMeta` output, so adding an article does not require an
 article-specific source parser or workflow edit.
 
+An executable sample with human-readable comments declares Czech and English
+`display_variants`. Each variant binds localized replacement comments to exact
+line numbers in the hashed runtime fixture. The checker derives the displayed
+sample from that shared command stream, requires every human-readable comment
+to have both bindings, preserves comment structure, and prevents replacements
+of executable lines, shebangs, or tool directives. Runtime suites continue to
+read and execute only the sample's `path`.
+
 Every test script has the common `kb-runtime` tag and a `kbArticle` label. The
 managed articles provide these independently runnable scripts:
 

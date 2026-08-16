@@ -10,6 +10,9 @@ require 'yaml'
 
 class ArticleContractError < StandardError; end
 
+DISPLAY_LANGUAGES = %w[cs en].freeze
+TOOL_DIRECTIVE = /\A[ \t]*#(?:[ \t]*(?:shellcheck|shfmt|nix-shell)\b|[ \t]*syntax=)/
+
 def normalize(value)
   value.gsub(/\s+/, ' ').strip
 end
@@ -32,6 +35,119 @@ def managed_marker(source_url, test_url)
       test="#{test_url}"
     />
   MARKER
+end
+
+def comment_parts(line, code_language)
+  return nil if line.match?(/\A[ \t]*#!/) || line.match?(TOOL_DIRECTIVE)
+
+  pattern = if code_language == 'scheme'
+              /\A(?<indent>[ \t]*)(?<marker>;+)(?<spacing>[ \t]*)(?<text>.*)\z/
+            else
+              /\A(?<indent>[ \t]*)(?<marker>#+)(?<spacing>[ \t]*)(?<text>.*)\z/
+            end
+  match = line.match(pattern)
+  return nil unless match
+
+  {
+    shape: [match[:indent], match[:marker], match[:spacing]],
+    text: match[:text]
+  }
+end
+
+def display_sources(article_id, sample_id, sample, runtime_source, code_language)
+  runtime_lines = runtime_source.split("\n", -1)
+  comments = runtime_lines.each_with_index.filter_map do |line, index|
+    parts = comment_parts(line, code_language)
+    [index + 1, parts] if parts
+  end.to_h
+  variants = sample['display_variants']
+
+  if comments.empty?
+    if variants
+      raise ArticleContractError,
+            "#{article_id}: #{sample_id}: display variants require human-readable comments"
+    end
+
+    return DISPLAY_LANGUAGES.to_h { |language| [language, runtime_source] }
+  end
+
+  unless variants.is_a?(Hash) && variants.keys.sort == DISPLAY_LANGUAGES
+    raise ArticleContractError,
+          "#{article_id}: #{sample_id}: display variants must contain exactly cs and en"
+  end
+
+  sources = variants.to_h do |language, variant|
+    unless variant.is_a?(Hash) && variant.keys == ['comments']
+      raise ArticleContractError,
+            "#{article_id}: #{sample_id}: #{language}: display variant must contain only comments"
+    end
+
+    replacements = variant.fetch('comments')
+    unless replacements.is_a?(Hash)
+      raise ArticleContractError,
+            "#{article_id}: #{sample_id}: #{language}: display comments must be a mapping"
+    end
+
+    invalid_lines = replacements.keys.reject { |line| line.is_a?(Integer) && comments.key?(line) }
+    unless invalid_lines.empty?
+      raise ArticleContractError,
+            "#{article_id}: #{sample_id}: #{language}: line #{invalid_lines.first} " \
+            'is not a human-readable comment'
+    end
+
+    missing_lines = comments.keys - replacements.keys
+    unless missing_lines.empty?
+      raise ArticleContractError,
+            "#{article_id}: #{sample_id}: #{language}: missing display comment for line " \
+            "#{missing_lines.first}"
+    end
+
+    lines = runtime_lines.dup
+    replacements.each do |line_number, replacement|
+      unless replacement.is_a?(String)
+        raise ArticleContractError,
+              "#{article_id}: #{sample_id}: #{language}: display comment must be a string"
+      end
+
+      replacement_parts = comment_parts(replacement, code_language)
+      unless replacement_parts && replacement_parts.fetch(:shape) == comments.fetch(line_number).fetch(:shape)
+        raise ArticleContractError,
+              "#{article_id}: #{sample_id}: #{language}: comment line structure differs at line " \
+              "#{line_number}"
+      end
+      lines[line_number - 1] = replacement
+    end
+
+    [language, lines.join("\n")]
+  end
+
+  comments.each_key do |line_number|
+    cs = comment_parts(sources.fetch('cs').split("\n", -1).fetch(line_number - 1), code_language)
+    en = comment_parts(sources.fetch('en').split("\n", -1).fetch(line_number - 1), code_language)
+    next if cs.fetch(:text).empty? && en.fetch(:text).empty?
+    next unless cs.fetch(:text) == en.fetch(:text)
+
+    raise ArticleContractError,
+          "#{article_id}: #{sample_id}: human-readable comment is not localized at line " \
+          "#{line_number}"
+  end
+
+  cs_lines = sources.fetch('cs').split("\n", -1)
+  en_lines = sources.fetch('en').split("\n", -1)
+  unless cs_lines.length == en_lines.length
+    raise ArticleContractError, "#{article_id}: #{sample_id}: display line structure differs"
+  end
+  cs_lines.zip(en_lines).each_with_index do |(cs, en), index|
+    next if comment_parts(cs, code_language) && comment_parts(en, code_language)
+    next if cs == en
+
+    kind = cs.match?(/\A[ \t]*#!/) || cs.match?(TOOL_DIRECTIVE) ? 'shebang/tool directive' :
+      'non-comment executable line'
+    raise ArticleContractError,
+          "#{article_id}: #{sample_id}: #{kind} differs at line #{index + 1}"
+  end
+
+  sources
 end
 
 def path_within(root, relative)
@@ -233,6 +349,7 @@ articles.each do |article_id, article|
 
   samples = article.fetch('samples', {})
   sample_ids = samples.keys
+  sample_display_sources = {}
   samples.each do |sample_id, sample|
     code_language = sample.fetch('language', 'bash')
     unless code_language.is_a?(String) && code_language.match?(/\A[a-zA-Z0-9_+-]+\z/)
@@ -246,6 +363,15 @@ articles.each do |article_id, article|
     unless actual == sample.fetch('sha256')
       raise ArticleContractError, "#{article_id}: #{sample_id}: sample SHA-256 differs"
     end
+
+    runtime_source = File.read(path, encoding: Encoding::UTF_8)
+    sample_display_sources[sample_id] = display_sources(
+      article_id,
+      sample_id,
+      sample,
+      runtime_source,
+      code_language
+    )
 
     unknown_tests = sample.fetch('tests') - script_ids
     unless unknown_tests.empty?
@@ -295,10 +421,7 @@ articles.each do |article_id, article|
 
       section_samples.each do |sample_id|
         sample_contract = samples.fetch(sample_id)
-        sample = File.read(
-          path_within(root, sample_contract.fetch('path')),
-          encoding: Encoding::UTF_8
-        ).strip
+        sample = sample_display_sources.fetch(sample_id).fetch(language).strip
         code_language = sample_contract.fetch('language', 'bash')
         unless body.include?("<code #{code_language}>\n#{sample}\n</code>")
           raise ArticleContractError, "#{article_id}: #{language}: #{heading}: exact sample #{sample_id} is missing"
