@@ -11,7 +11,10 @@ require 'yaml'
 class ArticleContractError < StandardError; end
 
 DISPLAY_LANGUAGES = %w[cs en].freeze
+EXPECTED_REPOSITORY = 'vpsfreecz/vpsfree-kb-contracts'
 TOOL_DIRECTIVE = /\A[ \t]*#(?:[ \t]*(?:shellcheck|shfmt|nix-shell)\b|[ \t]*syntax=)/
+REPOSITORY_PATH_COMPONENT = /\A[a-zA-Z0-9_.-]+\z/
+TEST_SUITE_COMPONENT = /\A[a-z0-9][a-z0-9_.-]*\z/
 
 def normalize(value)
   value.gsub(/\s+/, ' ').strip
@@ -28,13 +31,38 @@ def sections(source)
   end
 end
 
-def managed_marker(source_url, test_url)
+def managed_marker(source_path, test_pattern)
   <<~MARKER.chomp
     <kb-managed
-      source="#{source_url}"
-      test="#{test_url}"
+      source="#{source_path}"
+      test="#{test_pattern}"
     />
   MARKER
+end
+
+def repository_relative_path(value, label)
+  unless value.is_a?(String) && !value.empty? && !value.start_with?('/') && !value.include?('\\')
+    raise ArticleContractError, "#{label} must be a repository-relative path"
+  end
+
+  components = value.split('/', -1)
+  unless components.all? do |component|
+           component.match?(REPOSITORY_PATH_COMPONENT) && !%w[. ..].include?(component)
+         end
+    raise ArticleContractError, "#{label} must be a safe repository-relative path"
+  end
+
+  value
+end
+
+def test_suite(value, label)
+  unless value.is_a?(String) && !value.empty? && value.split('/', -1).all? do |component|
+           component.match?(TEST_SUITE_COMPONENT)
+         end
+    raise ArticleContractError, "#{label} must be a test-runner suite name"
+  end
+
+  value
 end
 
 def comment_parts(line, code_language)
@@ -151,7 +179,7 @@ def display_sources(article_id, sample_id, sample, runtime_source, code_language
 end
 
 def path_within(root, relative)
-  raise ArticleContractError, "invalid relative path #{relative.inspect}" unless relative.is_a?(String)
+  repository_relative_path(relative, 'path')
 
   root_path = Pathname.new(root).realpath
   path = root_path.join(relative).cleanpath
@@ -194,8 +222,9 @@ root = options.fetch(:root)
 raise ArticleContractError, 'article contract schema must be 1' unless contract.fetch('schema') == 1
 
 repository = contract.fetch('repository')
-unless repository.match?(%r{\A[a-zA-Z0-9_.-]+/[a-zA-Z0-9_.-]+\z})
-  raise ArticleContractError, "invalid GitHub repository #{repository.inspect}"
+unless repository == EXPECTED_REPOSITORY
+  raise ArticleContractError,
+        "article repository must be #{EXPECTED_REPOSITORY}, got #{repository.inspect}"
 end
 
 lock = JSON.parse(File.read(path_within(root, 'flake.lock')))
@@ -231,7 +260,8 @@ article_suites = articles.to_h do |article_id, article|
     raise ArticleContractError, "invalid article ID #{article_id.inspect}"
   end
 
-  [article_id, article.fetch('test').fetch('suite')]
+  suite = test_suite(article.fetch('test').fetch('suite'), "#{article_id}: test suite")
+  [article_id, suite]
 end
 unless article_suites.values.uniq.length == article_suites.length
   raise ArticleContractError, 'each article must own a distinct test suite'
@@ -282,7 +312,16 @@ sample_count = 0
 articles.each do |article_id, article|
   test = article.fetch('test')
   suite = test.fetch('suite')
-  test_source = path_within(root, test.fetch('source'))
+  test_source_relative = repository_relative_path(
+    test.fetch('source'),
+    "#{article_id}: test source"
+  )
+  expected_test_source = "tests/suite/#{suite}.nix"
+  unless test_source_relative == expected_test_source
+    raise ArticleContractError,
+          "#{article_id}: test source must be #{expected_test_source}, got #{test_source_relative}"
+  end
+  test_source = path_within(root, test_source_relative)
   raise ArticleContractError, "#{article_id}: test source is missing" unless File.file?(test_source)
 
   suite_meta = tests_meta.fetch(suite) do
@@ -314,7 +353,11 @@ articles.each do |article_id, article|
   pages.each do |language, page|
     id = page.fetch('id')
     page_ids << id
-    source_path = path_within(root, page.fetch('source'))
+    page_source = repository_relative_path(
+      page.fetch('source'),
+      "#{article_id}: #{language}: page source"
+    )
+    source_path = path_within(root, page_source)
     raise ArticleContractError, "#{article_id}: #{language}: page source is missing" unless File.file?(source_path)
 
     source = File.read(source_path, encoding: Encoding::UTF_8)
@@ -323,8 +366,7 @@ articles.each do |article_id, article|
       raise ArticleContractError, "#{article_id}: #{language}: counterpart mapping differs"
     end
 
-    source_url = "https://github.com/#{repository}/blob/master/#{page.fetch('source')}"
-    test_url = "https://github.com/#{repository}/blob/master/#{test.fetch('source')}"
+    test_pattern = "#{suite}#*"
     marker_starts = source.scan(/<kb-managed\b/)
     unless marker_starts.length == 1
       raise ArticleContractError,
@@ -332,7 +374,7 @@ articles.each do |article_id, article|
     end
 
     expected_prefix = "<page>#{counterpart}</page>\n\n" \
-                      "#{managed_marker(source_url, test_url)}\n\n"
+                      "#{managed_marker(page_source, test_pattern)}\n\n"
     unless source.start_with?(expected_prefix)
       raise ArticleContractError,
             "#{article_id}: #{language}: managed-page marker is misplaced or differs from the registry"

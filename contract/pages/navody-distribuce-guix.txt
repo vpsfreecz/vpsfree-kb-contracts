@@ -1,8 +1,8 @@
 <page>manuals:distributions:guix</page>
 
 <kb-managed
-  source="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/contract/pages/navody-distribuce-guix.txt"
-  test="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/tests/suite/kb/guix.nix"
+  source="contract/pages/navody-distribuce-guix.txt"
+  test="kb/guix#*"
 />
 
 ====== GNU Guix System ======

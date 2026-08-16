@@ -214,12 +214,39 @@ List or run the maintained tests from the repository root:
 ```
 
 Managed pages place an invisible `<kb-managed>` marker immediately after their
-language mapping. It links the canonical source and test; the DokuWiki plugin
-uses those links for a **Source on GitHub** page tool and an editor warning.
-Do not edit these pages directly in DokuWiki. Candidate construction compares
-the fetched wiki page, an explicit Git base commit, and the working source. A
-wiki-only edit or concurrent Git/wiki edits stop the release until the change
-is explicitly adopted or merged into the repository and verified again.
+language mapping. The marker identifies the registered page source and all
+scripts in its test-runner suite without naming a Git branch:
+
+```text
+<kb-managed
+  source="contract/pages/navody-server-firewall.txt"
+  test="kb/firewall#*"
+/>
+```
+
+The DokuWiki plugin combines these values with its configured repository and
+revision. Production uses `master`; staging uses the exact contract commit from
+the pending release. Do not edit these pages directly in DokuWiki. Candidate
+construction compares the fetched wiki page, an explicit Git base commit, and
+the committed source. A wiki-only edit or concurrent Git/wiki edits stop the
+release until the change is adopted or merged into the repository and verified
+again.
+
+Candidate provenance records every registered test suite once under
+`managed_contract.tests`:
+
+```json
+{
+  "article": "firewall",
+  "pattern": "kb/firewall#*",
+  "source": "tests/suite/kb/firewall.nix",
+  "sha256": "<SHA-256 of the source at managed_contract.head_commit>"
+}
+```
+
+The release manifest copies entries for the articles represented by changed
+managed pages to `contract.tests`. This gives staging and production the exact
+test source and checksum to verify at the recorded commit.
 
 The flake exports `tests`, `testsMeta`, `lib.testFramework`, and a named
 `test-runner` app using the pinned vpsAdminOS external-test interface. The

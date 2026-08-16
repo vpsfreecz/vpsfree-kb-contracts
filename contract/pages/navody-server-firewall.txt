@@ -1,8 +1,8 @@
 <page>manuals:server:firewall</page>
 
 <kb-managed
-  source="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/contract/pages/navody-server-firewall.txt"
-  test="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/tests/suite/kb/firewall.nix"
+  source="contract/pages/navody-server-firewall.txt"
+  test="kb/firewall#*"
 />
 
 ====== Firewall ======

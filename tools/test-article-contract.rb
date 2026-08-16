@@ -246,13 +246,100 @@ class ArticleContractCheckerTest < Minitest::Test
     assert_match(/article owns suite kb\/kvm/, error)
   end
 
-  def test_repository_link_drift_is_rejected
+  def test_invalid_repository_is_rejected
     _output, error, status = check_mutated_contract do |contract|
-      contract['repository'] = 'vpsfreecz/different-repository'
+      contract['repository'] = 'https://github.com/vpsfreecz/vpsfree-kb-contracts'
+    end
+
+    refute(status.success?)
+    assert_match(/article repository must be vpsfreecz\/vpsfree-kb-contracts/, error)
+  end
+
+  def test_other_valid_repository_is_rejected
+    _output, error, status = check_mutated_contract do |contract|
+      contract['repository'] = 'vpsfreecz/other-contracts'
+    end
+
+    refute(status.success?)
+    assert_match(/article repository must be vpsfreecz\/vpsfree-kb-contracts/, error)
+  end
+
+  def test_full_source_url_is_rejected
+    _output, error, status = check_czech_source do |_marker, relative_path, test_pattern|
+      marker = managed_marker(
+        "https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/#{relative_path}",
+        test_pattern
+      )
+      "<page>manuals:vps:kvm</page>\n\n#{marker}\n"
     end
 
     refute(status.success?)
     assert_match(/managed-page marker is misplaced or differs/, error)
+  end
+
+  def test_test_source_path_is_rejected_as_marker_pattern
+    _output, error, status = check_czech_source do |_marker, relative_path, _test_pattern|
+      marker = managed_marker(relative_path, 'tests/suite/kb/kvm.nix')
+      "<page>manuals:vps:kvm</page>\n\n#{marker}\n"
+    end
+
+    refute(status.success?)
+    assert_match(/managed-page marker is misplaced or differs/, error)
+  end
+
+  def test_test_pattern_must_select_every_script
+    _output, error, status = check_czech_source do |_marker, relative_path, _test_pattern|
+      marker = managed_marker(relative_path, 'kb/kvm#storage')
+      "<page>manuals:vps:kvm</page>\n\n#{marker}\n"
+    end
+
+    refute(status.success?)
+    assert_match(/managed-page marker is misplaced or differs/, error)
+  end
+
+  def test_unsafe_page_source_path_is_rejected
+    _output, error, status = check_mutated_contract do |contract|
+      contract.dig('articles', 'kvm', 'pages', 'cs')['source'] = '../page.txt'
+    end
+
+    refute(status.success?)
+    assert_match(/page source must be a safe repository-relative path/, error)
+  end
+
+  def test_unsafe_test_source_path_is_rejected
+    _output, error, status = check_mutated_contract do |contract|
+      contract.dig('articles', 'kvm', 'test')['source'] = '/tmp/kvm.nix'
+    end
+
+    refute(status.success?)
+    assert_match(/test source must be a repository-relative path/, error)
+  end
+
+  def test_test_source_must_be_derived_from_the_suite
+    _output, error, status = check_mutated_contract do |contract|
+      contract.dig('articles', 'kvm', 'test')['source'] = 'tests/suite/kb/gre.nix'
+    end
+
+    refute(status.success?)
+    assert_match(/kvm: test source must be tests\/suite\/kb\/kvm\.nix/, error)
+  end
+
+  def test_invalid_test_suite_is_rejected
+    _output, error, status = check_mutated_contract do |contract|
+      contract.dig('articles', 'kvm', 'test')['suite'] = 'kb/kvm#storage'
+    end
+
+    refute(status.success?)
+    assert_match(/test suite must be a test-runner suite name/, error)
+  end
+
+  def test_empty_test_suite_is_rejected
+    _output, error, status = check_mutated_contract do |contract|
+      contract.dig('articles', 'kvm', 'test')['suite'] = ''
+    end
+
+    refute(status.success?)
+    assert_match(/test suite must be a test-runner suite name/, error)
   end
 
   def test_missing_managed_page_marker_is_rejected
@@ -293,21 +380,24 @@ class ArticleContractCheckerTest < Minitest::Test
 
   private
 
+  def managed_marker(source, test)
+    <<~MARKER.chomp
+      <kb-managed
+        source="#{source}"
+        test="#{test}"
+      />
+    MARKER
+  end
+
   def check_czech_source
     Dir.mktmpdir('.article-contract-', ROOT) do |dir|
       contract = YAML.safe_load_file(CONTRACT)
       source_path = File.join(dir, 'page.txt')
       relative_path = source_path.delete_prefix("#{ROOT}/")
       contract.dig('articles', 'kvm', 'pages', 'cs')['source'] = relative_path
-      repository = contract.fetch('repository')
-      test_source = contract.dig('articles', 'kvm', 'test', 'source')
-      marker = <<~MARKER.chomp
-        <kb-managed
-          source="https://github.com/#{repository}/blob/master/#{relative_path}"
-          test="https://github.com/#{repository}/blob/master/#{test_source}"
-        />
-      MARKER
-      File.write(source_path, yield(marker))
+      suite = contract.dig('articles', 'kvm', 'test', 'suite')
+      marker = managed_marker(relative_path, "#{suite}#*")
+      File.write(source_path, yield(marker, relative_path, "#{suite}#*"))
       run_checker(contract, self.class.tests_meta)
     end
   end

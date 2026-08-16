@@ -167,11 +167,39 @@ bin/kb-contract-build \
 Use the full 40-character commit OID so the reconciliation base cannot move
 after a fetch. The candidate index and generated release manifest record that
 base, the contract HEAD, the registry digest, and the canonical page digests.
-The builder compares the base source, committed source, and fetched wiki page.
-A wiki-only or concurrent edit stops candidate construction. Inspect it with
-`bin/kb-contract-reconcile`; import a wiki-only edit only with an explicit
-`--adopt --yes`, then commit it, update its contract evidence, and rerun the
-tests.
+The HEAD must be committed. Push it before staging so source links can use that
+exact revision. The builder compares the base source, committed source, and
+fetched wiki page. A wiki-only or concurrent edit stops candidate construction.
+Inspect it with `bin/kb-contract-reconcile`; import a wiki-only edit only with
+an explicit `--adopt --yes`, then commit it, update its contract evidence, and
+rerun the tests.
+
+Each managed page marker contains repository-relative identifiers rather than
+a branch URL. Both values must match `contract/articles.yml` exactly:
+
+```text
+<kb-managed
+  source="contract/pages/navody-server-firewall.txt"
+  test="kb/firewall#*"
+/>
+```
+
+The `#*` selector covers every script reported for the suite by `testsMeta`.
+The candidate index records one test entry per registered article under
+`managed_contract.tests`:
+
+```json
+{
+  "article": "firewall",
+  "pattern": "kb/firewall#*",
+  "source": "tests/suite/kb/firewall.nix",
+  "sha256": "<SHA-256 of the source at managed_contract.head_commit>"
+}
+```
+
+The release generator copies the entries needed by changed managed pages to
+`contract.tests`. It keeps the existing `contract.pages` provenance alongside
+them.
 
 ## 6. Build and stage guarded releases
 
@@ -231,6 +259,11 @@ bin/kb-release verify --manifest work/SLUG/kb-release-en.yml
 
 Review both sites through their staging hostnames. Verify normal page IDs,
 screenshots, rendered navigation markers, and bidirectional language links.
+Staging resolves managed source and test links at the manifest's immutable
+contract commit. `kb-release stage` updates the mounted staging revision file;
+later feature-branch commits require restaging, not a host redeployment or a
+container restart. `kb-release verify` checks the active revision and resolved
+managed links.
 The verify command also prints every page action, its exact summary, and a
 clickable staging revision-history URL. Open those links and review the
 summaries before approving publication. If candidate content is already staged
@@ -256,6 +289,10 @@ pages. Never treat a green check, staging review, merge approval, or a general
 After direct approval, stage, verify, and immediately promote each exact
 manifest separately. Restaging here recreates its pending digest; it must not
 change the already reviewed candidate files.
+
+Promotion verifies that remote `master` contains the recorded managed page and
+test files with their exact checksums. This check must pass before any
+production page write.
 
 ```sh
 bin/kb-release stage --manifest work/SLUG/kb-release-cs.yml --yes

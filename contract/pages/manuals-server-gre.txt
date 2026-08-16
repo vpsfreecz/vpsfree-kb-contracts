@@ -1,8 +1,8 @@
 <page>navody:server:gre</page>
 
 <kb-managed
-  source="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/contract/pages/manuals-server-gre.txt"
-  test="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/tests/suite/kb/gre.nix"
+  source="contract/pages/manuals-server-gre.txt"
+  test="kb/gre#*"
 />
 
 ====== GRE tunnel ======

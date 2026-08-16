@@ -1,8 +1,8 @@
 <page>manuals:vps:kvm</page>
 
 <kb-managed
-  source="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/contract/pages/navody-vps-kvm.txt"
-  test="https://github.com/vpsfreecz/vpsfree-kb-contracts/blob/master/tests/suite/kb/kvm.nix"
+  source="contract/pages/navody-vps-kvm.txt"
+  test="kb/kvm#*"
 />
 
 ====== KVM a libvirt uvnitř VPS ======
