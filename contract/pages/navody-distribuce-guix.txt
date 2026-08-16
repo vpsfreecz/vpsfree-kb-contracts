@@ -97,10 +97,8 @@ Následující úplná konfigurace je výchozí bod pro jednu VPS. Ty spravuješ
 Na řídicím systému potřebuješ SSH klíč
 ''/root/.ssh/id_ed25519'' a jeho veřejnou část musíš před prvním nasazením
 přidat uživateli ''root'' na cílové VPS. Přihlášení klíčem nejdřív vyzkoušej.
-Úplný veřejný klíč SSH serveru bezpečně zjistíš příkazem
-''cat /etc/ssh/ssh_host_ed25519_key.pub'' ve
-[[navody:vps:konzole|vzdálené konzoli]]; jeho otisk porovnej s údajem ve
-vpsAdminu podle [[navody:server:ssh|návodu pro SSH]]. Do konfigurace patří celý
+Na cílové VPS spusť ''cat /etc/ssh/ssh_host_ed25519_key.pub'' a otisk získaného
+klíče ověř podle [[navody:server:ssh|návodu pro SSH]]. Do konfigurace patří celý
 řádek začínající ''ssh-ed25519'', ne jen otisk.
 
 Ulož tuto konfiguraci jako ''/etc/config/deploy.scm'' na řídicím systému a

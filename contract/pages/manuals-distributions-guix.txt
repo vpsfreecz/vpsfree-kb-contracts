@@ -97,11 +97,10 @@ only ''deploy.scm''; the container details continue to come from the maintained
 
 The coordinator needs the SSH key ''/root/.ssh/id_ed25519'', and you must add
 its public part to ''root'' on the target VPS before the first deployment. Test
-key-only login first. Safely obtain the SSH server's complete public key by
-running ''cat /etc/ssh/ssh_host_ed25519_key.pub'' in the
-[[manuals:vps:console|remote console]], then compare its fingerprint with
-vpsAdmin as described in the [[manuals:server:ssh|SSH guide]]. The configuration
-needs the whole line beginning with ''ssh-ed25519'', not just the fingerprint.
+key-only login first. Run ''cat /etc/ssh/ssh_host_ed25519_key.pub'' on the target
+VPS and verify the resulting key fingerprint by following the
+[[manuals:server:ssh|SSH guide]]. The configuration needs the whole line
+beginning with ''ssh-ed25519'', not just the fingerprint.
 
 Save this configuration as ''/etc/config/deploy.scm'' on the coordinator and
 replace the target VPS address and host key:

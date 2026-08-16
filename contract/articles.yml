@@ -497,10 +497,10 @@ articles:
         localizations:
           cs:
             heading: Nasazení pomocí guix deploy
-            fingerprint: 4f50352f780be6a70a2115577b77af256d3190ee9263bfe0e287a60677a22379
+            fingerprint: 348890db1a23cb0da6d5d37ea0416408a936a83890a93f25fa3a7577f6156bfa
           en:
             heading: Deploying with guix deploy
-            fingerprint: 94b920569629176a8591a72f5ea9a691377521df980316bdcc43a3eb799ab2a5
+            fingerprint: d4d34205051ae7280b54f02a72a3b4ffba387a56d3d16bf23aeb7815ef0ca56c
       recovery:
         claims:
         - reconfiguration-keeps-older-generations
