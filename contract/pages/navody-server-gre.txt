@@ -58,9 +58,13 @@ ip link set dev gre1 mtu 1476 up
 Spojení ověř z obou stran:
 
 <code bash>
+#!/usr/bin/env bash
 # Na VPS A
 ping -c 3 10.0.0.2
+</code>
 
+<code bash>
+#!/usr/bin/env bash
 # Na VPS B
 ping -c 3 10.0.0.1
 </code>

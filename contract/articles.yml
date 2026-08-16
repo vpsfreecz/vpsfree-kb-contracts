@@ -548,6 +548,30 @@ articles:
         sha256: 7a0365aa5e7dd7050eedf39403d98c0e1c13ccf5c5dc011d6dff5f642bf9f475
         tests:
         - tunnel
+      ping-a:
+        path: tests/fixtures/gre/ping-a.sh
+        sha256: 9eb7f1e26c2c68acefea12878d647d62b8038da3872d8176127c4e49a0d0f343
+        display_variants:
+          cs:
+            comments:
+              2: '# Na VPS A'
+          en:
+            comments:
+              2: '# On VPS A'
+        tests:
+        - tunnel
+      ping-b:
+        path: tests/fixtures/gre/ping-b.sh
+        sha256: 6bbdf28bfced6dd0e866ecf1180c08b18fd9b6331fb77fffa92411fa08c2f117
+        display_variants:
+          cs:
+            comments:
+              2: '# Na VPS B'
+          en:
+            comments:
+              2: '# On VPS B'
+        tests:
+        - tunnel
     sections:
       prerequisites:
         claims:
@@ -575,13 +599,15 @@ articles:
         samples:
         - transient-a
         - transient-b
+        - ping-a
+        - ping-b
         localizations:
           cs:
             heading: Okamžité nastavení
-            fingerprint: f7dd013b61761c7b2549e48b79afd0797e8a4ba709693152f076bff96f629080
+            fingerprint: 4dec5f4b3d94bae363702965668549b501472f4a382522a12f3f31e1619f1052
           en:
             heading: Immediate configuration
-            fingerprint: 3169e54d4aae2057811a1fdd02557f5daa446d1c92eab172e3afba0c8aa0b323
+            fingerprint: 2a340fc9c6f01c9a70472956f650a274c4bde7af7240414e66fe50822f43582b
       debian-ifupdown:
         claims:
         - debian-template-uses-ifupdown

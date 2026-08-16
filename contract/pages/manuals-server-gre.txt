@@ -58,9 +58,13 @@ ip link set dev gre1 mtu 1476 up
 Test the connection in both directions:
 
 <code bash>
+#!/usr/bin/env bash
 # On VPS A
 ping -c 3 10.0.0.2
+</code>
 
+<code bash>
+#!/usr/bin/env bash
 # On VPS B
 ping -c 3 10.0.0.1
 </code>

@@ -10,6 +10,8 @@ import ../../make-test.nix (
     transientB = builtins.readFile ../../fixtures/gre/configure-transient-b.sh;
     interfacesA = builtins.readFile ../../fixtures/gre/interfaces-a;
     interfacesB = builtins.readFile ../../fixtures/gre/interfaces-b;
+    pingA = builtins.readFile ../../fixtures/gre/ping-a.sh;
+    pingB = builtins.readFile ../../fixtures/gre/ping-b.sh;
     rubySingleQuoted = value: "'${lib.replaceStrings [ "\\" "'" ] [ "\\\\" "\\'" ] value}'";
   in
   {
@@ -64,6 +66,14 @@ import ../../make-test.nix (
           ${rubySingleQuoted interfacesB}
         end
 
+        def ping_a_script
+          ${rubySingleQuoted pingA}
+        end
+
+        def ping_b_script
+          ${rubySingleQuoted pingB}
+        end
+
         def runtime_sample(article_sample)
           substituted = ADDRESS_SUBSTITUTIONS.reduce(article_sample) do |sample, pair|
             sample.gsub(*pair)
@@ -113,8 +123,8 @@ import ../../make-test.nix (
         end
 
         def expect_bidirectional_ping
-          in_container('kb-gre-a', 'ping -c 3 -W 2 203.0.113.2')
-          in_container('kb-gre-b', 'ping -c 3 -W 2 203.0.113.1')
+          run_script('kb-gre-a', runtime_sample(ping_a_script))
+          run_script('kb-gre-b', runtime_sample(ping_b_script))
         end
 
         def expect_tunnel(container, local:, remote:, address:, peer: nil)
@@ -158,6 +168,14 @@ import ../../make-test.nix (
             [
               interfaces_b_config,
               ${builtins.toJSON (builtins.hashString "sha256" interfacesB)}
+            ],
+            [
+              ping_a_script,
+              ${builtins.toJSON (builtins.hashString "sha256" pingA)}
+            ],
+            [
+              ping_b_script,
+              ${builtins.toJSON (builtins.hashString "sha256" pingB)}
             ]
           ].each do |sample, expected|
             expect(Digest::SHA256.hexdigest(sample)).to eq(expected)
@@ -170,7 +188,9 @@ import ../../make-test.nix (
             transient_a_script,
             transient_b_script,
             interfaces_a_config,
-            interfaces_b_config
+            interfaces_b_config,
+            ping_a_script,
+            ping_b_script
           ].each do |sample|
             expect(runtime_sample(sample)).not_to eq(sample)
           end
