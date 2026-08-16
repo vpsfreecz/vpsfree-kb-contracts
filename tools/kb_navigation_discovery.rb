@@ -21,7 +21,8 @@ module KbNavigationDiscovery
   def discover(language:, page:, content:)
     paragraphs(content).each_with_index.filter_map do |paragraph, paragraph_index|
       normalized = normalize(paragraph)
-      next if normalized.empty? || !normalized.match?(SIGNAL)
+      annotated = semantic_content(paragraph).include?('<vpsadmin-nav')
+      next if normalized.empty? || (!annotated && !normalized.match?(SIGNAL))
 
       identity = [language, page, paragraph_index, normalized].join("\0")
       entry = {

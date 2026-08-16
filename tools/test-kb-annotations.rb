@@ -74,6 +74,17 @@ class KbAnnotationsCheckerTest < Minitest::Test
     assert_equal('manuals:vps:kvm', discoveries.first.fetch('page'))
   end
 
+  def test_annotated_paragraph_is_discovered_without_lexical_signal
+    discoveries = KbNavigationDiscovery.discover(
+      language: 'cs',
+      page: 'informace:novacci',
+      content: '<vpsadmin-nav id="session.login.open">Přihlas se svými údaji.</vpsadmin-nav>'
+    )
+
+    assert_equal(1, discoveries.length)
+    assert_equal(['session.login.open'], discoveries.first.fetch('paths'))
+  end
+
   def test_duplicate_page_cannot_replace_an_omitted_identity
     _out, error, status = run_checker(duplicate_candidate: true)
 
