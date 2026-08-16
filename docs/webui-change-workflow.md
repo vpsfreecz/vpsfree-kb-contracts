@@ -175,20 +175,45 @@ tests.
 
 ## 6. Build and stage guarded releases
 
-Create one manifest per language with an informative, localized production
-summary:
+List every page write and deletion in one bilingual changes file. Each entry
+needs its own informative summary. Czech summaries are descriptive noun
+phrases; English summaries describe the resulting change in one line.
+
+```yaml
+schema: 1
+changes:
+  - language: cs
+    id: navody:vps:sprava
+    action: write
+    summary: Aktualizace správy VPS a doplnění konzole
+  - language: en
+    id: manuals:vps:management
+    action: write
+    summary: Update VPS management and add console recovery
+  - language: cs
+    id: navody:server:zastarametoda
+    action: delete
+    summary: Odstranění zastaralého serverového návodu
+```
+
+The generator requires exactly one `write` entry for every changed candidate
+page. A `delete` entry must name an unchanged page from the fetched production
+inventory. The generated manifest records its source revision and checksum.
+This prevents a concurrent page edit from being deleted.
+
+Create one schema-4 manifest per language from the same changes file:
 
 ```sh
 bin/kb-contract-manifest \
   --source work/SLUG/kb-sources \
   --candidate work/SLUG/kb-candidates \
-  --language cs --summary 'Český jednořádkový souhrn změny' \
+  --language cs --changes work/SLUG/release-changes.yml \
   --output work/SLUG/kb-release-cs.yml
 
 bin/kb-contract-manifest \
   --source work/SLUG/kb-sources \
   --candidate work/SLUG/kb-candidates \
-  --language en --summary 'English one-line summary of the change' \
+  --language en --changes work/SLUG/release-changes.yml \
   --output work/SLUG/kb-release-en.yml
 ```
 
@@ -206,6 +231,17 @@ bin/kb-release verify --manifest work/SLUG/kb-release-en.yml
 
 Review both sites through their staging hostnames. Verify normal page IDs,
 screenshots, rendered navigation markers, and bidirectional language links.
+The verify command also prints every page action, its exact summary, and a
+clickable staging revision-history URL. Open those links and review the
+summaries before approving publication. If candidate content is already staged
+with another summary, reset staging and stage the manifest again; DokuWiki
+cannot replace a revision summary with an unchanged page save.
+
+Page deletions follow the same staging and promotion path as writes. The release
+tool checks the recorded source, delete permission, resulting absence, and
+latest revision summary. Do not remove release pages with separate `kb-page`
+commands.
+
 Only one manifest can be the pending promotion at a time; staging the second
 language intentionally replaces the first pending record. Both page sets remain
 available for review.
@@ -249,5 +285,6 @@ pending, `bin/kb-stage release --yes` refuses to discard it; use
 - All reported pages and captures were reviewed.
 - Affected screenshots were regenerated in both languages where needed.
 - Complete production page identities and candidates validate.
-- Czech and English staging releases render and interlink correctly.
+- Czech and English staging releases render and interlink correctly; every page
+  summary and revision-history link has been reviewed.
 - Production remains untouched until the user approves exact promotion.
