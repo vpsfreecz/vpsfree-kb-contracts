@@ -120,7 +120,7 @@ articles:
         localizations:
           cs:
             heading: Jak pravidla fungují
-            fingerprint: dcef86947c0a6c54886749eb00670239d5aa65fd87fd097d50f61e60d81c87c4
+            fingerprint: 330f4e4935ce8ca275f273ff2d33629e69cc50d80e571da8b843cc5a25e6ad3f
           en:
             heading: How rules work
             fingerprint: 50280702be06a396463068724113e76542f613c5aaab79733668cca6fa1d38a7
@@ -139,10 +139,10 @@ articles:
         localizations:
           cs:
             heading: Jednoduchý firewall pomocí iptables
-            fingerprint: 2a3e3d5e8be4c68ed14428fae53df2526e86fcae7d39080ea1afa47862c8cef2
+            fingerprint: 7e30b450a806e212228361271c4634941289c96191709ec3c5b33e34fb9800bc
           en:
             heading: A simple firewall with iptables
-            fingerprint: 2ca5735169dd49d121dc4c3b5817c484364b9c11d8284a62b558c57e7693734d
+            fingerprint: baca42e9f8963960985649fa5503fd74d7ed2287743e9c1453280beac4996ff5
       nftables:
         claims:
         - inet-table-filters-ipv4-and-ipv6
@@ -247,10 +247,10 @@ articles:
         localizations:
           cs:
             heading: Když se odřízneš
-            fingerprint: 16ab7f5b1533f35afeeef9b36b8d43b8737189451d29f7fecb74b626e495a412
+            fingerprint: 9fb4584b4d100b694cd9faf28fe939b15d1327870a6d34a4a5e6c5777135b753
           en:
             heading: If you lock yourself out
-            fingerprint: e03e9fbfe8e9367c177a51a0ca2d24956bb8814344c867e227c8178340a4940c
+            fingerprint: ce80c78e50625fa9979bc1af83774afb6fd5a1f90c4a171748a1a9c181c6dafc
   kvm:
     test:
       suite: kb/kvm
@@ -334,10 +334,10 @@ articles:
         localizations:
           cs:
             heading: Diskové obrazy a ZFS
-            fingerprint: 0caff2a7ae450298ef408dd9e97699d8a2332f6f1406410eda09b18864275e84
+            fingerprint: 6b9bd250e91f1b2ae56e8c920a5e846f11d9ff411237989c6b435db4ec96294f
           en:
             heading: Disk images and ZFS
-            fingerprint: bf9d190c5634c499cdc0066fb808163dfba312c6402bbad42abdea807fcf47ca
+            fingerprint: 06c8ba46b88c445361c3b4e05899f1a7f58b42e1c12bdbeae27ff125acc594aa
       networking:
         claims:
         - outer-veth-is-routed-and-must-not-be-bridged

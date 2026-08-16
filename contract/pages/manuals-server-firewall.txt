@@ -59,11 +59,11 @@ current Debian systems, the ''iptables'' commands normally use the nftables
 backend; ''iptables -V'' reports ''nf_tables''. The ''iptables'' command
 handles IPv4 and the separate ''ip6tables'' command handles IPv6.
 
-The following script for a clean VPS permits loopback, ICMP, established
-connections, and new TCP connections on ports 22, 80, and 443. INPUT and
-FORWARD end with a ''DROP'' policy, while OUTPUT remains ''ACCEPT''. It first
-sets accepting policies, builds the rules, and enables the blocking policies
-only at the end:
+This script for a clean VPS permits loopback, ICMP, established connections,
+and new TCP connections on ports 22, 80, and 443. INPUT and FORWARD end with a
+''DROP'' policy, while OUTPUT remains ''ACCEPT''. The script first sets
+accepting policies, builds the rules, and enables the blocking policies only at
+the end:
 
 <code bash>
 #!/usr/bin/env bash
@@ -328,12 +328,11 @@ original session**. Use it to inspect ''ss -lntp'' and the manager you chose:
 ''iptables -L -n'', ''nft list ruleset'', ''ufw status verbose'', or
 ''firewall-cmd --get-active-zones''.
 
-If no SSH session remains, nothing is lost. The guides to the
-[[manuals:vps:console|remote console in vpsAdmin]] and the
-[[manuals:vps:start_menu|start menu]] describe a recovery path that does not
-depend on working networking or an allowed SSH port. During a restart, **Run
-shell** provides a shell directly in the VPS file system from which you can
-repair the rules.
+If no SSH session remains, the [[manuals:vps:console|remote console guide]]
+walks you through recovery. The [[manuals:vps:start_menu|start menu]] gives you
+a recovery path that does not depend on working networking or an allowed SSH
+port. During a restart, **Run shell** provides a shell directly in the VPS file
+system from which you can repair the rules.
 
 In a normally running system, temporarily disable UFW with ''ufw disable'',
 firewalld with ''systemctl stop firewalld'', or nftables with ''systemctl stop

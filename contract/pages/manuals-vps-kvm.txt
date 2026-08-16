@@ -47,9 +47,9 @@ with a key. Do not expose an unencrypted libvirt TCP socket to the Internet.
 
 ===== Disk images and ZFS =====
 
-A separate [[manuals:vps:datasets|subdataset]] is recommended for disk images.
-It lets you change ZFS properties for this workload later without affecting the
-VPS root dataset. Prepare the recommended storage as follows:
+Use a separate [[manuals:vps:datasets|subdataset]] for disk images. This lets
+you change ZFS properties for the workload later without affecting the VPS root
+dataset. Prepare the storage as follows:
 
   * <vpsadmin-nav id="datasets.edit.open">In the VPS details, use **Edit** on the root dataset and reduce its reference quota by the capacity intended for images.</vpsadmin-nav>
   * <vpsadmin-nav id="datasets.create.open">Use **Create dataset** to create a ''vm-images'' subdataset with the freed capacity.</vpsadmin-nav>

@@ -12,7 +12,7 @@ VPS. vpsFree před VPS žádný společný firewall nezapíná. Výchozí stav p
 záleží na distribuci: například NixOS má firewall standardně zapnutý, zatímco
 čistý Debian nebo Ubuntu obvykle žádná vlastní omezující pravidla nemají.
 
-Vlastní firewall **není povinnost**. Může být rozumné provozovat jen potřebné
+Vlastní firewall **není povinný**. Může být rozumné provozovat jen potřebné
 a pravidelně aktualizované služby a ostatní vůbec nespouštět. Firewall přidává
 další ochrannou vrstvu, ale nenahrazuje bezpečnou konfiguraci, aktualizace ani
 přihlašování pomocí SSH klíčů.
@@ -43,7 +43,7 @@ povolení služby jen pro IPv4 ji neschová na veřejné IPv6 adrese.
 Vyber si **jeden** způsob správy firewallu. Nekombinuj ruční pravidla
 ''iptables'' nebo ''nftables'' s UFW či firewalld, pokud přesně nevíš, jak se
 budou ovlivňovat. Jednoduchá pravidla níže počítají s VPS bez Dockeru, VPN,
-směrování a jiné služby, která si vytváří vlastní firewallová pravidla.
+směrování a jiných služeb, které si vytvářejí vlastní firewallová pravidla.
 
 <note important>
 Než zapneš blokující politiku, povol TCP port 22, nech otevřené současné SSH
@@ -58,10 +58,10 @@ současném Debianu příkazy ''iptables'' běžně používají backend nftable
 to pomocí ''iptables -V'', kde je uvedeno ''nf_tables''. IPv4 obsluhuje
 ''iptables'' a IPv6 samostatný příkaz ''ip6tables''.
 
-Následující skript pro čistou VPS povolí loopback, ICMP, navázaná spojení a
-nová TCP spojení na porty 22, 80 a 443. INPUT a FORWARD mají nakonec politiku
-''DROP'', OUTPUT zůstává ''ACCEPT''. Skript nejprve nastaví přijímající
-politiky, pak vytvoří pravidla a blokující politiky zapne až nakonec:
+Tento skript pro čistou VPS povolí loopback, ICMP, navázaná spojení a nová TCP
+spojení na porty 22, 80 a 443. INPUT a FORWARD mají nakonec politiku ''DROP'',
+OUTPUT zůstává ''ACCEPT''. Skript nejprve nastaví přijímající politiky, pak
+vytvoří pravidla a blokující politiky zapne až nakonec:
 
 <code bash>
 #!/usr/bin/env bash
@@ -318,11 +318,11 @@ relaci**. Z ní zkontroluj ''ss -lntp'' a stav správce, který sis vybral:
 ''iptables -L -n'', ''nft list ruleset'', ''ufw status verbose'' nebo
 ''firewall-cmd --get-active-zones''.
 
-Když už žádné SSH spojení nemáš, nic není ztraceno. Návody ke
-[[navody:vps:konzole|vzdálené konzoli ve vpsAdminu]] a
-[[navody:vps:start_menu|start menu]] popisují záchranný postup nezávislý na
-funkční síti a povoleném portu SSH. Položka **Run shell** při restartu zpřístupní
-shell přímo v souborovém systému VPS, odkud můžeš pravidla opravit.
+Když už žádné SSH spojení nemáš, návod ke [[navody:vps:konzole|vzdálené konzoli
+ve vpsAdminu]] tě provede obnovením přístupu. [[navody:vps:start_menu|Start
+menu]] nabízí záchranný postup nezávislý na funkční síti a povoleném portu SSH.
+Položka **Run shell** při restartu zpřístupní shell přímo v souborovém systému
+VPS, odkud můžeš pravidla opravit.
 
 V normálně spuštěném systému UFW dočasně vypne ''ufw disable'', firewalld
 ''systemctl stop firewalld'' a nftables ''systemctl stop nftables''. U ručních

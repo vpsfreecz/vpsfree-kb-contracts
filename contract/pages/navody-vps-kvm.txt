@@ -47,9 +47,9 @@ klíčem. Nezveřejňuj nešifrovaný libvirt TCP socket do internetu.
 
 ===== Diskové obrazy a ZFS =====
 
-Pro obrazy disků doporučujeme samostatný [[navody:vps:datasety|subdataset]].
-V budoucnu tak můžeš změnit jeho ZFS vlastnosti bez zásahu do kořenového
-datasetu VPS. Doporučené úložiště připrav takto:
+Pro obrazy disků použij samostatný [[navody:vps:datasety|subdataset]]. Jeho ZFS
+vlastnosti pak můžeš změnit bez zásahu do kořenového datasetu VPS. Úložiště
+připrav takto:
 
   * <vpsadmin-nav id="datasets.edit.open">V detailu VPS u kořenového datasetu použij akci **Upravit** a zmenši jeho referenční kvótu o prostor určený pro obrazy.</vpsadmin-nav>
   * <vpsadmin-nav id="datasets.create.open">Pomocí **Vytvořit dataset** vytvoř subdataset ''vm-images'' s uvolněnou kapacitou.</vpsadmin-nav>
