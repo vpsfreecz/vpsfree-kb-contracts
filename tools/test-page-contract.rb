@@ -7,15 +7,15 @@ require 'open3'
 require 'tmpdir'
 require 'yaml'
 
-class ArticleContractCheckerTest < Minitest::Test
+class PageContractCheckerTest < Minitest::Test
   ROOT = File.expand_path('..', __dir__)
-  CHECKER = File.join(ROOT, 'tools/check-article-contract.rb')
-  CONTRACT = File.join(ROOT, 'contract/articles.yml')
+  CHECKER = File.join(ROOT, 'tools/check-page-contract.rb')
+  CONTRACT = File.join(ROOT, 'contract/pages.yml')
 
   def self.tests_meta
     @tests_meta ||= begin
-      if ENV['ARTICLE_TESTS_META']
-        JSON.parse(File.read(ENV.fetch('ARTICLE_TESTS_META')))
+      if ENV['PAGE_TESTS_META']
+        JSON.parse(File.read(ENV.fetch('PAGE_TESTS_META')))
       else
         output, error, status = Open3.capture3(
           'nix', 'eval', '--json', '.#testsMeta.x86_64-linux',
@@ -34,18 +34,27 @@ class ArticleContractCheckerTest < Minitest::Test
     assert(status.success?, error)
   end
 
-  def test_article_id_is_not_hard_coded
+  def test_page_key_is_not_hard_coded
     contract = YAML.safe_load_file(CONTRACT)
-    article = contract.fetch('articles').delete('kvm')
-    contract.fetch('articles')['virtualization'] = article
+    page_contract = contract.fetch('pages').delete('kvm')
+    contract.fetch('pages')['virtualization'] = page_contract
     metadata = Marshal.load(Marshal.dump(self.class.tests_meta))
     metadata.fetch('kb/kvm').fetch('testScripts').each_value do |script|
-      script.fetch('labels')['kbArticle'] = 'virtualization'
+      script.fetch('labels')['kbPage'] = 'virtualization'
     end
 
     _output, error, status = run_checker(contract, metadata)
 
     assert(status.success?, error)
+  end
+
+  def test_schema_one_registry_is_rejected
+    _output, error, status = check_mutated_contract do |contract|
+      contract['schema'] = 1
+    end
+
+    refute(status.success?)
+    assert_match(/page contract schema must be 2/, error)
   end
 
   def test_revision_drift_is_rejected
@@ -59,7 +68,7 @@ class ArticleContractCheckerTest < Minitest::Test
 
   def test_sample_drift_is_rejected
     _output, error, status = check_mutated_contract do |contract|
-      contract.dig('articles', 'kvm', 'samples', 'install-libvirt')['sha256'] = '0' * 64
+      contract.dig('pages', 'kvm', 'samples', 'install-libvirt')['sha256'] = '0' * 64
     end
 
     refute(status.success?)
@@ -68,7 +77,7 @@ class ArticleContractCheckerTest < Minitest::Test
 
   def test_invalid_sample_code_language_is_rejected
     _output, error, status = check_mutated_contract do |contract|
-      contract.dig('articles', 'guix', 'samples', 'deploy-system')['language'] = 'scheme bad'
+      contract.dig('pages', 'guix', 'samples', 'deploy-system')['language'] = 'scheme bad'
     end
 
     refute(status.success?)
@@ -77,7 +86,7 @@ class ArticleContractCheckerTest < Minitest::Test
 
   def test_display_variants_require_both_languages
     _output, error, status = check_mutated_contract do |contract|
-      sample = contract.dig('articles', 'guix', 'samples', 'reconfigure-system')
+      sample = contract.dig('pages', 'guix', 'samples', 'reconfigure-system')
       sample.fetch('display_variants').delete('en')
     end
 
@@ -87,7 +96,7 @@ class ArticleContractCheckerTest < Minitest::Test
 
   def test_human_readable_comments_require_display_variants
     _output, error, status = check_mutated_contract do |contract|
-      sample = contract.dig('articles', 'guix', 'samples', 'reconfigure-system')
+      sample = contract.dig('pages', 'guix', 'samples', 'reconfigure-system')
       sample.delete('display_variants')
     end
 
@@ -98,7 +107,7 @@ class ArticleContractCheckerTest < Minitest::Test
   def test_display_variant_must_bind_every_human_readable_comment
     _output, error, status = check_mutated_contract do |contract|
       comments = contract.dig(
-        'articles', 'guix', 'samples', 'reconfigure-system',
+        'pages', 'guix', 'samples', 'reconfigure-system',
         'display_variants', 'cs', 'comments'
       )
       comments.delete(4)
@@ -111,7 +120,7 @@ class ArticleContractCheckerTest < Minitest::Test
   def test_display_variant_cannot_override_a_shebang
     _output, error, status = check_mutated_contract do |contract|
       comments = contract.dig(
-        'articles', 'guix', 'samples', 'reconfigure-system',
+        'pages', 'guix', 'samples', 'reconfigure-system',
         'display_variants', 'cs', 'comments'
       )
       comments[1] = '#!/bin/sh'
@@ -124,7 +133,7 @@ class ArticleContractCheckerTest < Minitest::Test
   def test_display_variant_cannot_override_a_tool_directive
     _output, error, status = check_mutated_contract do |contract|
       comments = contract.dig(
-        'articles', 'guix', 'samples', 'reconfigure-system',
+        'pages', 'guix', 'samples', 'reconfigure-system',
         'display_variants', 'cs', 'comments'
       )
       comments[6] = '# shellcheck disable=SC1090'
@@ -137,7 +146,7 @@ class ArticleContractCheckerTest < Minitest::Test
   def test_display_variant_cannot_override_an_executable_line
     _output, error, status = check_mutated_contract do |contract|
       comments = contract.dig(
-        'articles', 'guix', 'samples', 'reconfigure-system',
+        'pages', 'guix', 'samples', 'reconfigure-system',
         'display_variants', 'cs', 'comments'
       )
       comments[5] = 'export GUIX_PROFILE=/tmp/profile'
@@ -150,7 +159,7 @@ class ArticleContractCheckerTest < Minitest::Test
   def test_display_variant_must_preserve_comment_line_structure
     _output, error, status = check_mutated_contract do |contract|
       comments = contract.dig(
-        'articles', 'guix', 'samples', 'reconfigure-system',
+        'pages', 'guix', 'samples', 'reconfigure-system',
         'display_variants', 'cs', 'comments'
       )
       comments[4] = '  # Použij revizi Guixu.'
@@ -163,7 +172,7 @@ class ArticleContractCheckerTest < Minitest::Test
   def test_human_readable_display_comments_must_be_localized
     _output, error, status = check_mutated_contract do |contract|
       variants = contract.dig(
-        'articles', 'guix', 'samples', 'reconfigure-system', 'display_variants'
+        'pages', 'guix', 'samples', 'reconfigure-system', 'display_variants'
       )
       variants.fetch('cs').fetch('comments')[4] = variants.fetch('en').fetch('comments').fetch(4)
     end
@@ -175,7 +184,7 @@ class ArticleContractCheckerTest < Minitest::Test
   def test_page_must_include_its_matching_language_display_variant
     _output, error, status = check_mutated_contract do |contract|
       variants = contract.dig(
-        'articles', 'guix', 'samples', 'reconfigure-system', 'display_variants'
+        'pages', 'guix', 'samples', 'reconfigure-system', 'display_variants'
       )
       variants['cs'], variants['en'] = variants.fetch('en'), variants.fetch('cs')
     end
@@ -187,7 +196,7 @@ class ArticleContractCheckerTest < Minitest::Test
   def test_section_drift_is_rejected
     _output, error, status = check_mutated_contract do |contract|
       contract.dig(
-        'articles', 'kvm', 'sections', 'libvirt', 'localizations', 'cs'
+        'pages', 'kvm', 'sections', 'libvirt', 'localizations', 'cs'
       )['fingerprint'] = '0' * 64
     end
 
@@ -197,44 +206,44 @@ class ArticleContractCheckerTest < Minitest::Test
 
   def test_unknown_test_binding_is_rejected
     _output, error, status = check_mutated_contract do |contract|
-      contract.dig('articles', 'kvm', 'sections', 'libvirt')['tests'] = ['missing']
+      contract.dig('pages', 'kvm', 'sections', 'libvirt')['tests'] = ['missing']
     end
 
     refute(status.success?)
     assert_match(/unknown tests missing/, error)
   end
 
-  def test_unknown_article_label_is_rejected
+  def test_unknown_page_label_is_rejected
     metadata = Marshal.load(Marshal.dump(self.class.tests_meta))
-    metadata.dig('kb/kvm', 'testScripts', 'storage', 'labels')['kbArticle'] = 'other'
+    metadata.dig('kb/kvm', 'testScripts', 'storage', 'labels')['kbPage'] = 'other'
 
     _output, error, status = run_checker(YAML.safe_load_file(CONTRACT), metadata)
 
     refute(status.success?)
-    assert_match(/storage has unknown kbArticle label "other"/, error)
+    assert_match(/storage has unknown kbPage label "other"/, error)
   end
 
-  def test_runtime_script_without_an_article_label_is_rejected
+  def test_runtime_script_without_a_page_label_is_rejected
     metadata = Marshal.load(Marshal.dump(self.class.tests_meta))
-    metadata.dig('kb/kvm', 'testScripts', 'storage', 'labels').delete('kbArticle')
+    metadata.dig('kb/kvm', 'testScripts', 'storage', 'labels').delete('kbPage')
 
     _output, error, status = run_checker(YAML.safe_load_file(CONTRACT), metadata)
 
     refute(status.success?)
-    assert_match(/storage lacks the kbArticle label/, error)
+    assert_match(/storage lacks the kbPage label/, error)
   end
 
-  def test_article_labeled_script_without_the_runtime_tag_is_rejected
+  def test_page_labeled_script_without_the_runtime_tag_is_rejected
     metadata = Marshal.load(Marshal.dump(self.class.tests_meta))
     metadata.dig('kb/kvm', 'testScripts', 'storage', 'tags').delete('kb-runtime')
 
     _output, error, status = run_checker(YAML.safe_load_file(CONTRACT), metadata)
 
     refute(status.success?)
-    assert_match(/storage has a kbArticle label but lacks the kb-runtime tag/, error)
+    assert_match(/storage has a kbPage label but lacks the kb-runtime tag/, error)
   end
 
-  def test_article_label_in_an_unregistered_suite_is_rejected
+  def test_page_label_in_an_unregistered_suite_is_rejected
     metadata = Marshal.load(Marshal.dump(self.class.tests_meta))
     script = Marshal.load(Marshal.dump(metadata.dig('kb/kvm', 'testScripts', 'storage')))
     metadata['kb/unregistered'] = { 'testScripts' => { 'external' => script } }
@@ -243,7 +252,7 @@ class ArticleContractCheckerTest < Minitest::Test
 
     refute(status.success?)
     assert_match(/kb\/unregistered#external is labeled for kvm/, error)
-    assert_match(/article owns suite kb\/kvm/, error)
+    assert_match(/page owns suite kb\/kvm/, error)
   end
 
   def test_invalid_repository_is_rejected
@@ -252,7 +261,7 @@ class ArticleContractCheckerTest < Minitest::Test
     end
 
     refute(status.success?)
-    assert_match(/article repository must be vpsfreecz\/vpsfree-kb-contracts/, error)
+    assert_match(/page repository must be vpsfreecz\/vpsfree-kb-contracts/, error)
   end
 
   def test_other_valid_repository_is_rejected
@@ -261,7 +270,7 @@ class ArticleContractCheckerTest < Minitest::Test
     end
 
     refute(status.success?)
-    assert_match(/article repository must be vpsfreecz\/vpsfree-kb-contracts/, error)
+    assert_match(/page repository must be vpsfreecz\/vpsfree-kb-contracts/, error)
   end
 
   def test_full_source_url_is_rejected
@@ -299,7 +308,7 @@ class ArticleContractCheckerTest < Minitest::Test
 
   def test_unsafe_page_source_path_is_rejected
     _output, error, status = check_mutated_contract do |contract|
-      contract.dig('articles', 'kvm', 'pages', 'cs')['source'] = '../page.txt'
+      contract.dig('pages', 'kvm', 'variants', 'cs')['source'] = '../page.txt'
     end
 
     refute(status.success?)
@@ -308,7 +317,7 @@ class ArticleContractCheckerTest < Minitest::Test
 
   def test_unsafe_test_source_path_is_rejected
     _output, error, status = check_mutated_contract do |contract|
-      contract.dig('articles', 'kvm', 'test')['source'] = '/tmp/kvm.nix'
+      contract.dig('pages', 'kvm', 'test')['source'] = '/tmp/kvm.nix'
     end
 
     refute(status.success?)
@@ -317,7 +326,7 @@ class ArticleContractCheckerTest < Minitest::Test
 
   def test_test_source_must_be_derived_from_the_suite
     _output, error, status = check_mutated_contract do |contract|
-      contract.dig('articles', 'kvm', 'test')['source'] = 'tests/suite/kb/gre.nix'
+      contract.dig('pages', 'kvm', 'test')['source'] = 'tests/suite/kb/gre.nix'
     end
 
     refute(status.success?)
@@ -326,7 +335,7 @@ class ArticleContractCheckerTest < Minitest::Test
 
   def test_invalid_test_suite_is_rejected
     _output, error, status = check_mutated_contract do |contract|
-      contract.dig('articles', 'kvm', 'test')['suite'] = 'kb/kvm#storage'
+      contract.dig('pages', 'kvm', 'test')['suite'] = 'kb/kvm#storage'
     end
 
     refute(status.success?)
@@ -335,7 +344,7 @@ class ArticleContractCheckerTest < Minitest::Test
 
   def test_empty_test_suite_is_rejected
     _output, error, status = check_mutated_contract do |contract|
-      contract.dig('articles', 'kvm', 'test')['suite'] = ''
+      contract.dig('pages', 'kvm', 'test')['suite'] = ''
     end
 
     refute(status.success?)
@@ -390,12 +399,20 @@ class ArticleContractCheckerTest < Minitest::Test
   end
 
   def check_czech_source
-    Dir.mktmpdir('.article-contract-', ROOT) do |dir|
+    check_variant_source('cs') { |*arguments| yield(*arguments) }
+  end
+
+  def check_english_source
+    check_variant_source('en') { |*arguments| yield(*arguments) }
+  end
+
+  def check_variant_source(language)
+    Dir.mktmpdir('.page-contract-', ROOT) do |dir|
       contract = YAML.safe_load_file(CONTRACT)
       source_path = File.join(dir, 'page.txt')
       relative_path = source_path.delete_prefix("#{ROOT}/")
-      contract.dig('articles', 'kvm', 'pages', 'cs')['source'] = relative_path
-      suite = contract.dig('articles', 'kvm', 'test', 'suite')
+      contract.dig('pages', 'kvm', 'variants', language)['source'] = relative_path
+      suite = contract.dig('pages', 'kvm', 'test', 'suite')
       marker = managed_marker(relative_path, "#{suite}#*")
       File.write(source_path, yield(marker, relative_path, "#{suite}#*"))
       run_checker(contract, self.class.tests_meta)
@@ -410,7 +427,7 @@ class ArticleContractCheckerTest < Minitest::Test
 
   def run_checker(contract, tests_meta)
     Dir.mktmpdir do |dir|
-      contract_path = File.join(dir, 'articles.yml')
+      contract_path = File.join(dir, 'pages.yml')
       metadata_path = File.join(dir, 'tests-meta.json')
       File.write(contract_path, YAML.dump(contract))
       File.write(metadata_path, JSON.generate(tests_meta))

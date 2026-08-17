@@ -151,8 +151,8 @@ The source index still has to contain exactly the same complete page-ID set;
 candidate construction and the release manifest separately guard the fetched
 production checksums and revisions.
 
-For pages registered in `contract/articles.yml`, use replacement-plan schema 4
-and name the article under `managed_articles`. Pass the contract repository and
+For pages registered in `contract/pages.yml`, use replacement-plan schema 5
+and name the page key under `managed_pages`. Pass the contract repository and
 the explicit pre-change Git base to the builder:
 
 ```sh
@@ -175,7 +175,7 @@ an explicit `--adopt --yes`, then commit it, update its contract evidence, and
 rerun the tests.
 
 Each managed page marker contains repository-relative identifiers rather than
-a branch URL. Both values must match `contract/articles.yml` exactly:
+a branch URL. Both values must match `contract/pages.yml` exactly:
 
 ```text
 <kb-managed
@@ -185,12 +185,12 @@ a branch URL. Both values must match `contract/articles.yml` exactly:
 ```
 
 The `#*` selector covers every script reported for the suite by `testsMeta`.
-The candidate index records one test entry per registered article under
+The candidate index records one test entry per registered page key under
 `managed_contract.tests`:
 
 ```json
 {
-  "article": "firewall",
+  "page_key": "firewall",
   "pattern": "kb/firewall#*",
   "source": "tests/suite/kb/firewall.nix",
   "sha256": "<SHA-256 of the source at managed_contract.head_commit>"

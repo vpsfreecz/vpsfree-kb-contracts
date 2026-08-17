@@ -1,15 +1,15 @@
 ---
-schema: 1
+schema: 2
 repository: vpsfreecz/vpsfree-kb-contracts
 revisions:
   vpsadmin: 02449a1e0966c00969e98e7267ad68e002123d62
   vpsadminos: 67fcc17372d175b036706a1459a8b471bfc225e0
-articles:
+pages:
   firewall:
     test:
       suite: kb/firewall
       source: tests/suite/kb/firewall.nix
-    pages:
+    variants:
       cs:
         id: navody:server:firewall
         counterpart: manuals:server:firewall
@@ -255,7 +255,7 @@ articles:
     test:
       suite: kb/kvm
       source: tests/suite/kb/kvm.nix
-    pages:
+    variants:
       cs:
         id: navody:vps:kvm
         counterpart: manuals:vps:kvm
@@ -381,7 +381,7 @@ articles:
     test:
       suite: kb/guix
       source: tests/suite/kb/guix.nix
-    pages:
+    variants:
       cs:
         id: navody:distribuce:guix
         counterpart: manuals:distributions:guix
@@ -518,7 +518,7 @@ articles:
     test:
       suite: kb/gre
       source: tests/suite/kb/gre.nix
-    pages:
+    variants:
       cs:
         id: navody:server:gre
         counterpart: manuals:server:gre

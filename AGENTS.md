@@ -22,10 +22,10 @@ be safe to rerun and must not stop, reset, or reuse another initiative's
 cluster. Wiki uploads are deliberately outside the capture command and require
 an explicit, separately reviewed DokuWiki publication workflow.
 
-Every source-controlled article must be registered in
-`contract/articles.yml`, provide reciprocal Czech/English pages, and bind every
-claim, executable sample, screenshot, and `kb-runtime` test script. Article
-tests must expose the registry key through the `kbArticle` metadata label.
+Every source-controlled page must be registered in `contract/pages.yml`,
+provide reciprocal Czech/English variants, and bind every claim, executable
+sample, screenshot, and `kb-runtime` test script. Page tests must expose the
+registry key through the `kbPage` metadata label.
 Managed pages must retain the invisible `<kb-managed>` marker immediately after
 their language mapping. Its `source` attribute is the registered
 repository-relative page path, and its `test` attribute is the registered test
@@ -38,7 +38,7 @@ WebUI must be wrapped in a paired `<vpsadmin-nav>` tag with a semantic path from
 explicitly name a menu, form, or navigation path. Treat independent discovery
 as a safety net, not as proof that every instruction is annotated.
 
-When authoring or translating Czech KB articles, address the reader using
+When authoring or translating Czech KB pages, address the reader using
 informal singular forms (`tykání`), for example `můžeš`, `potřebuješ`,
 `nainstaluj`, and `použij`. Do not use formal `vy` or plural imperatives as a
 polite form; use plural only when genuinely addressing multiple people.
@@ -54,11 +54,11 @@ the finished result. In Czech pages, translate human-readable comments in
 scripts and configuration examples while preserving executable lines,
 directives, identifiers, and values.
 
-Write KB articles as documentation of the current supported state. Do not
+Write KB pages as documentation of the current supported state. Do not
 mention obsolete distributions, former defaults, superseded commands, or
 historical workarounds unless readers of a still-supported installation need
 that history to migrate or recover. Record removal rationale in commit
-messages, DokuWiki revision summaries, or initiative notes instead of article
+messages, DokuWiki revision summaries, or initiative notes instead of page
 prose.
 
 When a vpsAdmin feature changes anything visible in the WebUI, follow

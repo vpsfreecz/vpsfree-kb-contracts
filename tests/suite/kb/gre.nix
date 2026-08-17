@@ -32,7 +32,7 @@ import ../../make-test.nix (
         Configure both documented GRE endpoints and verify them across restarts
       '';
       tags = [ "kb-runtime" ];
-      labels.kbArticle = "gre";
+      labels.kbPage = "gre";
       script = ''
         require 'base64'
         require 'digest'
@@ -74,13 +74,13 @@ import ../../make-test.nix (
           ${rubySingleQuoted pingB}
         end
 
-        def runtime_sample(article_sample)
-          substituted = ADDRESS_SUBSTITUTIONS.reduce(article_sample) do |sample, pair|
+        def runtime_sample(page_sample)
+          substituted = ADDRESS_SUBSTITUTIONS.reduce(page_sample) do |sample, pair|
             sample.gsub(*pair)
           end
 
           if ADDRESS_SUBSTITUTIONS.keys.any? { |address| substituted.include?(address) }
-            raise 'article address remained in the runtime fixture'
+            raise 'page address remained in the runtime fixture'
           end
 
           substituted
@@ -235,7 +235,7 @@ import ../../make-test.nix (
         end
 
         describe 'the documented transient GRE configuration' do
-          it 'creates matching endpoints from the exact article fixtures' do
+          it 'creates matching endpoints from the exact page fixtures' do
             run_script('kb-gre-a', runtime_sample(transient_a_script))
             run_script('kb-gre-b', runtime_sample(transient_b_script))
 

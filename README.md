@@ -1,7 +1,7 @@
 # vpsFree KB contracts
 
 This repository owns reproducible evidence for an explicit subset of the
-vpsFree.cz knowledge bases. It contains canonical article sources and runtime
+vpsFree.cz knowledge bases. It contains canonical page sources and runtime
 tests, the complete vpsAdmin screenshot inventory, a pinned development
 cluster, deterministic fixtures, and Playwright capture scenarios for the
 WebUI, remote console, and CLI. It is not the source repository for every KB
@@ -144,13 +144,13 @@ sets, candidate paragraphs missed by the discovery heuristic, and newly
 unclassified or stale independently discovered paragraphs.
 Fetching, staging, and publishing DokuWiki pages remain outside this repository.
 
-## Managed article contract
+## Managed page contract
 
-`contract/articles.yml` is the registry of source-controlled KB articles. Each
-entry binds its Czech and English sources to a test suite, executable samples,
-section claims and fingerprints, and screenshot references. The checker reads
-the flake's `testsMeta` output, so adding an article does not require an
-article-specific source parser or workflow edit.
+`contract/pages.yml` is the schema-2 registry of source-controlled KB pages.
+Each entry binds its Czech and English variants to a test suite, executable
+samples, section claims and fingerprints, and screenshot references. The
+checker reads the flake's `testsMeta` output, so adding a page does not require
+a page-specific source parser or workflow edit.
 
 An executable sample with human-readable comments declares Czech and English
 `display_variants`. Each variant binds localized replacement comments to exact
@@ -160,8 +160,8 @@ to have both bindings, preserves comment structure, and prevents replacements
 of executable lines, shebangs, or tool directives. Runtime suites continue to
 read and execute only the sample's `path`.
 
-Every test script has the common `kb-runtime` tag and a `kbArticle` label. The
-managed articles provide these independently runnable scripts:
+Every test script has the common `kb-runtime` tag and a `kbPage` label. The
+managed pages provide these independently runnable scripts:
 
 ```text
 kb/kvm#platform-defaults
@@ -209,7 +209,7 @@ List or run the maintained tests from the repository root:
 ./test-runner.sh test --fresh 'kb/guix#reconfigure'
 ./test-runner.sh test --fresh 'kb/gre#tunnel'
 ./test-runner.sh test --fresh --jobs 1 \
-  --filter 'tag=kb-runtime && kbArticle=kvm'
+  --filter 'tag=kb-runtime && kbPage=kvm'
 ./test-runner.sh test --fresh --jobs auto
 ```
 
@@ -237,14 +237,14 @@ Candidate provenance records every registered test suite once under
 
 ```json
 {
-  "article": "firewall",
+  "page_key": "firewall",
   "pattern": "kb/firewall#*",
   "source": "tests/suite/kb/firewall.nix",
   "sha256": "<SHA-256 of the source at managed_contract.head_commit>"
 }
 ```
 
-The release manifest copies entries for the articles represented by changed
+The release manifest copies entries for the page keys represented by changed
 managed pages to `contract.tests`. This gives staging and production the exact
 test source and checksum to verify at the recorded commit.
 

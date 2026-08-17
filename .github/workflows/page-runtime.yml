@@ -1,21 +1,21 @@
-name: Managed article runtime
+name: Managed page runtime
 
 on:
   push:
     paths:
-      - .github/workflows/article-runtime.yml
+      - .github/workflows/page-runtime.yml
       - captures.json
       - cluster/**
-      - contract/articles.yml
+      - contract/pages.yml
       - contract/pages/**
       - flake.lock
       - flake.nix
       - test-runner.sh
       - tests/**
-      - tools/check-article-contract.rb
-      - tools/check-managed-article-sources.rb
-      - tools/test-article-contract.rb
-      - tools/test-managed-article-sources.rb
+      - tools/check-page-contract.rb
+      - tools/check-managed-page-sources.rb
+      - tools/test-page-contract.rb
+      - tools/test-managed-page-sources.rb
   workflow_dispatch:
   schedule:
     - cron: "30 3 * * 0"

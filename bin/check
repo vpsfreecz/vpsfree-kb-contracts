@@ -40,17 +40,17 @@ ruby -c bin/validate
 ruby -c cluster/seed-production-shape.rb
 ruby -c tools/check-contract.rb
 ruby -c tools/check-kb-annotations.rb
-ruby -c tools/check-article-contract.rb
-ruby -c tools/check-managed-article-sources.rb
+ruby -c tools/check-page-contract.rb
+ruby -c tools/check-managed-page-sources.rb
 ruby -c tests/runner/extensions/vpsadmin_services.rb
 ruby tools/check-seed.rb
 ruby tools/check-contract.rb
 ruby tools/check-kb-annotations.rb
-ruby tools/check-article-contract.rb --tests-meta "$tests_meta"
-ruby tools/check-managed-article-sources.rb
+ruby tools/check-page-contract.rb --tests-meta "$tests_meta"
+ruby tools/check-managed-page-sources.rb
 ruby tools/test-contract.rb
 ruby tools/test-kb-annotations.rb
-ARTICLE_TESTS_META="$tests_meta" ruby tools/test-article-contract.rb
-ruby tools/test-managed-article-sources.rb
+PAGE_TESTS_META="$tests_meta" ruby tools/test-page-contract.rb
+ruby tools/test-managed-page-sources.rb
 node tools/test-browser.cjs
 bin/validate "${validate_args[@]}"

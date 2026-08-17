@@ -39,7 +39,7 @@ import ../../make-test.nix (
         Reconfigure the shipped Guix container contract and verify it after a restart
       '';
       tags = [ "kb-runtime" ];
-      labels.kbArticle = "guix";
+      labels.kbPage = "guix";
       script = ''
         require 'base64'
         require 'digest'

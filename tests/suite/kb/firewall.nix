@@ -299,7 +299,7 @@ import ../../make-test.nix (
     mkScript = description: body: {
       inherit description;
       tags = [ "kb-runtime" ];
-      labels.kbArticle = "firewall";
+      labels.kbPage = "firewall";
       script = commonScript + body;
     };
   in
