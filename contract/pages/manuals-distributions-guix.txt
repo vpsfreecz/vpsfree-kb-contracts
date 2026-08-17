@@ -1,4 +1,4 @@
-<page>navody:distribuce:guix</page>
+<page>manuals:distributions:guix</page>
 
 <kb-managed
   source="contract/pages/manuals-distributions-guix.txt"

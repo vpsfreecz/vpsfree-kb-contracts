@@ -1,4 +1,4 @@
-<page>navody:vps:kvm</page>
+<page>manuals:vps:kvm</page>
 
 <kb-managed
   source="contract/pages/manuals-vps-kvm.txt"

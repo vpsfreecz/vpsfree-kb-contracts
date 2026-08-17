@@ -25,7 +25,9 @@ an explicit, separately reviewed DokuWiki publication workflow.
 Every source-controlled page must be registered in `contract/pages.yml`,
 provide reciprocal Czech/English variants, and bind every claim, executable
 sample, screenshot, and `kb-runtime` test script. Page tests must expose the
-registry key through the `kbPage` metadata label.
+registry key through the `kbPage` metadata label. The invisible DokuWiki
+`<page>` tag connects translations: both variants must use the same tag value,
+and that value must be the English KB page ID.
 Managed pages must retain the invisible `<kb-managed>` marker immediately after
 their language mapping. Its `source` attribute is the registered
 repository-relative page path, and its `test` attribute is the registered test

@@ -1,4 +1,4 @@
-<page>navody:server:gre</page>
+<page>manuals:server:gre</page>
 
 <kb-managed
   source="contract/pages/manuals-server-gre.txt"

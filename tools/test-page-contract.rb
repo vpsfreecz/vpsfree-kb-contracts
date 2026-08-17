@@ -286,6 +286,24 @@ class PageContractCheckerTest < Minitest::Test
     assert_match(/managed-page marker is misplaced or differs/, error)
   end
 
+  def test_czech_page_tag_must_use_the_english_id
+    _output, error, status = check_czech_source do |marker|
+      "<page>navody:vps:kvm</page>\n\n#{marker}\n"
+    end
+
+    refute(status.success?)
+    assert_match(/page tag must use English ID manuals:vps:kvm/, error)
+  end
+
+  def test_english_page_tag_must_use_the_english_id
+    _output, error, status = check_english_source do |marker|
+      "<page>navody:vps:kvm</page>\n\n#{marker}\n"
+    end
+
+    refute(status.success?)
+    assert_match(/page tag must use English ID manuals:vps:kvm/, error)
+  end
+
   def test_test_source_path_is_rejected_as_marker_pattern
     _output, error, status = check_czech_source do |_marker, relative_path, _test_pattern|
       marker = managed_marker(relative_path, 'tests/suite/kb/kvm.nix')

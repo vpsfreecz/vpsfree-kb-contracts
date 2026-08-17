@@ -349,6 +349,8 @@ registry_pages.each do |page_key, page_contract|
   unless variants.keys.sort == %w[cs en]
     raise PageContractError, "#{page_key}: variants must contain exactly cs and en"
   end
+  canonical_id = variants.fetch('en').fetch('id')
+
   page_sources = {}
   page_sections = {}
   variants.each do |language, page|
@@ -362,9 +364,9 @@ registry_pages.each do |page_key, page_contract|
     raise PageContractError, "#{page_key}: #{language}: page source is missing" unless File.file?(source_path)
 
     source = File.read(source_path, encoding: Encoding::UTF_8)
-    counterpart = page.fetch('counterpart')
-    unless source.start_with?("<page>#{counterpart}</page>\n")
-      raise PageContractError, "#{page_key}: #{language}: counterpart mapping differs"
+    unless source.start_with?("<page>#{canonical_id}</page>\n")
+      raise PageContractError,
+            "#{page_key}: #{language}: page tag must use English ID #{canonical_id}"
     end
 
     test_pattern = "#{suite}#*"
@@ -374,7 +376,7 @@ registry_pages.each do |page_key, page_contract|
             "#{page_key}: #{language}: expected exactly one managed-page marker"
     end
 
-    expected_prefix = "<page>#{counterpart}</page>\n\n" \
+    expected_prefix = "<page>#{canonical_id}</page>\n\n" \
                       "#{managed_marker(page_source, test_pattern)}\n\n"
     unless source.start_with?(expected_prefix)
       raise PageContractError,

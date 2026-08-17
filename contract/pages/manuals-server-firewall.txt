@@ -1,4 +1,4 @@
-<page>navody:server:firewall</page>
+<page>manuals:server:firewall</page>
 
 <kb-managed
   source="contract/pages/manuals-server-firewall.txt"

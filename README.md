@@ -152,6 +152,10 @@ samples, section claims and fingerprints, and screenshot references. The
 checker reads the flake's `testsMeta` output, so adding a page does not require
 a page-specific source parser or workflow edit.
 
+The invisible DokuWiki `<page>` tag connects a Czech/English pair. Both source
+variants use the same tag value, which is always the English KB page ID. The
+language-specific page IDs remain separate in the registry.
+
 An executable sample with human-readable comments declares Czech and English
 `display_variants`. Each variant binds localized replacement comments to exact
 line numbers in the hashed runtime fixture. The checker derives the displayed
