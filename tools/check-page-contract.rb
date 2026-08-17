@@ -364,6 +364,12 @@ registry_pages.each do |page_key, page_contract|
     raise PageContractError, "#{page_key}: #{language}: page source is missing" unless File.file?(source_path)
 
     source = File.read(source_path, encoding: Encoding::UTF_8)
+    page_tag_starts = source.scan(/<page(?:\s|>)/).length
+    page_tag_ends = source.scan(%r{</page>}).length
+    unless page_tag_starts == 1 && page_tag_ends == 1
+      raise PageContractError,
+            "#{page_key}: #{language}: expected exactly one page tag"
+    end
     unless source.start_with?("<page>#{canonical_id}</page>\n")
       raise PageContractError,
             "#{page_key}: #{language}: page tag must use English ID #{canonical_id}"

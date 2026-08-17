@@ -304,6 +304,15 @@ class PageContractCheckerTest < Minitest::Test
     assert_match(/page tag must use English ID manuals:vps:kvm/, error)
   end
 
+  def test_conflicting_second_page_tag_is_rejected
+    _output, error, status = check_czech_source do |marker|
+      "<page>manuals:vps:kvm</page>\n\n#{marker}\n\n<page>navody:vps:kvm</page>\n"
+    end
+
+    refute(status.success?)
+    assert_match(/expected exactly one page tag/, error)
+  end
+
   def test_test_source_path_is_rejected_as_marker_pattern
     _output, error, status = check_czech_source do |_marker, relative_path, _test_pattern|
       marker = managed_marker(relative_path, 'tests/suite/kb/kvm.nix')
