@@ -1,5 +1,5 @@
 {
-  description = "Reproducible contracts for selected vpsFree.cz KB articles";
+  description = "Reproducible contracts for selected vpsFree.cz KB pages";
 
   inputs = {
     vpsadmin.url = "github:vpsfreecz/vpsadmin/02449a1e0966c00969e98e7267ad68e002123d62";
