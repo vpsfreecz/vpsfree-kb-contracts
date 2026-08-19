@@ -157,7 +157,9 @@ import ../../make-test.nix (
             expect(system).to include("'%ct-operating-system-base")
             expect(system).to include('(inherit platform-system)')
             expect(platform).to include('(define %ct-operating-system-base')
-            expect(platform).to include('(service dhcpcd-service-type)')
+            expect(platform).to include('(service dhcpcd-service-type')
+            expect(platform).to include('(dhcpcd-configuration')
+            expect(platform).to include('(no-hook \'("resolv.conf"))')
             expect(platform).to include('/ifcfg.add')
           end
 
