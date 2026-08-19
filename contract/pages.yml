@@ -405,23 +405,25 @@ pages:
         - reconfigure
       deploy-system:
         path: tests/fixtures/guix/deploy-system.scm
-        sha256: 5fe2c099bd86fc65b96071b82da467712dbb71263362d52f6eac91e69f806afe
+        sha256: 0c6b1549ec7121820eb31a999f25b7b43f32f04e5521d99c3dfae83a7167a14b
         language: scheme
         display_variants:
           cs:
             comments:
               1: ';; Načti udržovanou integraci kontejnerů vpsAdminOS.'
-              11: ';; Tyto soubory se nacházejí na stroji, ze kterého spouštíš guix deploy.'
-              59: '      ;; Nahraď adresu a hostitelský klíč údaji cílové VPS.'
-              67: '      ;; vpsAdminOS poskytuje jádro a používá zástupný kořen /dev/null.'
-              68: '      ;; Guix proto nemůže provést kontroly souborového systému a initrd určené pro fyzický stroj.'
+              12: '       ;; Tyto soubory jsou na stroji, ze kterého spouštíš guix deploy.'
+              17: '       ;; Sestav seznam služeb dříve, než jej přiřadíš zpožděně vyhodnocovanému poli.'
+              47: '            ;; Nahraď adresu a hostitelský klíč údaji cílové VPS.'
+              55: '            ;; vpsAdminOS poskytuje jádro a používá zástupný kořen /dev/null.'
+              56: '            ;; Guix proto nemůže provést kontroly souborového systému a initrd určené pro fyzický stroj.'
           en:
             comments:
               1: ';; Load the maintained vpsAdminOS container integration.'
-              11: ';; These files belong to the machine from which you run guix deploy.'
-              59: '      ;; Replace the address and host key with those of your target VPS.'
-              67: '      ;; vpsAdminOS supplies the kernel and exposes a dummy /dev/null root.'
-              68: "      ;; Guix's bare-metal file-system/initrd checks cannot inspect it."
+              12: '       ;; These files belong to the machine from which you run guix deploy.'
+              17: '       ;; Build the service list before assigning the delayed services field.'
+              47: '            ;; Replace the address and host key with those of your target VPS.'
+              55: '            ;; vpsAdminOS supplies the kernel and exposes a dummy /dev/null root.'
+              56: "            ;; Guix's bare-metal file-system/initrd checks cannot inspect it."
         tests:
         - reconfigure
     sections:
@@ -436,10 +438,10 @@ pages:
         localizations:
           cs:
             heading: Jak funguje šablona
-            fingerprint: 7f84122da76082f2b4cda9781824a497729148c5aa7477c54f54e6baf64fdc3e
+            fingerprint: 417774c9b82071cb3b31f129097b527c0a5a20ee509e6ebe315a9ba4613fc431
           en:
             heading: How the template works
-            fingerprint: 519ba6c8da06e49f0c8259c018d858867934a40c7b0afa66bab089cc569e06b0
+            fingerprint: bfdbff495e896e779a1a930ba48aea7dc353bbb2157d9763d78e638ab31fc525
       configuration:
         claims:
         - system-scm-is-member-editable
@@ -452,10 +454,10 @@ pages:
         localizations:
           cs:
             heading: Úprava konfigurace
-            fingerprint: ed23905ed56e55bb948b06bf0a9268d4173b3c53b489ed1468c8e7a589895ebb
+            fingerprint: 6cd1ee1b126eaf8e64635efd9b36e7912fe876ff926c818cc8f31ae8baef9770
           en:
             heading: Editing the configuration
-            fingerprint: d1c7368e800061055cb5926a026c2daa4c9f17864a3838a640ccc2e74ad98ab9
+            fingerprint: b040551a40d3b68d4b61da9864f50fc2f5a55a928bdbe3713064378b41f7bab0
       updates:
         claims:
         - reconfigure-does-not-require-guix-pull
@@ -497,10 +499,10 @@ pages:
         localizations:
           cs:
             heading: Nasazení pomocí guix deploy
-            fingerprint: 348890db1a23cb0da6d5d37ea0416408a936a83890a93f25fa3a7577f6156bfa
+            fingerprint: b9fed0f3c18e2de92d4911694718d53d31a9682a4f96e3601a792a4ec3084f73
           en:
             heading: Deploying with guix deploy
-            fingerprint: d4d34205051ae7280b54f02a72a3b4ffba387a56d3d16bf23aeb7815ef0ca56c
+            fingerprint: 3c4ffeca3cdec74f5ab560e334902d110a29bd4ab250c15f5612eae84bbd8b5a
       recovery:
         claims:
         - reconfiguration-keeps-older-generations

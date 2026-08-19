@@ -110,7 +110,7 @@ import ../../make-test.nix (
           machine.wait_until_online
           machine.succeeds(
             'osctl ct new --repository default --vendor vpsadminos ' \
-            '--variant minimal --distribution guix --version 20260613 kb-guix',
+            '--variant minimal --distribution guix --version 20260819 kb-guix',
             timeout: 600
           )
           machine.succeeds('osctl ct netif new routed kb-guix eth0')
@@ -151,10 +151,13 @@ import ../../make-test.nix (
             _, system = in_guix('cat /etc/config/system.scm')
             _, platform = in_guix('cat /etc/config/vpsadminos.scm')
 
-            expect(system).to include('(add-to-load-path "/etc/config")')
-            expect(system).to include('(use-modules (vpsadminos))')
-            expect(platform).to include('(define %ct-file-systems')
-            expect(platform).to include('(define vpsadminos-networking')
+            expect(system).to include(
+              "(module-ref (resolve-interface '(vpsadminos))"
+            )
+            expect(system).to include("'%ct-operating-system-base")
+            expect(system).to include('(inherit platform-system)')
+            expect(platform).to include('(define %ct-operating-system-base')
+            expect(platform).to include('(service dhcpcd-service-type)')
             expect(platform).to include('/ifcfg.add')
           end
 
@@ -191,7 +194,7 @@ import ../../make-test.nix (
           it 'deploys the complete configuration to a second Guix VPS' do
             machine.succeeds(
               'osctl ct new --repository default --vendor vpsadminos ' \
-              '--variant minimal --distribution guix --version 20260613 ' \
+              '--variant minimal --distribution guix --version 20260819 ' \
               'kb-guix-target',
               timeout: 600
             )
@@ -226,18 +229,30 @@ import ../../make-test.nix (
             expect(rendered).to include('(allow-downgrades? #f)')
             expect(rendered).to include('(password-authentication? #f)')
             expect(rendered).to include("(permit-root-login 'prohibit-password)")
+            expect(rendered).to include(
+              '(operating-system-user-services platform-system)'
+            )
+            expect(rendered).to include('(inherit platform-system)')
+            expect(rendered).to include('(services user-services)')
+            expect(rendered).not_to include('%ct-services')
             encoded = Base64.strict_encode64(rendered)
             in_guix(
               "printf %s #{Shellwords.escape(encoded)} | " \
               'base64 -d > /etc/config/deploy.scm'
             )
 
+            deploy_command =
+              'guix time-machine -C /run/current-system/channels.scm -- ' \
+              'deploy -L /etc/config /etc/config/deploy.scm'
+            retry_guix_operation(
+              "#{deploy_command} --dry-run",
+              timeout: 2 * 60 * 60
+            )
             _, before_generation = in_guix_target(
               'readlink -f /var/guix/profiles/system'
             )
             retry_guix_operation(
-              'guix time-machine -C /run/current-system/channels.scm -- ' \
-              'deploy -L /etc/config /etc/config/deploy.scm',
+              deploy_command,
               timeout: 2 * 60 * 60
             )
             _, after_generation = in_guix_target(

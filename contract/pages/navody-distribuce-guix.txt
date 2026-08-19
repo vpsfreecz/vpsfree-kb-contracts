@@ -19,10 +19,11 @@ kterým se můžeš vrátit.
   * ''/etc/config/system.scm'' je tvoje hlavní konfigurace systému;
   * ''/etc/config/vpsadminos.scm'' zajišťuje běh Guixu v kontejneru vpsAdminOS.
 
-''system.scm'' načítá modul ''vpsadminos'' z druhého souboru. Toto propojení
-zachovej: definuje kontejnerový bootloader, souborové systémy a službu, která
-při startu spouští síťovou konfiguraci vytvořenou vpsAdminOS. Aktuální podobu
-obou souborů najdeš v
+''system.scm'' vyhledá v modulu ''vpsadminos'' základ
+''%ct-operating-system-base'' a zdědí jeho nastavení. Vyhledání modulu a dědění
+zachovej: základ obsahuje kontejnerový bootloader, souborové systémy, zástupný
+kernel, balíčky, služby a síťovou integraci. Aktuální podobu obou souborů najdeš
+v
 [[https://github.com/vpsfreecz/vpsadminos/tree/staging/image-scripts/images/guix|adresáři šablony pro Guix v repozitáři vpsAdminOS]].
 
 Jádro spravuje vpsAdminOS, proto do konfigurace nepřidávej vlastní linuxový
@@ -30,9 +31,17 @@ kernel ani běžný bootloader pro fyzický stroj.
 
 ===== Úprava konfigurace =====
 
-Nejdřív uprav ''/etc/config/system.scm''. Můžeš změnit například hostname,
-balíčky a seznam služeb. Strukturu ''%ct-services'', ''%ct-file-systems'' a
-''%ct-bootloader'' ponech z modulu ''vpsadminos''.
+Nejdřív uprav ''/etc/config/system.scm''. Najdeš v něm výchozí hostname, časové
+pásmo a locale, které můžeš změnit. Můžeš přidat také přímo vyhodnocovaná pole,
+například ''packages''. Vyhledání ''platform-system'' a řádek
+''(inherit platform-system)'' zachovej, aby zůstala aktivní nastavení pro tuto
+platformu.
+
+Při změně služeb nejdřív odvoď seznam služeb mimo záznam
+''operating-system'', ulož jej do proměnné a tu přiřaď poli ''services''.
+Stejný postup používá příklad nasazení níže. Guix vyhodnocuje pole služeb až po
+načtení konfigurace, proto nesmí záviset na vazbách v dočasném konfiguračním
+modulu.
 
 Konfiguraci aktivuj jako ''root'':
 
@@ -107,75 +116,62 @@ nahraď adresu a hostitelský klíč cílové VPS:
 <code scheme>
 ;; Načti udržovanou integraci kontejnerů vpsAdminOS.
 (add-to-load-path "/etc/config")
-(use-modules (vpsadminos)
-             (gnu)
+(use-modules (gnu)
              (gnu machine)
              (gnu machine ssh)
              (gnu services base))
-(use-package-modules nss ssh)
 (use-service-modules ssh)
 
-;; Tyto soubory se nacházejí na stroji, ze kterého spouštíš guix deploy.
-(define %controller-signing-key
-  (local-file "/etc/guix/signing-key.pub"))
-(define %root-ssh-key
-  (local-file "/root/.ssh/id_ed25519.pub"))
-
-(define %system
-  (operating-system
-    (host-name "guix-target")
-    (timezone "Etc/UTC")
-    (locale "en_US.utf8")
-    (firmware '())
-    (initrd-modules '())
-    (kernel %ct-dummy-kernel)
-
-    (packages (cons* nss-certs
-                     %base-packages))
-
-    (essential-services
-     (modify-services
-         (operating-system-default-essential-services this-operating-system)
-       (delete firmware-service-type)
-       (delete (service-kind %linux-bare-metal-service))))
-
-    (bootloader %ct-bootloader)
-    (file-systems %ct-file-systems)
-
-    (services
-     (cons* (service openssh-service-type
-                     (openssh-configuration
-                      (openssh openssh-sans-x)
-                      (permit-root-login 'prohibit-password)
-                      (password-authentication? #f)
-                      (authorized-keys
-                       `(("root" ,%root-ssh-key)))))
-            (simple-service 'controller-signing-key
-                            guix-service-type
-                            (guix-extension
-                             (authorized-keys
-                              (list %controller-signing-key))))
-            %ct-services))))
-
-(define %machine
-  (machine
-    (operating-system %system)
-    (environment managed-host-environment-type)
-    (configuration
-     (machine-ssh-configuration
-      ;; Nahraď adresu a hostitelský klíč údaji cílové VPS.
-      (host-name "192.0.2.3")
-      (system "x86_64-linux")
-      (user "root")
-      (identity "/root/.ssh/id_ed25519")
-      (host-key "ssh-ed25519 REPLACE_WITH_TARGET_HOST_KEY")
-      (authorize? #t)
-      (allow-downgrades? #f)
-      ;; vpsAdminOS poskytuje jádro a používá zástupný kořen /dev/null.
-      ;; Guix proto nemůže provést kontroly souborového systému a initrd určené pro fyzický stroj.
-      (safety-checks? #f)))))
-
-(list %machine)
+(let* ((platform-system
+        (module-ref (resolve-interface '(vpsadminos))
+                    '%ct-operating-system-base))
+       ;; Tyto soubory jsou na stroji, ze kterého spouštíš guix deploy.
+       (controller-signing-key
+        (local-file "/etc/guix/signing-key.pub"))
+       (root-ssh-key
+        (local-file "/root/.ssh/id_ed25519.pub"))
+       ;; Sestav seznam služeb dříve, než jej přiřadíš zpožděně vyhodnocovanému poli.
+       (user-services
+        (cons
+         (simple-service 'controller-signing-key
+                         guix-service-type
+                         (guix-extension
+                          (authorized-keys
+                           (list controller-signing-key))))
+         (modify-services
+             (operating-system-user-services platform-system)
+           (openssh-service-type config =>
+             (openssh-configuration
+              (inherit config)
+              (permit-root-login 'prohibit-password)
+              (password-authentication? #f)
+              (authorized-keys
+               `(("root" ,root-ssh-key))))))))
+       (system
+        (operating-system
+          (inherit platform-system)
+          (host-name "guix-target")
+          (timezone "Etc/UTC")
+          (locale "en_US.utf8")
+          (services user-services)))
+       (target-machine
+        (machine
+          (operating-system system)
+          (environment managed-host-environment-type)
+          (configuration
+           (machine-ssh-configuration
+            ;; Nahraď adresu a hostitelský klíč údaji cílové VPS.
+            (host-name "192.0.2.3")
+            (system "x86_64-linux")
+            (user "root")
+            (identity "/root/.ssh/id_ed25519")
+            (host-key "ssh-ed25519 REPLACE_WITH_TARGET_HOST_KEY")
+            (authorize? #t)
+            (allow-downgrades? #f)
+            ;; vpsAdminOS poskytuje jádro a používá zástupný kořen /dev/null.
+            ;; Guix proto nemůže provést kontroly souborového systému a initrd určené pro fyzický stroj.
+            (safety-checks? #f))))))
+  (list target-machine))
 </code>
 
 Nejdřív konfiguraci načti bez nasazení příkazem ''guix time-machine -C
