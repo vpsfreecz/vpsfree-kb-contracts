@@ -43,8 +43,6 @@ page_ids:
   - navody:distribuce:guix
   - navody:distribuce:nixos
   - navody:distribuce:nixos:impermanence
-  - navody:distribuce:nixos:nginx
-  - navody:distribuce:nixos:zaciname
   - navody:meet
   - navody:server:drupal
   - navody:server:firewall
@@ -52,16 +50,13 @@ page_ids:
   - navody:server:gre
   - navody:server:mailgun
   - navody:server:mailserver-nixos
-  - navody:server:nginx
   - navody:server:nixos-mailserver
-  - navody:server:openshift_centos
   - navody:server:postfix
   - navody:server:primarni_dns
   - navody:server:sekundarni_dns
   - navody:server:ssh
   - navody:server:sysloger
   - navody:server:wireguard
-  - navody:server:wireguard:openwrt
   - navody:uzivatele:moreplavec
   - navody:uzivatele:stepan_schejbal
   - navody:vps:api
@@ -427,16 +422,6 @@ discoveries:
     serveru, který ti běží ve VPS.
   paths:
   - dns.secondary-zones.open
-- id: 28ea810da301f69f
-  language: cs
-  page: navody:server:wireguard:openwrt
-  paragraph: 8
-  text: Následně je potřeba ve webovém rozhraní openwrt vlézt do interfaces > wg0
-    (náš nový interface wireguardu) a dovyplnit chybějící položky - především endpoint
-    host, Allowed IP (bacha to je většinou 0.0.0.0/0 - jiná je adresa klienta nastavená
-    už na druhé straně tunelu - serveru), MTU, v sekci peerů vytvořit peer (tj. server
-    kde běží wireguard a přes který to chceme provozovat).
-  reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
 - id: 0d6d0dd0950f223a
   language: cs
   page: navody:uzivatele:stepan_schejbal
@@ -633,27 +618,27 @@ discoveries:
     115 GiB pro KVM disk\\
   reason: Existing WebUI reference outside the localized navigation-label set; inventoried
     for future semantic binding.
-- id: 42e70cd419946f38
-  language: cs
-  page: navody:vps:metriky
-  paragraph: 3
-  text: Metrika ''vpsadmin_metrics_version'' (pokud jste si nezměnili prefix) udává
-    verzi metrik. Pokud bychom dělali zpětně nekompatibilní změny, první číslo se
-    navýší, tj. např. ''1.0 -> 2.0''. Číslo za desetinnou čárkou se může zvyšovat,
-    když přidáme nějaké nové metriky, ale význam původních metrik se nezmění.
-  reason: Existing WebUI reference outside the localized navigation-label set; inventoried
-    for future semantic binding.
-- id: 6d291b8a104c8295
+- id: 3fc09c702912e3bf
   language: cs
   page: navody:vps:metriky
   paragraph: 2
   text: Pro nastavení si ve vpsAdminu v **Upravit profil** -> **Přístupové tokeny
-    k metrikám** vytvořte přístupový token. Zobrazí se vám tzv. scrape URL, kterou
-    přidáte do vašeho monitoringu. Statusy VPS se aktualizují co 2 minuty, takže nemá
-    cenu data stahovat častěji. Pro přesný přehled dostupných metrik si URL otevřete
-    v prohlížeči.
+    k metrikám** vytvoř přístupový token. vpsAdmin ti zobrazí scrape URL, kterou přidáš
+    do svého monitoringu. Stav VPS se aktualizuje každé dvě minuty, takže nemá smysl
+    data stahovat častěji. Úplný seznam dostupných metrik najdeš po otevření scrape
+    URL v prohlížeči.
   paths:
   - member.metrics-access-tokens.open
+- id: 4687ac9f2b1e769b
+  language: cs
+  page: navody:vps:metriky
+  paragraph: 5
+  text: Metrika ''vpsadmin_metrics_version'' udává verzi metrik, pokud sis nezměnil
+    prefix. Aktuální verze je ''1.1''. Při zpětně nekompatibilní změně se zvýší první
+    číslo, například ''1.0 -> 2.0''. Číslo za desetinnou čárkou se může zvýšit při
+    přidání metrik, které nemění význam těch stávajících.
+  reason: Existing WebUI reference outside the localized navigation-label set; inventoried
+    for future semantic binding.
 - id: 41620c06a0e29265
   language: cs
   page: navody:vps:obnova_webu_zo_zalohy
@@ -1456,28 +1441,28 @@ discoveries:
     solution you prefer in the VPS details.
   reason: Existing WebUI reference outside the localized navigation-label set; inventoried
     for future semantic binding.
-- id: 3b87105383452ca9
+- id: 561d6eb4fef6d7f3
+  language: en
+  page: manuals:vps:metrics
+  paragraph: 5
+  text: The metric ''vpsadmin_metrics_version'' indicates the metrics version, unless
+    you have changed the prefix. The current version is ''1.1''. The first number
+    increases for a backward-incompatible change, for example ''1.0 -> 2.0''. The
+    number after the decimal point may increase when metrics are added without changing
+    the meaning of existing metrics. <page>manuals:vps:metrics</page>
+  reason: Existing WebUI reference outside the localized navigation-label set; inventoried
+    for future semantic binding.
+- id: c8488142146443a5
   language: en
   page: manuals:vps:metrics
   paragraph: 2
   text: To set this up, go to **Edit profile** -> **Metrics access tokens** in vpsAdmin
-    and create an access token. You will be provided with a scrape URL, which you
-    can add to your monitoring configuration. VPS statuses are updated every 2 minutes,
-    so there’s no point in fetching the data more frequently. For a detailed overview
-    of the available metrics, open the URL in your browser.
+    and create an access token. vpsAdmin will show you a scrape URL to add to your
+    monitoring configuration. VPS status is updated every two minutes, so there is
+    no benefit in fetching the data more frequently. Open the scrape URL in your browser
+    for a complete list of the available metrics.
   paths:
   - member.metrics-access-tokens.open
-- id: d6ac0c30fcd5fbb6
-  language: en
-  page: manuals:vps:metrics
-  paragraph: 3
-  text: The metric ''vpsadmin_metrics_version'' (unless you’ve changed the prefix)
-    indicates the version of the metrics. If we make backward-incompatible changes,
-    the first number will increase, e.g., ''1.0 -> 2.0''. The number after the decimal
-    point may increase when new metrics are added, but the meaning of the original
-    metrics will remain unchanged.
-  reason: Existing WebUI reference outside the localized navigation-label set; inventoried
-    for future semantic binding.
 - id: 26460fb195107ec6
   language: en
   page: manuals:vps:playgroundvps
@@ -1824,20 +1809,20 @@ discoveries:
   paragraph: 3
   text: 'The current VPS addresses are shown in its vpsAdmin details:'
   reason: Read-only address information in VPS details, not a navigation action.
-- id: 3c3b56e0ba06340e
+- id: f50f14b19263323d
   language: en
   page: manuals:distributions:guix
-  paragraph: 20
+  paragraph: 21
   text: If you manage several Guix VPSes, you can keep their configurations on one
     coordinator Guix system and deploy them with [[https://guix.gnu.org/manual/en/html_node/Invoking-guix-deploy.html|guix
     deploy]]. The complete configuration below is a starting point for one VPS. You
     maintain only ''deploy.scm''; the container details continue to come from the
     maintained ''/etc/config/vpsadminos.scm'' module.
   reason: Upstream guix deploy documentation, not a vpsAdmin WebUI action.
-- id: 45be61985c1f04fd
+- id: 7fc36f69187ef911
   language: en
   page: manuals:distributions:guix
-  paragraph: 27
+  paragraph: 28
   text: If a new configuration does not boot or you lose SSH access, follow the [[manuals:vps:console|remote
     console guide]]. The [[manuals:vps:start_menu|vpsAdminOS start menu guide]] explains
     how to restore an older Guix generation. Fix the configuration and reconfigure
@@ -1874,10 +1859,10 @@ discoveries:
   paragraph: 3
   text: 'Aktuální IP adresy najdeš v detailu VPS ve vpsAdminu:'
   reason: Read-only address information in VPS details, not a navigation action.
-- id: 93c2b965dde36f18
+- id: fa829fe83da90a85
   language: cs
   page: navody:distribuce:guix
-  paragraph: 27
+  paragraph: 28
   text: Pokud nová konfigurace nenaběhne nebo ztratíš SSH, postupuj podle návodu pro
     [[navody:vps:konzole|vzdálenou konzoli]]. Obnovení starší generace Guixu popisuje
     návod ke [[navody:vps:start_menu|start menu vpsAdminOS]]. Konfiguraci pak oprav
@@ -1910,10 +1895,10 @@ discoveries:
     keys → Add public key** and paste the contents of ''~/.ssh/id_ed25519.pub''.
   paths:
   - member.public-keys.add
-- id: ee99d5a8dff746c6
+- id: 23baf18a5a0107f8
   language: cs
   page: navody:distribuce:guix
-  paragraph: 20
+  paragraph: 21
   text: Pokud spravuješ více Guix VPS, můžeš jejich konfigurace držet na jednom řídicím
     Guix systému a nasazovat je pomocí [[https://guix.gnu.org/manual/en/html_node/Invoking-guix-deploy.html|guix
     deploy]]. Následující úplná konfigurace je výchozí bod pro jednu VPS. Ty spravuješ
