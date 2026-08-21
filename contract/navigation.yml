@@ -161,7 +161,7 @@ controls:
     source:
       path: webui/pages/page_adminm.php
       contains: "action=metrics"
-      fingerprint: 51ef126b71b46ed9f5846a0318bb6a8aaa7365085ae48055773ce8cfae9baf50
+      fingerprint: c8d988fb82e54998d318372b5411014ebf616c188b1cbd9a9d9df674952def4b
 
   - id: member.cluster-resources
     label: { en: Cluster resources, cs: Prostředky clusteru }
@@ -215,10 +215,17 @@ controls:
     source:
       path: webui/pages/page_adminm.php
       contains: "action=user_sessions"
-      fingerprint: 0c081e64e85e939facfbd884bb08f7b8af5fbd04a365b57fba0a3d8f0697b2d3
+      fingerprint: 6406bd8f518abf90b6352a8abc2ecd29e046c0be9a7d80ae69c1e2665b81ac4c
     captures:
       - account/session-list
       - account/session-settings
+
+  - id: member.password-changes
+    label: { en: Password changes, cs: Změny hesla }
+    source:
+      path: webui/pages/page_adminm.php
+      contains: "action=password_changes"
+      fingerprint: c457147736b9b286fba2a88ddb0f522ddba27e9788b12c1e7b1277248b5490c0
 
   - id: networking.menu
     label: { en: Networking, cs: Sítě }
@@ -500,6 +507,12 @@ paths:
 
   - id: member.sessions.open
     steps: [member.edit-profile, member.sessions]
+    pages:
+      cs: [navody:vps:uzivatele]
+      en: [manuals:vps:users]
+
+  - id: member.password-changes.open
+    steps: [member.edit-profile, member.password-changes]
     pages:
       cs: [navody:vps:uzivatele]
       en: [manuals:vps:users]
