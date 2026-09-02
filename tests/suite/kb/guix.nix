@@ -64,16 +64,29 @@ import ../../make-test.nix (
           in_guix(command, container: 'kb-guix-target', timeout:)
         end
 
-        def retry_guix_operation(command, attempts: 3, timeout:)
-          attempts.times do |attempt|
-            return in_guix(command, timeout:)
-          rescue OsVm::CommandFailed => e
-            transient_git_error = e.message.match?(
-              /Git error:.*(?:SSL error|Resource temporarily unavailable)/m
+        def prepare_guix_time_machine
+          retry_operation(
+            name: 'Guix time-machine preparation',
+            attempts: 3,
+            delay: ->(attempt, _) { attempt * 15 },
+            retry_if: TestRunner::RetryClassifier.method(:guix_preparation)
+          ) do
+            in_guix(
+              'timeout --signal=TERM --kill-after=30s 30m ' \
+              'guix time-machine -C /run/current-system/channels.scm -- describe',
+              timeout: 31 * 60
             )
-            raise unless transient_git_error && attempt < attempts - 1
+          end
+        end
 
-            sleep(15)
+        def retry_guix_operation(command, attempts: 3, timeout:)
+          retry_operation(
+            name: 'Guix system operation',
+            attempts:,
+            delay: 15,
+            retry_if: TestRunner::RetryClassifier.method(:guix_operation)
+          ) do
+            in_guix(command, timeout:)
           end
         end
 
@@ -137,6 +150,7 @@ import ../../make-test.nix (
             '< /root/kb-guix-key'
           )
           verify_guix_ssh
+          prepare_guix_time_machine
         end
 
         after(:suite) do
