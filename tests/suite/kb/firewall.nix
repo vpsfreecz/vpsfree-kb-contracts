@@ -137,6 +137,27 @@ import ../../make-test.nix (
         )
       end
 
+      def prepare_apt_packages(ct, packages)
+        container_apt_get(
+          machine,
+          ct,
+          'update',
+          name: "APT metadata refresh in #{ct}",
+          timeout: 1200,
+        )
+
+        container_apt_get(
+          machine,
+          ct,
+          'install',
+          '-y',
+          *packages,
+          name: "APT package installation in #{ct}",
+          environment: { 'DEBIAN_FRONTEND' => 'noninteractive' },
+          timeout: 1200,
+        )
+      end
+
       def write_container_file(ct, path, contents)
         encoded = Base64.strict_encode64(contents)
         in_container(
@@ -157,16 +178,17 @@ import ../../make-test.nix (
       end
 
       def run_apt_fixture(ct, name, timeout: 1200)
-        run_fixture(
-          ct,
-          name,
-          environment: { 'DEBIAN_FRONTEND' => 'noninteractive' },
-          timeout:
-        )
+        retry_apt_operation(name: "APT fixture #{name} in #{ct}") do
+          run_fixture(
+            ct,
+            name,
+            environment: { 'DEBIAN_FRONTEND' => 'noninteractive' },
+            timeout:
+          )
+        end
       end
 
-      def prepare_systemd_listeners(ct, package_command:, ssh_service:)
-        in_container(ct, package_command, timeout: 1200)
+      def prepare_systemd_listeners(ct, ssh_service:)
         write_container_file(
           ct,
           '/etc/systemd/system/kb-firewall-listener@.service',
@@ -333,10 +355,12 @@ import ../../make-test.nix (
               ipv4: IPV4,
               ipv6: IPV6
             )
+            prepare_apt_packages(
+              CT,
+              %w[openssh-server socat curl iptables]
+            )
             prepare_systemd_listeners(
               CT,
-              package_command: 'apt-get update && DEBIAN_FRONTEND=noninteractive ' \
-                'apt-get install -y openssh-server socat curl iptables',
               ssh_service: 'ssh.service'
             )
             enable_permissive_connection_tracking(CT)
@@ -374,10 +398,12 @@ import ../../make-test.nix (
               ipv4: IPV4,
               ipv6: IPV6
             )
+            prepare_apt_packages(
+              CT,
+              %w[openssh-server socat curl nftables iptables]
+            )
             prepare_systemd_listeners(
               CT,
-              package_command: 'apt-get update && DEBIAN_FRONTEND=noninteractive ' \
-                'apt-get install -y openssh-server socat curl nftables iptables',
               ssh_service: 'ssh.service'
             )
             write_container_file(CT, '/etc/nftables.conf', FIXTURES.fetch('nftables-config'))
@@ -414,10 +440,12 @@ import ../../make-test.nix (
               ipv4: IPV4,
               ipv6: IPV6
             )
+            prepare_apt_packages(
+              CT,
+              %w[openssh-server socat curl iptables]
+            )
             prepare_systemd_listeners(
               CT,
-              package_command: 'apt-get update && DEBIAN_FRONTEND=noninteractive ' \
-                'apt-get install -y openssh-server socat curl iptables',
               ssh_service: 'ssh.service'
             )
             enable_permissive_connection_tracking(CT)
@@ -453,9 +481,13 @@ import ../../make-test.nix (
               ipv4: IPV4,
               ipv6: IPV6
             )
+            in_container(
+              CT,
+              'dnf install -y openssh-server socat curl firewalld',
+              timeout: 1200
+            )
             prepare_systemd_listeners(
               CT,
-              package_command: 'dnf install -y openssh-server socat curl firewalld',
               ssh_service: 'sshd.service'
             )
             in_container(

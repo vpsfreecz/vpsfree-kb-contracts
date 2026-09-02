@@ -94,12 +94,14 @@ import ../../make-test.nix (
       end
 
       def install_libvirt(node, vps_id)
-        run_in_vps(
-          node,
-          vps_id,
-          install_libvirt_script,
-          environment: { 'DEBIAN_FRONTEND' => 'noninteractive' }
-        )
+        retry_apt_operation(name: "APT libvirt installation in VPS #{vps_id}") do
+          run_in_vps(
+            node,
+            vps_id,
+            install_libvirt_script,
+            environment: { 'DEBIAN_FRONTEND' => 'noninteractive' }
+          )
+        end
       end
 
       def run_command_in_vps(node, vps_id, command, timeout: 300)
@@ -759,10 +761,18 @@ import ../../make-test.nix (
       end
 
       def install_guest_appliance(node, vps_id)
+        container_apt_get(
+          node,
+          vps_id,
+          'install',
+          '--yes',
+          'curl',
+          name: "APT guest appliance preparation in VPS #{vps_id}",
+          environment: { 'DEBIAN_FRONTEND' => 'noninteractive' },
+          timeout: 1200,
+        )
         run_command_in_vps(node, vps_id, <<~'SH', timeout: 1200)
           set -euo pipefail
-          export DEBIAN_FRONTEND=noninteractive
-          apt-get install --yes curl
           install -d -m 0755 /var/lib/libvirt/boot
           install -d -m 0755 /usr/local/libexec
           curl --fail --show-error --silent \
@@ -1660,11 +1670,23 @@ import ../../make-test.nix (
               services.wait_for_service('nfs-ganesha')
               services.succeeds("rpcinfo -p 127.0.0.1 | grep -Eq '[[:space:]]nfs$'")
               services.fails("rpcinfo -p 127.0.0.1 | grep -Eq '[[:space:]]nlockmgr$'")
-              run_command_in_vps(
+              container_apt_get(
                 node1,
                 @vps_id,
-                'apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install --yes nfs-common qemu-system-x86',
-                timeout: 1200
+                'update',
+                name: "APT metadata refresh in VPS #{@vps_id}",
+                timeout: 1200,
+              )
+              container_apt_get(
+                node1,
+                @vps_id,
+                'install',
+                '--yes',
+                'nfs-common',
+                'qemu-system-x86',
+                name: "APT NFS package installation in VPS #{@vps_id}",
+                environment: { 'DEBIAN_FRONTEND' => 'noninteractive' },
+                timeout: 1200,
               )
               run_command_in_vps(node1, @vps_id, 'ping -c 1 -W 5 172.16.106.53')
               public_ipv4 = documentation_vps_public_ipv4(services, @vps_id)
