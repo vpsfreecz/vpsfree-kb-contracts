@@ -104,6 +104,31 @@ class KbVpsadminServicesMachine < OsVm::NixosMachine
 
       sleep 1
     end
+  rescue OsVm::TimeoutError => readiness_error
+    begin
+      execute(<<~'SH', timeout: 30)
+        set +e
+        systemctl status --no-pager --full \
+          vpsadmin-database-setup.service \
+          vpsadmin-devcluster-seed.service \
+          vpsadmin-notification-templates.service \
+          vpsadmin-api.service
+        journalctl --no-pager --output=short-precise --lines=400 \
+          --unit=vpsadmin-database-setup.service \
+          --unit=vpsadmin-devcluster-seed.service \
+          --unit=vpsadmin-notification-templates.service \
+          --unit=vpsadmin-api.service
+        ps axo pid,ppid,state,etime,%cpu,%mem,command --forest
+        exit 0
+      SH
+    rescue StandardError => diagnostic_error
+      warn(
+        'Unable to collect vpsAdmin API diagnostics: ' \
+        "#{diagnostic_error.class}: #{diagnostic_error.message}"
+      )
+    end
+
+    raise readiness_error
   end
 
   def api_ruby_json(code:, timeout: nil)
