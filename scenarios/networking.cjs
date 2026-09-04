@@ -1,3 +1,4 @@
+const { expect } = require('@playwright/test');
 const { renderTerminal, runTrafficMonitor } = require('../lib/terminal.cjs');
 const { goto } = require('../lib/webui.cjs');
 const { label } = require('../lib/i18n.cjs');
@@ -11,16 +12,19 @@ async function run({ cluster, fixtures, language, page, proxyUrl, repoRoot, sess
     'traffic/vps-monthly-transfers',
     page.locator('form', { hasText: label(language, 'transfersIn') }).first(),
   );
-  await session.locator(
-    page,
-    'networking/routed-addresses',
-    page.locator('form[action*="action=iproute_select"]'),
+  const routedAddressForm = page.locator(
+    'form[action*="action=iproute_select"]',
   );
-  await session.locator(
-    page,
-    'networking/interface-addresses',
-    page.locator('form[action*="action=hostaddr_add"]'),
+  await expect(routedAddressForm.locator('option[value="ipv6"]')).toHaveCount(1);
+  await session.locator(page, 'networking/routed-addresses', routedAddressForm);
+
+  const interfaceAddressForm = page.locator(
+    'form[action*="action=hostaddr_add"]',
   );
+  await expect(
+    interfaceAddressForm.locator('select[name="hostaddr_public_v6"]'),
+  ).toHaveCount(1);
+  await session.locator(page, 'networking/interface-addresses', interfaceAddressForm);
   await goto(page, fixtures.reverseRecordRoute);
   await session.locator(
     page,

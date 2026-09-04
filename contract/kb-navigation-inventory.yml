@@ -563,16 +563,16 @@ discoveries:
     z tohoto seznamu je možné adresy přiřazovat k VPS.
   paths:
   - networking.routable-addresses.open
-- id: b252e2d081162a54
+- id: d832c44e2844dbd8
   language: cs
   page: navody:vps:ip_adresy
   paragraph: 17
-  text: Z každé sítě vpsAdminu umožňuje přidat první adresu na síťové rozhraní. Pokud
-    jich potřebujete více, můžete si další IP adresy do vpsAdminu přidat. U seznamu
-    routovaných adres v detailu VPS klikneme na ikonku s popiskem „Spravovat adresy
-    hostitelů“ a potom „Přidat adresy hostitelů“.
-  reason: Existing WebUI reference outside the localized navigation-label set; inventoried
-    for future semantic binding.
+  text: Z každé sítě umožňuje vpsAdmin přidat první adresu na síťové rozhraní. Pokud
+    potřebuješ více adres, můžeš si je do vpsAdminu přidat. U seznamu routovaných
+    adres v detailu VPS klikni na ikonu „Spravovat adresy hostitelů“ a potom na „Přidat
+    adresy hostitelů“.
+  paths:
+  - networking.host-addresses.add
 - id: b907eca365e34783
   language: cs
   page: navody:vps:konzole
@@ -1369,16 +1369,16 @@ discoveries:
     VPSs directly from this list.
   paths:
   - networking.routable-addresses.open
-- id: a53f911927c35237
+- id: '081c9e6eab01e342'
   language: en
   page: manuals:vps:ip_addresses
   paragraph: 16
-  text: vpsAdmin only has the first host address from every network in its database.
-    In case you need more host addresses, you can add them to vpsAdmin's database.
-    In "Routed addresses" form, click on the icon with labeled "Manage host addresses"
-    and then "Add host addresses".
-  reason: Existing WebUI reference outside the localized navigation-label set; inventoried
-    for future semantic binding.
+  text: vpsAdmin initially adds only the first host address from each network to its
+    database. If you need more host addresses, you can add them yourself. In the "Routed
+    addresses" section of the VPS details, click the "Manage host addresses" icon,
+    then click "Add host addresses".
+  paths:
+  - networking.host-addresses.add
 - id: 1a0c97ae89f33527
   language: en
   page: manuals:vps:kvm

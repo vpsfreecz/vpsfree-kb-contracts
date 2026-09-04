@@ -1,5 +1,5 @@
 schema: 1
-vpsadmin_revision: ba1217fb2757cf8624ac0d1fd89d9466377b6289
+vpsadmin_revision: 1acc1955f0e7b4f2b67a18674d02a6da8e9e8da4
 languages:
   - cs
   - en
@@ -237,6 +237,22 @@ controls:
       - networking/ip-address-list
       - networking/routed-addresses
       - networking/interface-addresses
+
+  - id: networking.manage-host-addresses
+    label: { en: Manage host addresses, cs: Spravovat adresy hostitelů }
+    source:
+      path: webui/forms/vps.forms.php
+      contains: 'data-vpsadmin-doc-id="networking.manage-host-addresses"'
+      fingerprint: 92f57292f19aeff65b49d696bcf8ac891e02f0ddd4b5a2acfae09b1957c5f833
+    captures:
+      - networking/routed-addresses
+
+  - id: networking.add-host-addresses
+    label: { en: Add host addresses, cs: Přidat adresy hostitelů }
+    source:
+      path: webui/forms/networking.forms.php
+      contains: 'data-vpsadmin-doc-id="networking.add-host-addresses"'
+      fingerprint: 25d3647add7d4b51d28679a92148056768f2d047c2fb1589d0600785ec0beafc
 
   - id: networking.monthly-traffic
     label: { en: List monthly traffic, cs: Seznam měsíčního provozu }
@@ -509,6 +525,12 @@ paths:
     pages:
       cs: [navody:vps:ip_adresy, navody:vps:kvm]
       en: [manuals:vps:ip_addresses, manuals:vps:kvm]
+
+  - id: networking.host-addresses.add
+    steps: [networking.manage-host-addresses, networking.add-host-addresses]
+    pages:
+      cs: [navody:vps:ip_adresy]
+      en: [manuals:vps:ip_addresses]
 
   - id: networking.monthly-traffic.open
     steps: [networking.menu, networking.monthly-traffic]

@@ -1,6 +1,6 @@
 {
   "schema": 5,
-  "vpsadmin_commit": "ba1217fb2757cf8624ac0d1fd89d9466377b6289",
+  "vpsadmin_commit": "1acc1955f0e7b4f2b67a18674d02a6da8e9e8da4",
   "assets": [
     {
       "id": "getting-started/members-list",
@@ -1399,9 +1399,9 @@
           },
           "dimensions": {
             "width": 513,
-            "height": 204
+            "height": 230
           },
-          "sha256": "f6995c256ece1f4d5294156935dfb45ec5a6cd236c51f2675fb9ebb803ad6107",
+          "sha256": "61deda7109fb8fe1597abe5c7399281611a7edfaff0ae7a344630ab980368eb5",
           "review_status": "pending"
         },
         "en": {
@@ -1426,9 +1426,9 @@
           },
           "dimensions": {
             "width": 488,
-            "height": 204
+            "height": 230
           },
-          "sha256": "6547e80b4b17d5b6ba72162d8a45407e3805634111c83f8d215fdb639d4ad868",
+          "sha256": "37b68768fda0a06d4943c80ab192323328f9a09574de5b362bc35964e9dc83db",
           "review_status": "pending"
         }
       }
