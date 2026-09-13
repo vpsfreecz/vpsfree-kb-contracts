@@ -629,12 +629,12 @@ discoveries:
     URL v prohlížeči.
   paths:
   - member.metrics-access-tokens.open
-- id: 4687ac9f2b1e769b
+- id: 3ec755599e114959
   language: cs
   page: navody:vps:metriky
   paragraph: 5
-  text: Metrika ''vpsadmin_metrics_version'' udává verzi metrik, pokud sis nezměnil
-    prefix. Aktuální verze je ''1.1''. Při zpětně nekompatibilní změně se zvýší první
+  text: ===== Verzování metrik ===== Metrika ''vpsadmin_metrics_version'' udává
+    verzi metrik, pokud sis nezměnil prefix. Aktuální verze je ''1.1''. Při zpětně nekompatibilní změně se zvýší první
     číslo, například ''1.0 -> 2.0''. Číslo za desetinnou čárkou se může zvýšit při
     přidání metrik, které nemění význam těch stávajících.
   reason: Existing WebUI reference outside the localized navigation-label set; inventoried
@@ -1449,12 +1449,12 @@ discoveries:
     solution you prefer in the VPS details.
   reason: Existing WebUI reference outside the localized navigation-label set; inventoried
     for future semantic binding.
-- id: 561d6eb4fef6d7f3
+- id: 669859eca700c726
   language: en
   page: manuals:vps:metrics
   paragraph: 5
-  text: The metric ''vpsadmin_metrics_version'' indicates the metrics version, unless
-    you have changed the prefix. The current version is ''1.1''. The first number
+  text: ===== Metrics versioning ===== The metric ''vpsadmin_metrics_version''
+    indicates the metrics version, unless you have changed the prefix. The current version is ''1.1''. The first number
     increases for a backward-incompatible change, for example ''1.0 -> 2.0''. The
     number after the decimal point may increase when metrics are added without changing
     the meaning of existing metrics. <page>manuals:vps:metrics</page>
