@@ -1,5 +1,5 @@
 schema: 1
-vpsadmin_revision: 791ab3aa89e2f613979da6090b89785c78245db5
+vpsadmin_revision: ddd01f59ca533c030f29b9b8a75984699e5dc581
 languages:
   - cs
   - en
@@ -191,6 +191,13 @@ controls:
     captures:
       - account/mail-template-recipients
       - account/email-roles
+
+  - id: member.email-verification
+    label: { en: Email verification, cs: Ověřování e-mailem }
+    source:
+      path: webui/pages/page_adminm.php
+      contains: 'member.email-verification'
+      fingerprint: 86563c203fcc53dd6b833cb1dad96969bcaaad4fadef008f5d2a21200c0ac8d6
 
   - id: member.totp-devices
     label: { en: TOTP devices, cs: TOTP zařízení }
@@ -502,6 +509,12 @@ paths:
     pages:
       cs: [navody:vps:prostredi]
       en: [manuals:vps:environment]
+
+  - id: member.email-verification.open
+    steps: [member.edit-profile, member.email-verification]
+    pages:
+      cs: [navody:vps:uzivatele]
+      en: [manuals:vps:users]
 
   - id: member.passkeys.open
     steps: [member.edit-profile, member.passkeys]

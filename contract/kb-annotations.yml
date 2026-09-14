@@ -2,6 +2,14 @@
 schema: 1
 bindings:
 - language: cs
+  page: navody:vps:uzivatele
+  path: member.email-verification.open
+  count: 1
+- language: en
+  page: manuals:vps:users
+  path: member.email-verification.open
+  count: 1
+- language: cs
   page: informace:novacci
   path: member.list.open
   count: 1
