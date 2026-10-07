@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { execFileSync, spawnSync } = require('child_process');
+const https = require('https');
 
 const { datasetIdsFromHrefs } = require('../lib/dataset-links.cjs');
 const { fixturesFor } = require('../lib/i18n.cjs');
@@ -68,6 +68,7 @@ async function createVpsIn(
   boot,
   environmentLabel,
   locationLabel,
+  resources,
 ) {
   await goto(page, `/?page=adminvps&action=new-step-1&user=${userId}`);
   const environmentForm = page.locator('form[name="newvps-step1"]');
@@ -93,6 +94,11 @@ async function createVpsIn(
   await preparePage(page);
 
   form = page.locator('form[name="newvps-step3"]');
+  if (resources) {
+    for (const [name, value] of Object.entries(resources)) {
+      await form.locator(`input[name="${name}"]`).fill(String(value));
+    }
+  }
   await submitLast(form);
   await page.waitForLoadState('domcontentloaded');
   await preparePage(page);
@@ -359,20 +365,8 @@ async function ensureSshHostKey(cluster, page, node, vpsId) {
     'printf "%s\\n" "$key" > "$root/etc/ssh/ssh_host_ed25519_key.pub"',
   ].join('\n');
   const encodedPublicKey = Buffer.from(DOCUMENTATION_HOST_PUBLIC_KEY).toString('base64');
-  execFileSync(
-    cluster.commandPath,
-    cluster.sshArgs(node, [
-      'bash', '-s', '--', String(vpsId), encodedPublicKey,
-    ]),
-    { input: `${script}\n`, stdio: ['pipe', 'pipe', 'pipe'] },
-  );
-  execFileSync(
-    cluster.commandPath,
-    cluster.sshArgs(node, [
-      'nodectl', 'update', 'ssh-host-keys', String(vpsId),
-    ]),
-    { stdio: ['ignore', 'pipe', 'pipe'] },
-  );
+  await cluster.ssh(node, ['bash', '-s', '--', String(vpsId), encodedPublicKey], { input: `${script}\n` });
+  await cluster.ssh(node, ['nodectl', 'update', 'ssh-host-keys', String(vpsId)]);
 
   const route = `/?page=adminvps&action=info&veid=${vpsId}`;
   const deadline = Date.now() + 2 * 60_000;
@@ -422,7 +416,7 @@ async function ensureSnapshot(page, datasetId, snapshotLabel) {
   };
 }
 
-function ensureNixosGenerations(cluster, node, vpsId) {
+async function ensureNixosGenerations(cluster, node, vpsId) {
   const script = [
     'set -eu',
     'root=$(osctl ct show -H -o rootfs "$1")',
@@ -435,46 +429,198 @@ function ensureNixosGenerations(cluster, node, vpsId) {
     'touch -h -t 202501011000.00 "$root/nix/var/nix/profiles/system-1-link" || true',
     'touch -h -t 202506011000.00 "$root/nix/var/nix/profiles/system-2-link" || true',
   ].join('; ');
-  execFileSync(
-    cluster.commandPath,
-    cluster.sshArgs(node, ['bash', '-s', '--', String(vpsId)]),
-    { input: `${script}\n`, stdio: ['pipe', 'pipe', 'pipe'] },
-  );
+  await cluster.ssh(node, ['bash', '-s', '--', String(vpsId)], { input: `${script}\n` });
 }
 
-function generateTrafficSamples(cluster, node, vpsId) {
-  const result = spawnSync(cluster.commandPath, cluster.sshArgs(node, [
+async function generateTrafficSamples(cluster, node, vpsId) {
+  const output = await cluster.ssh(node, [
     'osctl', 'ct', 'exec', String(vpsId),
     '/bin/ping', '-c', '200', '-i', '0.02', '-W', '1', '198.51.100.1',
-  ]), { encoding: 'utf8', timeout: 15_000 });
-  if (result.error || ![0, 1].includes(result.status) || !result.stdout.includes('PING')) {
-    throw new Error(
-      `Unable to generate traffic for VPS #${vpsId}: ${result.error || result.stderr}`,
-    );
-  }
+  ], { accepted: [0, 1], timeout: 15_000 });
+  if (!output.includes('PING')) throw new Error(`Unable to generate fixture traffic for VPS #${vpsId}`);
 }
 
-function networkInterface(cluster, node, vpsId) {
-  const output = execFileSync(
-    cluster.commandPath,
-    cluster.sshArgs(node, [
-      'osctl', 'ct', 'exec', String(vpsId), '/bin/ls', '/sys/class/net',
-    ]),
-    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
-  );
+async function networkInterface(cluster, node, vpsId) {
+  const output = await cluster.ssh(node, [
+    'osctl', 'ct', 'exec', String(vpsId), '/bin/ls', '/sys/class/net',
+  ]);
   const excluded = new Set(['erspan0', 'gre0', 'gretap0', 'ip6tnl0', 'lo', 'tunl0']);
   const interfaces = output.trim().split(/\s+/).filter((name) => !excluded.has(name));
-  if (interfaces.length !== 1) {
-    throw new Error(`Expected one fixture network interface, found: ${interfaces.join(', ')}`);
-  }
+  if (interfaces.length !== 1) throw new Error('Expected exactly one fixture network interface');
   return interfaces[0];
 }
 
-async function prepareFixtures({ cluster, language, page, required, repoRoot }) {
+// The dedicated inventory fixture uses ordinary authenticated resource actions.
+// Its HTTPS destination still comes exclusively from the leased descriptor.
+function inventoryApi(cluster, login) {
+  return async (method, resource, body) => {
+    cluster.assertLease();
+    const url = new URL(`v1/${resource}`, cluster.apiUrl);
+    const endpoint = cluster.route(url);
+    const account = cluster.account(login);
+    const bytes = body === undefined ? null : JSON.stringify(body);
+    return new Promise((resolve, reject) => {
+      const request = https.request({
+        hostname: endpoint.host, port: endpoint.port, servername: url.hostname,
+        path: `${url.pathname}${url.search}`, method,
+        ca: fs.readFileSync(cluster.caPath), signal: cluster.lease.signal,
+        headers: {
+          Host: url.host, Accept: 'application/json',
+          Authorization: `Basic ${Buffer.from(`${account.login}:${account.password}`).toString('base64')}`,
+          ...(bytes ? { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(bytes) } : {}),
+        },
+      }, (response) => {
+        let data = '';
+        response.setEncoding('utf8');
+        response.on('data', (chunk) => {
+          data += chunk;
+          if (data.length > 2 * 1024 * 1024) request.destroy(new Error('Inventory response exceeds limit'));
+        });
+        response.on('error', reject);
+        response.on('end', () => {
+          try {
+            cluster.assertLease();
+            const value = JSON.parse(data);
+            if (response.statusCode !== 200 || value.status !== true) throw new Error('Inventory resource action failed');
+            resolve(value.response);
+          } catch (error) { reject(error); }
+        });
+      });
+      request.setTimeout(30000, () => request.destroy(new Error('Inventory resource action timed out')));
+      request.on('error', reject);
+      request.end(bytes);
+    });
+  };
+}
+
+function inventoryAccounts(cluster) {
+  cluster.assertLease();
+  const required = [['test-admin', 99, 1], ['test-user1', 1, 9], ['test-user2', 1, 17]];
+  for (const [login, level, blockStart] of required) {
+    const matches = cluster.accounts.filter((account) => account.login === login);
+    if (matches.length !== 1) throw new Error('Missing or duplicate inventory account');
+    const account = matches[0];
+    if (account.level !== level || typeof account.password !== 'string' || !account.password
+        || typeof account.fullName !== 'string' || !account.fullName.trim()
+        || account.email !== `${login}@example.test`
+        || account.namespace?.blockStart !== blockStart || account.namespace?.blockCount !== 8) {
+      throw new Error('Inventory account role, identity or namespace differs');
+    }
+  }
+}
+
+async function inventoryIdentity(cluster) {
+  inventoryAccounts(cluster);
+  const memberApi = inventoryApi(cluster, 'test-user1');
+  const adminApi = inventoryApi(cluster, 'test-admin');
+  const member = (await memberApi('GET', 'users/current')).user;
+  const admin = (await adminApi('GET', 'users/current')).user;
+  if (member?.login !== 'test-user1' || member.level !== 1 || !Number.isInteger(member.id) || member.id <= 0
+      || admin?.login !== 'test-admin' || admin.level !== 99 || !Number.isInteger(admin.id) || admin.id <= 0
+      || member.id === admin.id) {
+    throw new Error('Inventory API identities or roles differ');
+  }
+  return { member: { id: member.id, login: member.login }, adminApi };
+}
+
+async function assertInventoryMember(page, member) {
+  const profile = page.locator('[data-vpsadmin-doc-id="member.edit-profile"]');
+  const logbox = page.locator('#logbox-submit');
+  if (!member || member.login !== 'test-user1' || !Number.isInteger(member.id) || member.id <= 0
+      || await profile.count() !== 1 || await logbox.count() !== 1
+      || await page.locator('a[href*="action=regain_admin"]').count() !== 0) {
+    throw new Error('Inventory browser is not the proved ordinary member');
+  }
+  const href = await profile.getAttribute('href');
+  const login = (await logbox.getAttribute('value'))?.match(/\(([^()]*)\)\s*⯆?\s*$/)?.[1];
+  if (!href || new URL(href, page.url()).searchParams.get('id') !== String(member.id) || login !== member.login) {
+    throw new Error('Inventory browser identity differs from the proved member');
+  }
+}
+
+const INVENTORY_POOL = { label: 'Documentation disabled inventory', address: '203.0.113.0',
+  prefix: 24, ip_version: 4, role: 'public_access', managed: true,
+  split_access: 'no_access', split_prefix: 32, purpose: 'vps' };
+const INVENTORY_IP = '203.0.113.10';
+const INVENTORY_RESOURCES = { cpu: 1, memory: 1024, swap: 0, diskspace: 4096 };
+const resourceId = (value) => value && typeof value === 'object' ? value.id : value;
+
+async function ensureIpInventory(api, { userId, vpsId }) {
+  const vps = (await api('GET', `vpses/${vpsId}`)).vps;
+  if (resourceId(vps.user) !== userId || vps.hostname !== 'ip-inventory'
+      || Object.entries(INVENTORY_RESOURCES).some(([key, value]) => Number(vps[key]) !== value)) {
+    throw new Error('Unexpected inventory VPS owner, identity or resources');
+  }
+  const node = (await api('GET', `nodes/${resourceId(vps.node)}`)).node;
+  const locationId = resourceId(node.location);
+  const location = (await api('GET', `locations/${locationId}`)).location;
+  const networks = (await api('GET', 'networks?limit=1000')).networks;
+  if (networks.length === 1000) throw new Error('Inventory network selection is truncated');
+  for (const address of ['198.51.100.0', '2001:db8:106::']) {
+    const primary = networks.filter((network) => network.address === address);
+    if (primary.length !== 1 || primary[0].enabled !== true) throw new Error('Primary inventory pool is not enabled');
+  }
+  const matching = networks.filter((network) => network.address === INVENTORY_POOL.address
+    || network.label === INVENTORY_POOL.label);
+  if (matching.length > 1) throw new Error('Dedicated inventory network identity collision');
+  let pool = matching[0];
+  if (pool && Object.entries(INVENTORY_POOL).some(([key, value]) => pool[key] !== value)) {
+    throw new Error('Unexpected dedicated inventory network');
+  }
+  if (!pool) pool = (await api('POST', 'networks', { network: { ...INVENTORY_POOL, enabled: true } })).network;
+  let locations = (await api('GET', `location_networks?network=${pool.id}&limit=1000`)).location_networks;
+  if (locations.length > 1 || (locations.length === 1 && resourceId(locations[0].location) !== locationId)) {
+    throw new Error('Unexpected dedicated inventory location');
+  }
+  if (locations.length === 0) {
+    if (pool.enabled !== true) throw new Error('Disabled inventory pool is incomplete');
+    locations = [(await api('POST', 'location_networks', { location_network: {
+      network: pool.id, location: locationId, primary: false, priority: 100, autopick: false, userpick: false,
+    } })).location_network];
+  }
+  if (locations[0].primary !== false || locations[0].autopick !== false || locations[0].userpick !== false) {
+    throw new Error('Dedicated inventory location is unexpectedly pickable');
+  }
+  const addresses = (await api('GET', `ip_addresses?network=${pool.id}&limit=1000`)).ip_addresses;
+  if (addresses.length > 1) throw new Error('Dedicated inventory pool has unexpected addresses');
+  let ip = addresses[0];
+  if (!ip) {
+    if (pool.enabled !== true) throw new Error('Disabled inventory pool is incomplete');
+    ip = (await api('POST', 'ip_addresses', { ip_address: {
+      addr: `${INVENTORY_IP}/32`, network: pool.id, user: userId, location: locationId,
+    } })).ip_address;
+  }
+  if (ip.addr !== INVENTORY_IP || ip.prefix !== 32 || resourceId(ip.network) !== pool.id
+      || resourceId(ip.user) !== userId || ip.network_interface !== null
+      || resourceId(ip.charged_environment) !== resourceId(location.environment)) {
+    throw new Error('Unexpected dedicated inventory address ownership, charge or assignment');
+  }
+  const assigned = (await api('GET', `ip_addresses?vps=${vpsId}&version=4&limit=1000`)).ip_addresses;
+  if (!assigned.some((entry) => entry.addr.startsWith('198.51.100.') && resourceId(entry.user) === userId)) {
+    throw new Error('Inventory VPS has no real enabled assigned IPv4 address');
+  }
+  if (pool.enabled === true) {
+    pool = (await api('PUT', `networks/${pool.id}`, { network: { enabled: false } })).network;
+  }
+  if (pool.enabled !== false) throw new Error('Dedicated inventory network did not become disabled');
+  return { inventoryVpsId: vpsId, disabledIpId: ip.id, disabledNetworkId: pool.id, disabledAddress: INVENTORY_IP };
+}
+
+async function prepareFixtures({ cluster, language, page, required, invocationRoot }) {
   const requiredSet = new Set(required);
   const fixtureLabels = fixturesFor(language);
-  const userId = await findUserId(page, 'test-user1');
   const fixtures = {};
+  let userId;
+  if (requiredSet.has('ip-inventory')) {
+    const { member, adminApi } = await inventoryIdentity(cluster);
+    userId = member.id;
+    await assertInventoryMember(page, member);
+    let inventoryVps = await findOwnedVps(page, 'ip-inventory');
+    await assertInventoryMember(page, member);
+    if (!inventoryVps) inventoryVps = await createVpsIn(page, userId, 'ip-inventory', true, 'Production', 'Praha', INVENTORY_RESOURCES);
+    await waitForRunning(page, inventoryVps);
+    Object.assign(fixtures, { inventoryMember: member }, await ensureIpInventory(adminApi, { userId, vpsId: inventoryVps }));
+  } else userId = await findUserId(page, 'test-user1');
   let datasetId;
   let node;
   let vpsId;
@@ -494,7 +640,7 @@ async function prepareFixtures({ cluster, language, page, required, repoRoot }) 
     datasetId = await rootDatasetId(page, vpsId);
     node = await vpsNodeMachine(page, vpsId);
     Object.assign(fixtures, { vpsId, datasetId, node, hostname: 'vps' });
-    fixtures.networkInterface = networkInterface(cluster, node, vpsId);
+    fixtures.networkInterface = await networkInterface(cluster, node, vpsId);
     fixtures.reverseRecordRoute = await ensureInterfaceAddress(page, vpsId);
     fixtures.childDatasetId = await ensureChildDataset(page, vpsId, datasetId);
     await ensureMount(page, vpsId, fixtures.childDatasetId);
@@ -541,16 +687,17 @@ async function prepareFixtures({ cluster, language, page, required, repoRoot }) 
     fixtures.snapshot = await ensureSnapshot(page, datasetId, fixtureLabels.snapshot);
   }
   if (requiredSet.has('nixos-generations')) {
-    ensureNixosGenerations(cluster, node, vpsId);
+    await ensureNixosGenerations(cluster, node, vpsId);
   }
   if (requiredSet.has('traffic-samples')) {
-    generateTrafficSamples(cluster, node, vpsId);
+    await generateTrafficSamples(cluster, node, vpsId);
   }
 
-  const target = path.join(repoRoot, 'tmp/fixtures.json');
+  const target = path.join(invocationRoot, 'fixtures.json');
   fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.writeFileSync(target, `${JSON.stringify(fixtures, null, 2)}\n`);
+  fs.writeFileSync(target, `${JSON.stringify(fixtures, null, 2)}\n`, { mode: 0o600 });
   return fixtures;
 }
 
-module.exports = { generateTrafficSamples, prepareFixtures };
+module.exports = { assertInventoryMember, createVpsIn, ensureIpInventory, generateTrafficSamples, inventoryAccounts,
+  inventoryApi, inventoryIdentity, INVENTORY_POOL, INVENTORY_IP, INVENTORY_RESOURCES, prepareFixtures };

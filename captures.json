@@ -1224,8 +1224,7 @@
       "checkpoint": "networking/ip-address-list",
       "driver": "webui",
       "fixtures": [
-        "base-vps",
-        "traffic-samples"
+        "ip-inventory"
       ],
       "description": "Current routable-address list",
       "viewport": {

@@ -4,6 +4,12 @@ on:
   pull_request:
   push:
   workflow_dispatch:
+    inputs:
+      strict:
+        description: Check the full committed screenshot inventory
+        type: boolean
+        required: false
+        default: false
 
 permissions:
   contents: read
@@ -18,9 +24,16 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Install upstream Nix
+        # Retain v22 so source and strict runs share the existing installer setup;
+        # qualify installer upgrades separately from this media-mode change.
         uses: DeterminateSystems/nix-installer-action@v22
         with:
           determinate: false
 
-      - name: Run repository checks
+      - name: Run strict repository checks
+        if: github.event_name == 'workflow_dispatch' && inputs.strict == true
+        run: nix develop --command bin/check
+
+      - name: Run source repository checks
+        if: github.event_name != 'workflow_dispatch' || inputs.strict != true
         run: nix develop --command bin/check --allow-missing
