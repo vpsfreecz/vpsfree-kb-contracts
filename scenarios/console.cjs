@@ -70,7 +70,7 @@ async function run({ cluster, fixtures, language, page, session }) {
     }
     if (/Start Menu/.test(initial)) await send(remote.frame, 'i');
     await waitForConsoleText(remote.frame, guestBoot);
-    const banner = debianConsoleBanner(
+    const banner = await debianConsoleBanner(
       cluster,
       fixtures.node,
       fixtures.vpsId,

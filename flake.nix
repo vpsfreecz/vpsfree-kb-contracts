@@ -53,6 +53,8 @@
       vpsadminGoClientSourcePath = env "VPSADMIN_DEVCLUSTER_VPSADMIN_GO_CLIENT_SOURCE" "";
       telegramSecretsSourcePath = env "VPSADMIN_DEVCLUSTER_TELEGRAM_SECRETS" "";
       telegramEnable = env "VPSADMIN_DEVCLUSTER_TELEGRAM_ENABLE" "0";
+      instanceId = env "VPSADMIN_KB_INSTANCE_ID" "";
+      captureIdentityFile = env "VPSADMIN_KB_CAPTURE_IDENTITY_FILE" "";
 
       pkgs = import nixpkgs {
         inherit system;
@@ -88,6 +90,8 @@
           vpsadminGoClientSourcePath
           telegramEnable
           telegramSecretsSourcePath
+          instanceId
+          captureIdentityFile
           ;
       };
 
@@ -111,9 +115,61 @@
       runner = pkgs.writeShellScriptBin "vpsadmin-kb-capture-cluster-runner" ''
         export GEM_HOME=${runnerDeps}/${ruby.gemPath}
         export GEM_PATH=${runnerDeps}/${ruby.gemPath}
-        export RUBYLIB=${./cluster/lib}:${vpsadminos.outPath}/test-runner/lib:${vpsadminos.outPath}/osvm/lib:${vpsadminos.outPath}/libosctl/lib
+        export RUBYLIB=${self}/cluster/lib:${vpsadminos.outPath}/test-runner/lib:${vpsadminos.outPath}/osvm/lib:${vpsadminos.outPath}/libosctl/lib
 
-        exec ${ruby}/bin/ruby ${./cluster/lib/runner.rb} "$@"
+        exec ${ruby}/bin/ruby ${self}/cluster/lib/runner.rb "$@"
+      '';
+
+      sourceMetadata = toolPkgs.runCommand "vpsfree-kb-runtime-source.json" { nativeBuildInputs = [ toolPkgs.ruby ]; } ''
+        ruby ${self}/cluster/source-metadata.rb ${self} ${lib.escapeShellArg (self.rev or "")} > "$out"
+      '';
+      runtimeTools = [ toolPkgs.coreutils toolPkgs.git toolPkgs.iputils toolPkgs.nix
+        toolPkgs.openssh toolPkgs.openssl toolPkgs.ruby toolPkgs.util-linux ];
+      runtimePackage = toolPkgs.writeShellApplication {
+        name = "vpsfree-kb-devcluster";
+        runtimeInputs = runtimeTools;
+        text = ''
+          exec ruby ${self}/cluster/launcher.rb \
+            --state-root "$PWD/.devcluster/v2" \
+            --software-metadata ${sourceMetadata} "$@"
+        '';
+      };
+      capturePackage = toolPkgs.symlinkJoin {
+        name = "vpsfree-kb-capture";
+        paths = [
+          (toolPkgs.writeShellApplication {
+            name = "vpsfree-kb-capture";
+            runtimeInputs = runtimeTools ++ [ toolPkgs.nodejs toolPkgs.vpsfree-client ];
+            text = ''
+              export NODE_PATH=${toolPkgs.playwright-test}/lib/node_modules
+              export PLAYWRIGHT_BROWSERS_PATH=${toolPkgs.playwright-driver.browsers}
+              export FONTCONFIG_FILE=${fontConfig}
+              exec node ${self}/runner/package-capture.cjs ${sourceMetadata} "$@"
+            '';
+          })
+          (toolPkgs.writeShellApplication {
+            name = "vpsfree-kb-validate";
+            runtimeInputs = runtimeTools ++ [ toolPkgs.nodejs ];
+            text = ''
+              exec ruby ${self}/runner/validate-entry.rb "$PWD" ${sourceMetadata} "$@"
+            '';
+          })
+        ];
+      };
+
+      standaloneProfile = import ./nix/standalone-profile.nix;
+      standaloneTestConfig = toolPkgs.writeText "vpsfree-kb-standalone-test-config.nix" ''
+        {
+          kbStandalone = {
+            schema = 1;
+            revision = ${builtins.toJSON (standaloneProfile.cleanRevision self)};
+            source = ${builtins.toJSON (toString self)};
+            lockSha256 = ${builtins.toJSON (builtins.hashFile "sha256" ./flake.lock)};
+            sourceMetadata = ${builtins.toJSON (toString sourceMetadata)};
+            runtimePackage = ${builtins.toJSON (toString runtimePackage)};
+            capturePackage = ${builtins.toJSON (toString capturePackage)};
+          };
+        }
       '';
 
       # Reuse the Git-filtered flake source. Resolving the checkout as a plain
@@ -124,6 +180,7 @@
       '';
 
       testSuiteArgs = {
+        kbStandalone = null;
         inherit
           lib
           vpsadmin
@@ -134,16 +191,28 @@
 
       withTestFrameworkDefaults =
         args:
-        {
+        args // {
           pkgsPath = args.pkgsPath or nixpkgs.outPath;
-          suiteArgs = args.suiteArgs or testSuiteArgs;
-        }
-        // args;
+          suiteArgs = (args.suiteArgs or testSuiteArgs) // {
+            kbStandalone = if (args.testConfig or { }) ? kbStandalone then
+              standaloneProfile.validate {
+                source = self.outPath;
+                record = args.testConfig.kbStandalone;
+              }
+            else null;
+          };
+        };
     in
     {
+      runtimePlan = clusterConfig.config;
+      runtimeRunner = { executable = "${ruby}/bin/ruby"; entrypoint = "${self}/cluster/lib/runner.rb"; };
       packages.${system} = {
         cluster-config = clusterConfig.json;
         inherit runner;
+        kb-runtime = runtimePackage;
+        capture = capturePackage;
+        runtime-source = sourceMetadata;
+        standalone-test-config = standaloneTestConfig;
         test-runner = testRunner;
         default = clusterConfig.json;
       };
@@ -153,6 +222,8 @@
           type = "app";
           program = "${runner}/bin/vpsadmin-kb-capture-cluster-runner";
         };
+        kb-runtime = { type = "app"; program = "${runtimePackage}/bin/vpsfree-kb-devcluster"; };
+        capture = { type = "app"; program = "${capturePackage}/bin/vpsfree-kb-capture"; };
         test-runner = {
           type = "app";
           program = "${testRunner}/bin/test-runner";
@@ -186,10 +257,13 @@
           openssh
           openssl
           fontconfig
+          git
+          iputils
+          nix
           liberation_ttf
           playwright-test
           procps
-          ruby
+          (ruby.withPackages (gems: [ gems.minitest ]))
           shellcheck
           util-linux
           vpsfree-client
@@ -199,6 +273,13 @@
         NODE_PATH = "${toolPkgs.playwright-test}/lib/node_modules";
         FONTCONFIG_FILE = fontConfig;
         VPSADMIN_KB_VPSADMIN_SOURCE = vpsadmin.outPath;
+        VPSADMIN_KB_OSVM_SOURCE = vpsadminos.outPath;
+        shellHook = ''
+          unset RUBYOPT RUBYLIB GEM_HOME GEM_PATH BUNDLE_GEMFILE BUNDLE_PATH BUNDLE_BIN BUNDLE_WITH BUNDLE_WITHOUT
+          export GEM_HOME="$(${toolPkgs.ruby}/bin/ruby --disable-gems -rrubygems -e 'print Gem.default_dir')"
+          export GEM_PATH="$GEM_HOME"
+          export RUBYLIB=${vpsadminos.outPath}/osvm/lib:${vpsadminos.outPath}/test-runner/lib:${vpsadminos.outPath}/libosctl/lib
+        '';
       };
     };
 }

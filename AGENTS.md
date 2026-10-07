@@ -45,12 +45,14 @@ informal singular forms (`tykání`), for example `můžeš`, `potřebuješ`,
 `nainstaluj`, and `použij`. Do not use formal `vy` or plural imperatives as a
 polite form; use plural only when genuinely addressing multiple people.
 
-Before writing or editing user-facing prose, read and apply the workspace skill
-at `../../../skills/vpsfree-user-facing-writing/SKILL.md` from this initiative
-worktree. The standard workspace layout defined by the top-level `AGENTS.md`
-makes that the canonical copy; if it is unavailable, stop and report the
-missing workspace dependency instead of silently skipping it. Apply the skill
-directly after technical facts are settled and before committing. Do not hand
+Before writing or editing user-facing prose, read and apply the
+`vpsfree-user-facing-writing` skill from the active agent's configured skill
+catalog. Resolve its `SKILL.md` through that catalog rather than assuming a
+workspace checkout layout. If the skill is unavailable, stop and report the
+missing writing guidance instead of silently skipping it.
+
+Apply the skill directly after technical facts are settled and before committing.
+Do not hand
 the main rewrite to a context-poor subagent; use a fresh agent only to review
 the finished result. In Czech pages, translate human-readable comments in
 scripts and configuration examples while preserving executable lines,
@@ -75,3 +77,6 @@ or revision counters in them; Git and DokuWiki retain revision history. Never
 reuse or overwrite a legacy production media ID during the initial migration.
 After publication, a refreshed capture updates the same canonical media ID so
 existing pages do not require reference-only edits.
+
+Before changing launcher, capture runtime or provider integration, read
+`cluster/runtime-contract.md` for its ownership, source and lease contracts.

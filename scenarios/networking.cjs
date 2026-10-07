@@ -3,7 +3,7 @@ const { renderTerminal, runTrafficMonitor } = require('../lib/terminal.cjs');
 const { goto } = require('../lib/webui.cjs');
 const { label } = require('../lib/i18n.cjs');
 
-async function run({ cluster, fixtures, language, page, proxyUrl, repoRoot, session }) {
+async function run({ cluster, fixtures, language, page, proxyUrl, sourceRoot, invocationRoot, session }) {
   const vps = fixtures.vpsId;
 
   await goto(page, `/?page=adminvps&action=info&veid=${vps}`);
@@ -42,7 +42,7 @@ async function run({ cluster, fixtures, language, page, proxyUrl, repoRoot, sess
   await session.locator(page, 'traffic/live-monitor-web', page.locator('#content-in'));
 
   if (session.wants('traffic/live-monitor-cli')) {
-    const output = await runTrafficMonitor({ cluster, fixtures, proxyUrl, repoRoot });
+    const output = await runTrafficMonitor({ cluster, fixtures, proxyUrl, sourceRoot, invocationRoot });
     const terminal = await page.context().newPage();
     try {
       await renderTerminal(

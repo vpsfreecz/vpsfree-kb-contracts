@@ -21,6 +21,7 @@ let
   };
 in
 testLib.makeTests [
+  "runtime/standalone"
   "kb/firewall"
   "kb/gre"
   "kb/guix"

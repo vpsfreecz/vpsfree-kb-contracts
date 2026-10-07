@@ -22,6 +22,18 @@
     "bridge": "br0",
     "gateway": "172.16.106.1"
   },
+  "local": {
+    "bindAddress": "127.0.0.1",
+    "multicastPort": 10000,
+    "ports": {
+      "services": { "ssh": 10022, "https": 10443 },
+      "node1": { "ssh": 10122 },
+      "node2": { "ssh": 10222 },
+      "backuper1": { "ssh": 10322 },
+      "dns-primary": { "ssh": 10422 },
+      "dns-secondary": { "ssh": 10522 }
+    }
+  },
   "resolver": {
     "mode": "cluster",
     "upstreamNameservers": ["172.16.9.90", "172.19.9.90"]

@@ -5,6 +5,11 @@ require 'json'
 require 'optparse'
 require 'osvm'
 require 'time'
+require 'socket'
+require 'timeout'
+require_relative 'kb_state'
+require_relative 'kb_process'
+require_relative 'kb_machine'
 
 module DevClusters
   class OsVmRunner
@@ -28,7 +33,7 @@ module DevClusters
       when 'start'
         start
       else
-        warn "Usage: #{$PROGRAM_NAME} start --config PATH --state-dir DIR --sock-dir DIR --pid-file PATH --ready-file PATH"
+        warn "Usage: #{$PROGRAM_NAME} start --config PATH --state-dir DIR --sock-dir DIR --launch-file PATH --state-root DIR --slug SLUG --instance-id ID --run-id ID"
         2
       end
     end
@@ -46,20 +51,57 @@ module DevClusters
         parser.on('--config PATH') { |v| opts[:config] = v }
         parser.on('--state-dir DIR') { |v| opts[:state_dir] = v }
         parser.on('--sock-dir DIR') { |v| opts[:sock_dir] = v }
-        parser.on('--pid-file PATH') { |v| opts[:pid_file] = v }
-        parser.on('--ready-file PATH') { |v| opts[:ready_file] = v }
+        parser.on('--launch-file PATH') { |v| opts[:launch_file] = v }
+        parser.on('--state-root PATH') { |v| opts[:state_root] = v }
+        parser.on('--slug SLUG') { |v| opts[:slug] = v }
+        parser.on('--instance-id ID') { |v| opts[:instance_id] = v }
+        parser.on('--run-id ID') { |v| opts[:run_id] = v }
+        parser.on('--artifact-id ID') { |v| opts[:artifact_id] = v }
+        parser.on('--artifact-sha256 SHA') { |v| opts[:artifact_sha256] = v }
         parser.on('--timeout SECONDS', Integer) { |v| opts[:timeout] = v }
       end.parse!(@argv)
 
-      %i[config state_dir sock_dir pid_file ready_file].each do |key|
+      %i[config state_dir sock_dir launch_file state_root slug instance_id run_id artifact_id artifact_sha256].each do |key|
         raise ArgumentError, "--#{key.to_s.tr('_', '-')} is required" unless opts[key]
       end
 
-      FileUtils.mkdir_p(opts[:state_dir])
-      FileUtils.mkdir_p(opts[:sock_dir])
-      FileUtils.mkdir_p(File.dirname(opts[:pid_file]))
-      FileUtils.rm_f(opts[:ready_file])
-      File.write(opts[:pid_file], "#{Process.pid}\n")
+      state = KbRuntime::State.new(opts[:state_root], opts[:slug])
+      launch = state.read(opts[:launch_file])
+      unless state.identity['instance_id'] == opts[:instance_id] && launch['instance_id'] == opts[:instance_id] && launch['run_id'] == opts[:run_id] &&
+             launch['config_path'] == opts[:config] && launch['state_dir'] == opts[:state_dir] && launch['socket_dir'] == opts[:sock_dir] &&
+             launch['artifact_id'] == opts[:artifact_id] && launch['artifact_sha256'] == opts[:artifact_sha256] &&
+             launch['boot_id'] == KbRuntime::ProcessIdentity.boot_id
+        raise KbRuntime::Error, 'runner launch identity differs'
+      end
+      state.private_directory(opts[:state_dir]) || raise(KbRuntime::Error, 'runner state is absent')
+      state.private_directory(opts[:sock_dir]) || raise(KbRuntime::Error, 'runner sockets are absent')
+      @hash_base = launch.fetch('network_id')
+      artifact_bytes = state.file(state.path("artifact-#{launch.fetch('artifact_id')}.json"))
+      raise KbRuntime::Error, 'runner artifact differs' unless Digest::SHA256.hexdigest(artifact_bytes) == launch['artifact_sha256']
+      @artifact = JSON.parse(artifact_bytes)
+      @state = state
+
+      state.lock('runner', create: true) { run_owned(opts, state, launch) }
+    end
+
+    def run_owned(opts, state, launch)
+      File.umask(0o077)
+      process_path = state.path("processes-#{opts[:run_id]}.json")
+      ready_path = state.path("ready-#{opts[:run_id]}.json")
+      runner = KbRuntime::ProcessIdentity.read(Process.pid)
+      raise KbRuntime::Error, 'runner tuple differs' unless KbRuntime::ProcessIdentity.runner_matches?(runner, launch)
+      children = {}
+      complete = false
+      mutex = Mutex.new
+      publish = proc do
+        mutex.synchronize do
+          KbRuntime::ProcessIdentity.descendants(Process.pid).each { |record| children[[record['pid'], record['start_ticks']]] = record }
+          state.write(process_path, { 'schema' => 1, 'instance_id' => opts[:instance_id], 'run_id' => opts[:run_id],
+                      'artifact_id' => opts[:artifact_id], 'artifact_sha256' => opts[:artifact_sha256],
+                      'runner' => runner, 'children' => children.values, 'complete' => complete })
+        end
+      end
+      publish.call
 
       machines = build_machines(opts)
       stopping = false
@@ -74,11 +116,7 @@ module DevClusters
             entry.machine.stop(timeout: 120)
           rescue StandardError => e
             warn "Graceful stop failed for #{entry.name}: #{e.class}: #{e.message}"
-            begin
-              entry.machine.kill(signal: 'TERM')
-            rescue StandardError => kill_error
-              warn "Kill failed for #{entry.name}: #{kill_error.class}: #{kill_error.message}"
-            end
+            # Retain ambiguous processes and claims. A PID alone is no signal authority.
           end
         end
       end
@@ -104,9 +142,43 @@ module DevClusters
       Signal.trap('TERM', &signal_trap)
       Signal.trap('INT', &signal_trap)
 
+      control_path = File.join(opts[:sock_dir], 'control.sock')
+      raise KbRuntime::Error, 'control socket already exists' if File.exist?(control_path) || File.symlink?(control_path)
+      server = UNIXServer.new(control_path)
+      File.chmod(0o600, control_path)
+      control_thread = Thread.new do
+        loop do
+          peer = server.accept
+          begin
+            _pid, uid, = peer.getsockopt(Socket::SOL_SOCKET, Socket::SO_PEERCRED).unpack('iii')
+            request = Timeout.timeout(5) { peer.gets(8193) }
+            raise KbRuntime::Error, 'invalid control peer/request' unless uid == Process.uid && request && request.bytesize <= 8192
+            value = JSON.parse(request)
+            expected = { 'schema' => 1, 'instance_id' => opts[:instance_id], 'run_id' => opts[:run_id], 'command' => 'stop' }
+            raise KbRuntime::Error, 'control identity differs' unless value == expected
+            peer.puts(JSON.generate('schema' => 1, 'run_id' => opts[:run_id], 'accepted' => true))
+            peer.flush
+            signal_trap.call
+          rescue StandardError
+            # Invalid local requests never acquire shutdown authority.
+          ensure
+            peer.close
+          end
+        end
+      end
+      tracking_thread = Thread.new do
+        loop do
+          publish.call
+          sleep 0.05
+        end
+      end
+
       begin
         start_machines(machines, opts[:timeout])
-        File.write(opts[:ready_file], "#{Time.now.utc.iso8601}\n")
+        publish.call
+        state.write(state.path("run-#{opts[:run_id]}.json"), launch.merge('processes' => state.read(process_path)), immutable: true)
+        state.write(ready_path, { 'schema' => 1, 'instance_id' => opts[:instance_id], 'run_id' => opts[:run_id],
+          'artifact_id' => opts[:artifact_id], 'artifact_sha256' => opts[:artifact_sha256] }, immutable: true)
 
         loop do
           break if stopping
@@ -119,7 +191,12 @@ module DevClusters
         Signal.trap('TERM', 'IGNORE')
         Signal.trap('INT', 'IGNORE')
         stop_all.call
+        tracking_thread.kill
+        tracking_thread.join
+        publish.call
+        exited = children.values.all? { |record| KbRuntime::ProcessIdentity.gone?(record) }
         machines.each do |entry|
+          next unless exited
           begin
             entry.machine.finalize
             entry.machine.cleanup
@@ -127,8 +204,13 @@ module DevClusters
             warn "Cleanup failed for #{entry.name}: #{e.class}: #{e.message}"
           end
         end
-        FileUtils.rm_f(opts[:ready_file])
-        FileUtils.rm_f(opts[:pid_file])
+        complete = exited
+        publish.call
+        File.unlink(ready_path) if File.exist?(ready_path)
+        server.close
+        control_thread.kill
+        control_thread.join
+        File.unlink(control_path)
         signal_writer.close unless signal_writer.closed?
         signal_reader.close unless signal_reader.closed?
         signal_thread.kill
@@ -154,7 +236,7 @@ module DevClusters
             opts[:sock_dir],
             default_timeout: opts[:timeout],
             hash_base:
-          )
+          ).bind_preparation(@state, @artifact)
         )
       end
     end
@@ -162,9 +244,9 @@ module DevClusters
     def machine_class(config)
       case config.spin
       when 'nixos'
-        OsVm::NixosMachine
+        KbRuntime::NixosMachine
       when 'vpsadminos'
-        OsVm::VpsadminosMachine
+        KbRuntime::VpsadminosMachine
       else
         raise "Unsupported machine spin #{config.spin.inspect}"
       end

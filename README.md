@@ -13,25 +13,44 @@ repository is required.
 
 ## Quick start
 
-Enter the pinned shell, start an isolated cluster, and run the captures:
+From a committed checkout, enter the pinned shell, start an isolated cluster,
+and run the captures:
 
 ```sh
 nix develop
-bin/devcluster start kb-captures --topology screenshots
+bin/devcluster start kb-captures --topology screenshots --config /path/to/dedicated-config.json
 bin/capture --cluster kb-captures --language en
 bin/validate --update
 bin/validate
 bin/devcluster stop kb-captures
 ```
 
-Bridge networking is the default. Use `--network local` when another bridge
-cluster is active or bridge privileges are unavailable. Runtime state,
-certificates, SSH keys, logs, and generated cluster configuration are stored in
-the ignored `.devcluster/` directory.
+Bridge networking is the default and requires explicitly dedicated addresses.
+Local networking requires explicit forwarding ports and a multicast UDP port
+that other instances do not use.
+See the [portable runtime contract](cluster/runtime-contract.md) for configuration,
+ownership, source proof, update and recovery. Runtime state, certificates, SSH
+keys, logs and generated configuration stay in the ignored `.devcluster/v2` tree.
 
-The capture command reads the cluster's generated test accounts, verifies the
-pinned vpsAdmin revision, creates or reuses only fixtures owned by this
-repository, selects the requested locale and the exact `Debian (latest)` VPS
+The named `kb-runtime` and `capture` flake packages provide
+`vpsfree-kb-devcluster`, `vpsfree-kb-capture` and `vpsfree-kb-validate` for a
+standalone Linux/Nix host. They use the same engine and capture code as the
+checkout commands and require no development workspace or session tool. Packaged
+state defaults to `.devcluster/v2` beneath the invocation directory; capture
+output defaults to that directory itself. `--state-root` selects owned cluster
+state and `--output-root` selects capture artifacts. Code and
+source provenance stay bound to the package. An optional external environment
+can supply a private `--connection` descriptor under the runtime contract.
+
+The isolated `runtime/standalone` suite verifies the installed tools on a
+disposable NixOS host. It requires the `standalone-test-config` profile from the
+same exact committed source, nested KVM and sufficient disk, RAM and shared
+memory. See [standalone verification](cluster/runtime-contract.md#verification-and-limits)
+for the commands, capacity checks and exported evidence.
+
+The capture command verifies the live cluster's prepared source and system
+closures, reads its generated test accounts, creates or reuses only fixtures
+owned by this repository, selects the requested locale and the exact `Debian (latest)` VPS
 template, and writes PNG files under
 `screenshots/<language>/<topic>/`. Fixtures can create the two documentation
 VPSes (`vps` and `playground-vps`), a mounted `data` subdataset, a `nas`

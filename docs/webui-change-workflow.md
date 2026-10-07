@@ -78,14 +78,23 @@ when the semantic contract remains green.
 
 Every bitmap must remain reproducible from its scenario and checkpoint. Use the
 repository-owned development cluster and fixtures; never depend on another
-workspace at runtime.
+workspace at runtime. Configure explicit dedicated resources using the
+[portable runtime contract](../cluster/runtime-contract.md). Packaged capture and
+validation may write to an explicit artifact root without modifying their source.
+
+Use the same committed source snapshot for the cluster, capture and validation
+commands. Capture verifies the current instance, prepared source and running
+system closures before changing fixtures. Updating a lockfile alone does not
+establish the running revision. Keep both language results in one output root,
+then update and strictly validate its candidate inventory.
 
 ```sh
 nix develop
-bin/devcluster start FEATURE-SLUG --topology screenshots
+bin/devcluster start FEATURE-SLUG --topology screenshots --config /path/to/dedicated-config.json
 bin/capture --cluster FEATURE-SLUG --language cs --scenario SCENARIO
 bin/capture --cluster FEATURE-SLUG --language en --scenario SCENARIO
 bin/validate --update
+bin/validate
 bin/check
 bin/devcluster stop FEATURE-SLUG
 ```

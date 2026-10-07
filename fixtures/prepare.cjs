@@ -1,6 +1,5 @@
 const fs = require('fs');
 const path = require('path');
-const { execFileSync, spawnSync } = require('child_process');
 
 const { datasetIdsFromHrefs } = require('../lib/dataset-links.cjs');
 const { fixturesFor } = require('../lib/i18n.cjs');
@@ -359,20 +358,8 @@ async function ensureSshHostKey(cluster, page, node, vpsId) {
     'printf "%s\\n" "$key" > "$root/etc/ssh/ssh_host_ed25519_key.pub"',
   ].join('\n');
   const encodedPublicKey = Buffer.from(DOCUMENTATION_HOST_PUBLIC_KEY).toString('base64');
-  execFileSync(
-    cluster.commandPath,
-    cluster.sshArgs(node, [
-      'bash', '-s', '--', String(vpsId), encodedPublicKey,
-    ]),
-    { input: `${script}\n`, stdio: ['pipe', 'pipe', 'pipe'] },
-  );
-  execFileSync(
-    cluster.commandPath,
-    cluster.sshArgs(node, [
-      'nodectl', 'update', 'ssh-host-keys', String(vpsId),
-    ]),
-    { stdio: ['ignore', 'pipe', 'pipe'] },
-  );
+  await cluster.ssh(node, ['bash', '-s', '--', String(vpsId), encodedPublicKey], { input: `${script}\n` });
+  await cluster.ssh(node, ['nodectl', 'update', 'ssh-host-keys', String(vpsId)]);
 
   const route = `/?page=adminvps&action=info&veid=${vpsId}`;
   const deadline = Date.now() + 2 * 60_000;
@@ -422,7 +409,7 @@ async function ensureSnapshot(page, datasetId, snapshotLabel) {
   };
 }
 
-function ensureNixosGenerations(cluster, node, vpsId) {
+async function ensureNixosGenerations(cluster, node, vpsId) {
   const script = [
     'set -eu',
     'root=$(osctl ct show -H -o rootfs "$1")',
@@ -435,42 +422,28 @@ function ensureNixosGenerations(cluster, node, vpsId) {
     'touch -h -t 202501011000.00 "$root/nix/var/nix/profiles/system-1-link" || true',
     'touch -h -t 202506011000.00 "$root/nix/var/nix/profiles/system-2-link" || true',
   ].join('; ');
-  execFileSync(
-    cluster.commandPath,
-    cluster.sshArgs(node, ['bash', '-s', '--', String(vpsId)]),
-    { input: `${script}\n`, stdio: ['pipe', 'pipe', 'pipe'] },
-  );
+  await cluster.ssh(node, ['bash', '-s', '--', String(vpsId)], { input: `${script}\n` });
 }
 
-function generateTrafficSamples(cluster, node, vpsId) {
-  const result = spawnSync(cluster.commandPath, cluster.sshArgs(node, [
+async function generateTrafficSamples(cluster, node, vpsId) {
+  const output = await cluster.ssh(node, [
     'osctl', 'ct', 'exec', String(vpsId),
     '/bin/ping', '-c', '200', '-i', '0.02', '-W', '1', '198.51.100.1',
-  ]), { encoding: 'utf8', timeout: 15_000 });
-  if (result.error || ![0, 1].includes(result.status) || !result.stdout.includes('PING')) {
-    throw new Error(
-      `Unable to generate traffic for VPS #${vpsId}: ${result.error || result.stderr}`,
-    );
-  }
+  ], { accepted: [0, 1], timeout: 15_000 });
+  if (!output.includes('PING')) throw new Error(`Unable to generate fixture traffic for VPS #${vpsId}`);
 }
 
-function networkInterface(cluster, node, vpsId) {
-  const output = execFileSync(
-    cluster.commandPath,
-    cluster.sshArgs(node, [
-      'osctl', 'ct', 'exec', String(vpsId), '/bin/ls', '/sys/class/net',
-    ]),
-    { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] },
-  );
+async function networkInterface(cluster, node, vpsId) {
+  const output = await cluster.ssh(node, [
+    'osctl', 'ct', 'exec', String(vpsId), '/bin/ls', '/sys/class/net',
+  ]);
   const excluded = new Set(['erspan0', 'gre0', 'gretap0', 'ip6tnl0', 'lo', 'tunl0']);
   const interfaces = output.trim().split(/\s+/).filter((name) => !excluded.has(name));
-  if (interfaces.length !== 1) {
-    throw new Error(`Expected one fixture network interface, found: ${interfaces.join(', ')}`);
-  }
+  if (interfaces.length !== 1) throw new Error('Expected exactly one fixture network interface');
   return interfaces[0];
 }
 
-async function prepareFixtures({ cluster, language, page, required, repoRoot }) {
+async function prepareFixtures({ cluster, language, page, required, invocationRoot }) {
   const requiredSet = new Set(required);
   const fixtureLabels = fixturesFor(language);
   const userId = await findUserId(page, 'test-user1');
@@ -494,7 +467,7 @@ async function prepareFixtures({ cluster, language, page, required, repoRoot }) 
     datasetId = await rootDatasetId(page, vpsId);
     node = await vpsNodeMachine(page, vpsId);
     Object.assign(fixtures, { vpsId, datasetId, node, hostname: 'vps' });
-    fixtures.networkInterface = networkInterface(cluster, node, vpsId);
+    fixtures.networkInterface = await networkInterface(cluster, node, vpsId);
     fixtures.reverseRecordRoute = await ensureInterfaceAddress(page, vpsId);
     fixtures.childDatasetId = await ensureChildDataset(page, vpsId, datasetId);
     await ensureMount(page, vpsId, fixtures.childDatasetId);
@@ -541,15 +514,15 @@ async function prepareFixtures({ cluster, language, page, required, repoRoot }) 
     fixtures.snapshot = await ensureSnapshot(page, datasetId, fixtureLabels.snapshot);
   }
   if (requiredSet.has('nixos-generations')) {
-    ensureNixosGenerations(cluster, node, vpsId);
+    await ensureNixosGenerations(cluster, node, vpsId);
   }
   if (requiredSet.has('traffic-samples')) {
-    generateTrafficSamples(cluster, node, vpsId);
+    await generateTrafficSamples(cluster, node, vpsId);
   }
 
-  const target = path.join(repoRoot, 'tmp/fixtures.json');
+  const target = path.join(invocationRoot, 'fixtures.json');
   fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.writeFileSync(target, `${JSON.stringify(fixtures, null, 2)}\n`);
+  fs.writeFileSync(target, `${JSON.stringify(fixtures, null, 2)}\n`, { mode: 0o600 });
   return fixtures;
 }
 
