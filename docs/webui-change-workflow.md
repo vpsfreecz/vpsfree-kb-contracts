@@ -78,22 +78,77 @@ when the semantic contract remains green.
 
 Every bitmap must remain reproducible from its scenario and checkpoint. Use the
 repository-owned development cluster and fixtures; never depend on another
-workspace at runtime.
+workspace at runtime. Configure explicit dedicated resources using the
+[portable runtime contract](../cluster/runtime-contract.md). Packaged capture and
+validation may write to an explicit artifact root without modifying their source.
+
+Use the same committed source snapshot for the cluster, capture and validation
+commands. Capture verifies the current instance, prepared source and running
+system closures before changing fixtures. Updating a lockfile alone does not
+establish the running revision. Keep both language results in one output root,
+then update and strictly validate its candidate inventory.
 
 ```sh
 nix develop
-bin/devcluster start FEATURE-SLUG --topology screenshots
+bin/devcluster start FEATURE-SLUG --topology screenshots --config /path/to/dedicated-config.json
 bin/capture --cluster FEATURE-SLUG --language cs --scenario SCENARIO
 bin/capture --cluster FEATURE-SLUG --language en --scenario SCENARIO
 bin/validate --update
+bin/validate
 bin/check
 bin/devcluster stop FEATURE-SLUG
 ```
+
+For only `networking/ip-address-list`, use an explicit `single` configuration
+with the `ip-inventory` capability and matching committed runtime, capture and
+validation packages. This fixture needs services and node1; it does not require
+the full storage/traffic fixture. Keep both languages in one private output
+directory. Include explicit disposable `test-admin` (level 99), `test-user1`
+and `test-user2` (both level 1) entries in `seed.users`. Give each a full name,
+a password and an email of `LOGIN@example.test`. Each namespace has
+`blockCount: 8`; set `blockStart` to 1 for `test-admin`, 9 for `test-user1` and
+17 for `test-user2`. The fixture proves the recorded administrator and
+`test-user1` API identities, uses the administrator only for inventory
+provisioning, and keeps the browser in `test-user1`'s session throughout VPS
+creation and capture:
+
+```sh
+vpsfree-kb-devcluster start FEATURE-SLUG --topology single --config /path/to/dedicated-config.json --state-root /path/to/private-state
+vpsfree-kb-capture --cluster FEATURE-SLUG --state-root /path/to/private-state --language cs --checkpoint networking/ip-address-list --output-root /path/to/capture-output
+vpsfree-kb-capture --cluster FEATURE-SLUG --state-root /path/to/private-state --language en --checkpoint networking/ip-address-list --output-root /path/to/capture-output
+vpsfree-kb-validate --update --output-root /path/to/capture-output
+vpsfree-kb-validate --output-root /path/to/capture-output
+```
+
+The committed generator source must already pin the affected vpsAdmin revision.
+The [direct verifier](../cluster/runtime-contract.md#verification-and-limits)
+also exercises the private connection selector and writable-CWD output default.
+Its reduced real-runtime route qualifies one final-source `single`/local
+instance: services and node1 each use 2048 MiB RAM, the services image and root
+copy each use 8192 MiB, and the tank is 8 GiB. The builder also follows the
+services RAM setting. These are unqualified targets until measured preparation
+and public start succeed. The required `runtime-smoke` phase checks attested
+connection/lease and ordinary stop/resume; `bilingual-capture` reuses that
+resumed instance. Historical upgrade and two-root tests are separate deferred
+coverage. Capacity admission accounts closures, temporary build costs and
+retained-host obligations separately from the 24 GiB new disk extent. Its
+capacity and owned-state failure requirements apply before real work.
+Review the gray disabled row and enabled assigned row in both images; native
+title/focus assertions accompany the images without claiming a native tooltip
+popup was captured. Other screenshot concepts keep their existing fixtures.
 
 Inspect changed images, crops, fonts, fixture data, and the contact sheet. Keep
 the existing semantic filename for the same screenshot concept. Introduce a new
 concept only when the documented intent changes. Screenshot generation never
 uploads media.
+
+Hosted `Check` runs on pushes and pull requests use `--allow-missing` while
+media is being prepared. After committing and publishing the accepted media,
+run that workflow manually with `strict` enabled against the exact feature
+revision. It then runs `nix develop --command bin/check` over the full committed
+inventory. Confirm the run's checkout SHA and strict step; a permissive source
+check does not replace this result. Strict exported-output validation and visual
+review remain separate requirements.
 
 ## 5. Prepare KB candidates
 

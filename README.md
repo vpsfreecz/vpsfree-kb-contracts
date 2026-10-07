@@ -13,25 +13,52 @@ repository is required.
 
 ## Quick start
 
-Enter the pinned shell, start an isolated cluster, and run the captures:
+From a committed checkout, enter the pinned shell, start an isolated cluster,
+and run the captures:
 
 ```sh
 nix develop
-bin/devcluster start kb-captures --topology screenshots
+bin/devcluster start kb-captures --topology screenshots --config /path/to/dedicated-config.json
 bin/capture --cluster kb-captures --language en
 bin/validate --update
 bin/validate
 bin/devcluster stop kb-captures
 ```
 
-Bridge networking is the default. Use `--network local` when another bridge
-cluster is active or bridge privileges are unavailable. Runtime state,
-certificates, SSH keys, logs, and generated cluster configuration are stored in
-the ignored `.devcluster/` directory.
+Bridge networking is the default and requires explicitly dedicated addresses.
+Local networking requires explicit forwarding ports and a multicast UDP port
+that other instances do not use.
+See the [portable runtime contract](cluster/runtime-contract.md) for configuration,
+ownership, source proof, update and recovery. Runtime state, certificates, SSH
+keys, logs and generated configuration stay in the ignored `.devcluster/v2` tree.
 
-The capture command reads the cluster's generated test accounts, verifies the
-pinned vpsAdmin revision, creates or reuses only fixtures owned by this
-repository, selects the requested locale and the exact `Debian (latest)` VPS
+The named `kb-runtime` and `capture` flake packages provide
+`vpsfree-kb-devcluster`, `vpsfree-kb-capture` and `vpsfree-kb-validate` for a
+standalone Linux/Nix host. They use the same engine and capture code as the
+checkout commands and require no development workspace or session tool. Packaged
+state defaults to `.devcluster/v2` beneath the invocation directory; capture
+output defaults to that directory itself. `--state-root` selects owned cluster
+state and `--output-root` selects capture artifacts. Code and
+source provenance stay bound to the package. An optional external environment
+can supply a private `--connection` descriptor under the runtime contract.
+
+The `runtime-verify` package provides `vpsfree-kb-verify` for direct verification
+on an ordinary Linux/Nix/KVM host. Its `runtime-smoke` phase uses one dedicated
+single-node cluster for public start, attested connection and lease checks,
+then stop and same-source resume. The reduced qualification profile uses 2 GiB
+RAM per guest, one 8 GiB services image and writable root, and an 8 GiB node
+tank: 4 GiB guest RAM and 24 GiB eventual new disk output. The image builder
+uses the services memory setting too. These values are qualification targets,
+not established minimum requirements. Closure downloads, build staging and
+host reserves are assessed separately. Supply one private configuration and an
+identity-bound capacity receipt. The optional `bilingual-capture` phase uses
+that same resumed instance. See
+[verification and limits](cluster/runtime-contract.md#verification-and-limits)
+for the phases, capacity assessment, failure handling and exported evidence.
+
+The capture command verifies the live cluster's prepared source and system
+closures, reads its generated test accounts, creates or reuses only fixtures
+owned by this repository, selects the requested locale and the exact `Debian (latest)` VPS
 template, and writes PNG files under
 `screenshots/<language>/<topic>/`. Fixtures can create the two documentation
 VPSes (`vps` and `playground-vps`), a mounted `data` subdataset, a `nas`
@@ -48,6 +75,23 @@ values remain decimal strings so IPv6 quantities are not rounded by JSON
 implementations.
 The nodes use sparse 320 GiB tank images so the production-sized fixture
 packages pass pool-capacity checks without allocating that space up front.
+
+The `networking/ip-address-list` checkpoint instead uses the `ip-inventory`
+fixture: one real VPS with 1 CPU, 1024 MiB RAM and 4096 MiB disk, its enabled
+assigned address, and an owned detached address from a dedicated documentation
+pool. The fixture provisions that address while the pool is enabled, then
+disables only that pool. Reruns validate the same allocation without enabling
+the pool or charging again. Other checkpoints retain their full fixtures and
+the primary address pools remain enabled.
+
+This fixture requires explicit `test-admin` (level 99), `test-user1` and
+`test-user2` (both level 1) entries in the dedicated configuration's `seed.users`.
+Give each account a full name, a disposable password and an email of
+`LOGIN@example.test`. Each namespace has `blockCount: 8`; set `blockStart` to
+1 for `test-admin`, 9 for `test-user1` and 17 for `test-user2`. API provisioning
+uses the recorded administrator, while VPS creation and screenshots use
+`test-user1`. Both API identities and the browser's member identity are checked
+before mutations or capture.
 
 Use `--scenario NAME` to recapture a functional group or
 `--checkpoint TOPIC/VIEW` for one asset. Run `bin/devcluster --help` for cluster
