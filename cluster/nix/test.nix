@@ -20,6 +20,8 @@
   vpsadminGoClientSourcePath,
   telegramEnable,
   telegramSecretsSourcePath,
+  instanceId ? "",
+  captureIdentityFile ? "",
   extraModules ? { },
   generateCertificates ? false,
   seedPools ? true,
@@ -1276,27 +1278,28 @@ let
   socketNetwork = {
     type = "socket";
     mcast = {
-      port = "vpsadmin-devcluster-${slug}";
+      address = "230.0.0.1";
+      port =
+        let port = devConfig.local.multicastPort;
+        in if builtins.isInt port && port >= 1 && port <= 65535 then port
+        else throw "local.multicastPort must be an integer in 1..65535";
     };
   };
-  localForwardPorts = {
-    services = {
-      ssh = 10022;
-      https = 10443;
-    };
-  }
-  // listToAttrs (
+  localForwardPorts = devConfig.local.ports or ({
+    services = { ssh = 10022; https = 10443; };
+  } // listToAttrs (
     map (node: nameValuePair node.machineName { ssh = node.sshPort; }) (
       filter (node: node.sshPort != null) allNodeList
     )
-  );
+  ));
+  localBindAddress = devConfig.local.bindAddress or "127.0.0.1";
   localUserNetwork =
     machineName:
     let
       ports = localForwardPorts.${machineName} or { };
       forwards =
-        (lib.optional (ports ? https) "tcp:127.0.0.1:${toString ports.https}-:443")
-        ++ (lib.optional (ports ? ssh) "tcp:127.0.0.1:${toString ports.ssh}-:22");
+        (lib.optional (ports ? https) "tcp:${localBindAddress}:${toString ports.https}-:443")
+        ++ (lib.optional (ports ? ssh) "tcp:${localBindAddress}:${toString ports.ssh}-:22");
     in
     mkUserNetwork (concatMapStringsSep ",hostfwd=" (v: v) forwards);
   machineNetworks =
@@ -1313,6 +1316,9 @@ let
       ];
 
   sshModule = {
+    environment.etc = optionalAttrs (captureIdentityFile != "") {
+      "vpsfree-kb-capture.json".source = builtins.path { path = captureIdentityFile; name = "kb-capture-identity.json"; };
+    };
     services.openssh = {
       enable = true;
       settings.PermitRootLogin = "yes";
@@ -1361,6 +1367,8 @@ let
       };
     in
     {
+      virtualisation.memorySize = lib.mkForce serviceMemoryMiB;
+
       imports = [
         sshModule
         vpsfStatusModule
