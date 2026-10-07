@@ -20,6 +20,8 @@
   vpsadminGoClientSourcePath,
   telegramEnable,
   telegramSecretsSourcePath,
+  instanceId ? "",
+  captureIdentityFile ? "",
   extraModules ? { },
   generateCertificates ? false,
   seedPools ? true,
@@ -1276,27 +1278,28 @@ let
   socketNetwork = {
     type = "socket";
     mcast = {
-      port = "vpsadmin-devcluster-${slug}";
+      address = "230.0.0.1";
+      port =
+        let port = devConfig.local.multicastPort;
+        in if builtins.isInt port && port >= 1 && port <= 65535 then port
+        else throw "local.multicastPort must be an integer in 1..65535";
     };
   };
-  localForwardPorts = {
-    services = {
-      ssh = 10022;
-      https = 10443;
-    };
-  }
-  // listToAttrs (
+  localForwardPorts = devConfig.local.ports or ({
+    services = { ssh = 10022; https = 10443; };
+  } // listToAttrs (
     map (node: nameValuePair node.machineName { ssh = node.sshPort; }) (
       filter (node: node.sshPort != null) allNodeList
     )
-  );
+  ));
+  localBindAddress = devConfig.local.bindAddress or "127.0.0.1";
   localUserNetwork =
     machineName:
     let
       ports = localForwardPorts.${machineName} or { };
       forwards =
-        (lib.optional (ports ? https) "tcp:127.0.0.1:${toString ports.https}-:443")
-        ++ (lib.optional (ports ? ssh) "tcp:127.0.0.1:${toString ports.ssh}-:22");
+        (lib.optional (ports ? https) "tcp:${localBindAddress}:${toString ports.https}-:443")
+        ++ (lib.optional (ports ? ssh) "tcp:${localBindAddress}:${toString ports.ssh}-:22");
     in
     mkUserNetwork (concatMapStringsSep ",hostfwd=" (v: v) forwards);
   machineNetworks =
@@ -1312,9 +1315,13 @@ let
         socketNetwork
       ];
 
-  sshModule = {
+  sshModule = hostKeyPath: {
+    environment.etc = optionalAttrs (captureIdentityFile != "") {
+      "vpsfree-kb-capture.json".source = builtins.path { path = captureIdentityFile; name = "kb-capture-identity.json"; };
+    };
     services.openssh = {
       enable = true;
+      hostKeys = lib.mkForce [ { type = "ed25519"; path = hostKeyPath; } ];
       settings.PermitRootLogin = "yes";
     };
     users.users.root.openssh.authorizedKeys.keyFiles = [ sshPubKey ];
@@ -1361,8 +1368,10 @@ let
       };
     in
     {
+      virtualisation.memorySize = lib.mkForce serviceMemoryMiB;
+
       imports = [
-        sshModule
+        (sshModule "/etc/ssh/ssh_host_ed25519_key")
         vpsfStatusModule
       ]
       ++ lib.optional installNotificationTemplates {
@@ -1823,7 +1832,57 @@ let
     node:
     { pkgs, lib, ... }:
     {
-      imports = [ sshModule ];
+      imports = [ (sshModule "/tank/.vpsfree-kb-ssh/ssh_host_ed25519_key") ];
+
+      # The OS root is volatile. Gate its existing key-generation loop on the
+      # mounted retained tank, and never repair or replace an existing identity.
+      runit.services.sshd.run = lib.mkBefore ''
+        set -e
+        waitForService pool-tank || exit 1
+
+        kbSshRefuse() {
+          echo "Refusing unsafe or unavailable persistent SSH host-key storage" >&2
+          exit 1
+        }
+        kbSshMetadata() {
+          local value
+          value="$(${pkgs.coreutils}/bin/stat -c "$1" "$2")" || kbSshRefuse
+          [ "$value" = "$3" ] || kbSshRefuse
+        }
+        [ -d /tank ] && [ ! -L /tank ] || kbSshRefuse
+        tankMount="$(${pkgs.util-linux}/bin/findmnt -n -r -o SOURCE,FSTYPE,TARGET -M /tank)" || kbSshRefuse
+        [ "$tankMount" = "tank zfs /tank" ] || kbSshRefuse
+        tankMounted="$(${pkgs.zfs}/bin/zfs get -H -o value mounted tank)" || kbSshRefuse
+        [ "$tankMounted" = yes ] || kbSshRefuse
+        tankMountpoint="$(${pkgs.zfs}/bin/zfs get -H -o value mountpoint tank)" || kbSshRefuse
+        [ "$tankMountpoint" = /tank ] || kbSshRefuse
+        kbSshMetadata '%u:%g' /tank 0:0
+        tankMode="$(${pkgs.coreutils}/bin/stat -c '%a' /tank)" || kbSshRefuse
+        [[ "$tankMode" =~ ^[0-7]+$ ]] && (( (8#$tankMode & 022) == 0 )) || kbSshRefuse
+
+        keyDirectory=/tank/.vpsfree-kb-ssh
+        keyPath="$keyDirectory/ssh_host_ed25519_key"
+        if [ ! -e "$keyDirectory" ] && [ ! -L "$keyDirectory" ]; then
+          ${pkgs.coreutils}/bin/mkdir -m 0700 -- "$keyDirectory"
+        fi
+        [ -d "$keyDirectory" ] && [ ! -L "$keyDirectory" ] || kbSshRefuse
+        kbSshMetadata '%u:%g:%a' "$keyDirectory" 0:0:700
+
+        if [ -e "$keyPath" ] || [ -L "$keyPath" ]; then
+          [ -f "$keyPath" ] && [ ! -L "$keyPath" ] || kbSshRefuse
+          kbSshMetadata '%u:%g:%a:%h' "$keyPath" 0:0:600:1
+          publicKey="$(${pkgs.openssh}/bin/ssh-keygen -y -P "" -f "$keyPath")" || kbSshRefuse
+          case "$publicKey" in ssh-ed25519\ *) ;; *) kbSshRefuse ;; esac
+        elif [ -e "$keyPath.pub" ] || [ -L "$keyPath.pub" ]; then
+          # ssh-keygen would overwrite this public file while creating a key.
+          kbSshRefuse
+        fi
+        if [ -e "$keyPath.pub" ] || [ -L "$keyPath.pub" ]; then
+          [ -f "$keyPath.pub" ] && [ ! -L "$keyPath.pub" ] || kbSshRefuse
+          kbSshMetadata '%u:%g:%a:%h' "$keyPath.pub" 0:0:600:1
+        fi
+        umask 077
+      '';
 
       boot.initrd.kernelModules = [ "virtiofs" ];
       boot.supportedFilesystems.virtiofs = true;
@@ -1856,7 +1915,7 @@ let
     { pkgs, lib, ... }:
     {
       imports = [
-        sshModule
+        (sshModule "/etc/ssh/ssh_host_ed25519_key")
         (vpsadmin.outPath + "/tests/configs/nixos/vpsadmin-dns-server.nix")
         (extraModules.dnsServers.${dnsServer.machineName} or { })
       ];
