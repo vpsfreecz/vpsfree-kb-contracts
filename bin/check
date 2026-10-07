@@ -2,14 +2,17 @@
 set -euo pipefail
 
 validate_args=()
-if [[ ${1-} == --allow-missing ]]; then
-  validate_args+=(--allow-missing)
-  shift
-fi
-if (( $# > 0 )); then
-  echo "Usage: bin/check [--allow-missing]" >&2
-  exit 1
-fi
+while (( $# > 0 )); do
+  case "$1" in
+    --allow-missing) validate_args+=(--allow-missing); shift ;;
+    --output-root)
+      [[ $# -ge 2 ]] || exit 1
+      validate_args+=(--output-root "$(realpath -m -- "$2")")
+      shift 2
+      ;;
+    *) echo "Usage: bin/check [--allow-missing] [--output-root DIR]" >&2; exit 1 ;;
+  esac
+done
 
 repo_dir=$(cd -- "$(dirname -- "$0")/.." && pwd)
 cd "$repo_dir"
@@ -26,8 +29,8 @@ node tools/check-provenance.cjs
 node tools/check-dataset-links.cjs
 node tools/check-i18n.cjs
 mapfile -d '' shell_fixtures < <(find tests/fixtures -type f -name '*.sh' -print0 | sort -z)
-bash -n bin/capture bin/contact-sheet bin/devcluster test-runner.sh "${shell_fixtures[@]}"
-shellcheck bin/capture bin/contact-sheet bin/devcluster test-runner.sh "${shell_fixtures[@]}"
+bash -n bin/validate bin/capture bin/contact-sheet bin/devcluster test-runner.sh "${shell_fixtures[@]}"
+shellcheck bin/validate bin/capture bin/contact-sheet bin/devcluster test-runner.sh "${shell_fixtures[@]}"
 jq empty captures.json cluster/default-config.json fixtures/production-shape.json
 nix-instantiate --parse cluster/nix/test.nix >/dev/null
 while IFS= read -r -d '' nix_test; do
@@ -36,7 +39,22 @@ done < <(find tests -type f -name '*.nix' -print0 | sort -z)
 tests_meta=$(mktemp)
 trap 'rm -f "$tests_meta"' EXIT
 nix eval .#testsMeta.x86_64-linux --json >"$tests_meta"
-ruby -c bin/validate
+for ruby_source in runner/validate*.rb cluster/launcher.rb cluster/source-metadata.rb cluster/artifact-lock.rb cluster/lib/kb_*.rb cluster/lib/devcluster_runner.rb tools/test-runtime.rb tools/test-closure.rb tools/test-machine.rb tools/fixtures/fake-kb-runner.rb; do
+  ruby -c "$ruby_source"
+done
+ruby tools/test-runtime.rb
+ruby tools/test-closure.rb
+ruby tools/test-machine.rb
+ruby -c tools/capture-export.rb
+ruby -c tools/runtime-verify.rb
+ruby -c tools/test-runtime-verify.rb
+ruby tools/test-runtime-verify.rb
+node tools/test-ip-inventory.cjs
+ruby -c tools/test-capture-export.rb
+ruby tools/test-capture-export.rb
+node tools/test-connection.cjs
+node tools/test-artifacts.cjs
+node tools/test-capture-lease.cjs
 ruby -c cluster/seed-production-shape.rb
 ruby -c tools/check-contract.rb
 ruby -c tools/check-kb-annotations.rb
