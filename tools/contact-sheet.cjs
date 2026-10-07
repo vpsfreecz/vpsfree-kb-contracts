@@ -7,26 +7,39 @@ const { chromium } = require('playwright');
 const { chromiumExecutable } = require('../lib/browser.cjs');
 
 const repoRoot = path.resolve(__dirname, '..');
-const group = process.argv[2];
-const language = process.argv[3] || 'cs';
-const manifest = JSON.parse(fs.readFileSync(path.join(repoRoot, 'captures.json')));
-const assets = manifest.assets.flatMap((asset) => {
-  const variant = asset.variants?.[language];
-  return variant ? [{ ...asset, ...variant, language, variants: undefined }] : [];
-}).filter((asset) => !group || asset.topic === group || asset.scenario === group);
-if (assets.length === 0) throw new Error(`No assets match topic or scenario ${group}`);
+const { openLease } = require('../lib/connection.cjs');
+const { validationBundle } = require('../runner/validate-artifacts.cjs');
+const args = process.argv.slice(2);
+const outputIndex = args.indexOf('--output-root');
+const outputRoot = path.resolve(outputIndex < 0 ? repoRoot : args[outputIndex + 1]);
+if (outputIndex >= 0) args.splice(outputIndex, 2);
+if (args.length > 2) throw new Error('Usage: contact-sheet [GROUP] [cs|en] [--output-root DIR]');
+const [group, language = 'cs'] = args;
+if (!['cs', 'en'].includes(language)) throw new Error('Invalid contact-sheet language');
+let bundle;
+let assets;
 
 async function main() {
-  const browser = await chromium.launch({
+  const lock = await openLease(['ruby', path.join(repoRoot, 'cluster/artifact-lock.rb'), outputRoot],
+    { schema: 1, kind: 'kb-artifact-lock' });
+  let browser;
+  try {
+    bundle = validationBundle(repoRoot, outputRoot, false);
+    const manifest = bundle.manifest;
+    assets = manifest.assets.flatMap((asset) => {
+      const variant = asset.variants?.[language];
+      return variant ? [{ ...asset, ...variant, language, variants: undefined }] : [];
+    }).filter((asset) => !group || asset.topic === group || asset.scenario === group);
+    if (assets.length === 0) throw new Error('No assets match the requested contact sheet');
+    browser = await chromium.launch({
     executablePath: chromiumExecutable(),
     headless: true,
     args: ['--no-sandbox'],
   });
   const page = await browser.newPage({ viewport: { width: 1600, height: 1000 } });
-  try {
     const cards = assets.map((asset) => ({
       id: asset.id,
-      image: `data:image/png;base64,${fs.readFileSync(path.join(repoRoot, asset.output)).toString('base64')}`,
+      image: `data:image/png;base64,${fs.readFileSync(bundle.files[asset.output]).toString('base64')}`,
     }));
     await page.setContent(`<!doctype html><html><head><meta charset="utf-8"><style>
       body { margin: 20px; background: #dfe4ea; font: 15px sans-serif; }
@@ -48,11 +61,11 @@ async function main() {
     }, cards);
     await page.waitForFunction(() => Array.from(document.images).every((image) => image.complete));
     await page.screenshot({
-      path: path.join(repoRoot, 'tmp', `contact-sheet-${language}-${group || 'all'}.png`),
+      path: path.join(outputRoot, 'tmp', `contact-sheet-${language}-${group || 'all'}.png`),
       fullPage: true,
     });
   } finally {
-    await browser.close();
+    try { if (browser) await browser.close(); } finally { await lock.close(); }
   }
 }
 
