@@ -1249,14 +1249,210 @@
           "output": "screenshots/cs/networking/ip-address-list.png",
           "capture": {
             "driver": "webui",
-            "page": "/?page=networking&action=ip_addresses",
-            "runner": "vpsadmin-kb-captures/schema-5"
+            "page": "/?page=networking&action=ip_addresses&list=1&limit=100",
+            "runner": "vpsadmin-kb-captures/schema-5",
+            "provenance": {
+              "instance_id": "a408f97b-3f40-4a5e-88c0-2cf3ea51aa75",
+              "run_id": "ce148c72-7975-4048-8ff0-527ced9826cf",
+              "artifact_id": "22b19c9d-09a7-4cd4-9ad4-d1e7a130ac01",
+              "artifact_sha256": "19f62f228d490b024cc072896e5b693b11c85b525a7e71b177849734fec8552f",
+              "source": {
+                "schema": 1,
+                "revision": "d0b4f40708cc8b59aab7c91ae05fba695abc233c",
+                "source": "/nix/store/kdmyxmm7sj2qs7sw7zj038669nn2kaj7-source",
+                "lock_sha256": "9a518cc24aa2bc6af69fdefde9acc768705bbaca6d40926f66dfc3c25d01f81b",
+                "fixture_sha256": "128ffdf1a28dbab16c7f61a4cedd602d07ad4168056548c750ac71ab0e175a0e",
+                "inputs": {
+                  "nixpkgs": {
+                    "rev": "5dfba6236110080a54247d6460bc2ff5dda939cc",
+                    "narHash": "sha256-bu1QxmXKmPuvBLN7bHP355OV9Qo13x9WCiRDH62CqRM="
+                  },
+                  "toolsNixpkgs": {
+                    "rev": "0bb7ec54c8483066ec9d7720e780a5caa71f8612",
+                    "narHash": "sha256-iffAls3iaNTyJC2faYcUXSI+Gp02cDjYl+MygxKl2GI="
+                  },
+                  "vpsadmin": {
+                    "rev": "939159f27b5d627930281d5fac0c0aa9ba53bfc7",
+                    "narHash": "sha256-3YDInHVVj5ke4aL8fjCYsNOK6S/r5W3LidG96V2/81g="
+                  },
+                  "vpsadmin/nixpkgs": {
+                    "rev": "5dfba6236110080a54247d6460bc2ff5dda939cc",
+                    "narHash": "sha256-bu1QxmXKmPuvBLN7bHP355OV9Qo13x9WCiRDH62CqRM="
+                  },
+                  "vpsadmin/vpsadminos": {
+                    "rev": "6bdf458fd9105379860234ff33d352e55844f08f",
+                    "narHash": "sha256-mDLxNpbfUmo2FRXW5MJWJ8WqKLINUru6nVHB7zN4bVo="
+                  },
+                  "vpsadmin/vpsadminos/impermanence": {
+                    "rev": "7b1d382faf603b6d264f58627330f9faa5cba149",
+                    "narHash": "sha256-03+JxvzmfwRu+5JafM0DLbxgHttOQZkUtDWBmeUkN8Y="
+                  },
+                  "vpsadmin/vpsadminos/impermanence/home-manager": {
+                    "rev": "c47b2cc64a629f8e075de52e4742de688f930dc6",
+                    "narHash": "sha256-kkgA32s/f4jaa4UG+2f8C225Qvclxnqs76mf8zvTVPg="
+                  },
+                  "vpsadmin/vpsadminos/impermanence/home-manager/nixpkgs": {
+                    "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+                    "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc="
+                  },
+                  "vpsadmin/vpsadminos/impermanence/nixpkgs": {
+                    "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+                    "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc="
+                  },
+                  "vpsadmin/vpsadminos/netlinkrb": {
+                    "rev": "d9de53d843d2586ffa5b7b404887fa801c697ddf",
+                    "narHash": "sha256-0bXTWUdUDr2XP+bEIfIbxXap8Niva/IoPXTxFeXXImg="
+                  },
+                  "vpsadmin/vpsadminos/nixpkgs": {
+                    "rev": "5dfba6236110080a54247d6460bc2ff5dda939cc",
+                    "narHash": "sha256-bu1QxmXKmPuvBLN7bHP355OV9Qo13x9WCiRDH62CqRM="
+                  },
+                  "vpsadmin/vpsadminos/nixpkgsUnstable": {
+                    "rev": "34ab99075ac4f7e40cf037eef32cb1c360bb85e9",
+                    "narHash": "sha256-hn1oU2rue2SYK8dAr8+WNZWtbsz1S2W5mnHlSEuh3bo="
+                  },
+                  "vpsadmin/vpsadminos/ruby-lxc": {
+                    "rev": "004bf35eb90d41ba60b347b5b1e73d868a4f95d9",
+                    "narHash": "sha256-guAdOSP9MyCL3BQ1LGXAhcCoXgEU1fUE69d2ATMqUGE="
+                  },
+                  "vpsadminos": {
+                    "rev": "6bdf458fd9105379860234ff33d352e55844f08f",
+                    "narHash": "sha256-mDLxNpbfUmo2FRXW5MJWJ8WqKLINUru6nVHB7zN4bVo="
+                  },
+                  "vpsadminos/impermanence": {
+                    "rev": "7b1d382faf603b6d264f58627330f9faa5cba149",
+                    "narHash": "sha256-03+JxvzmfwRu+5JafM0DLbxgHttOQZkUtDWBmeUkN8Y="
+                  },
+                  "vpsadminos/impermanence/home-manager": {
+                    "rev": "c47b2cc64a629f8e075de52e4742de688f930dc6",
+                    "narHash": "sha256-kkgA32s/f4jaa4UG+2f8C225Qvclxnqs76mf8zvTVPg="
+                  },
+                  "vpsadminos/impermanence/home-manager/nixpkgs": {
+                    "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+                    "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc="
+                  },
+                  "vpsadminos/impermanence/nixpkgs": {
+                    "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+                    "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc="
+                  },
+                  "vpsadminos/netlinkrb": {
+                    "rev": "d9de53d843d2586ffa5b7b404887fa801c697ddf",
+                    "narHash": "sha256-0bXTWUdUDr2XP+bEIfIbxXap8Niva/IoPXTxFeXXImg="
+                  },
+                  "vpsadminos/nixpkgs": {
+                    "rev": "5dfba6236110080a54247d6460bc2ff5dda939cc",
+                    "narHash": "sha256-bu1QxmXKmPuvBLN7bHP355OV9Qo13x9WCiRDH62CqRM="
+                  },
+                  "vpsadminos/nixpkgsUnstable": {
+                    "rev": "34ab99075ac4f7e40cf037eef32cb1c360bb85e9",
+                    "narHash": "sha256-hn1oU2rue2SYK8dAr8+WNZWtbsz1S2W5mnHlSEuh3bo="
+                  },
+                  "vpsadminos/ruby-lxc": {
+                    "rev": "004bf35eb90d41ba60b347b5b1e73d868a4f95d9",
+                    "narHash": "sha256-guAdOSP9MyCL3BQ1LGXAhcCoXgEU1fUE69d2ATMqUGE="
+                  },
+                  "vpsfStatus": {
+                    "rev": "29853c364e2fa072152d2de4f17e57f1e802b9f3",
+                    "narHash": "sha256-fiaFXRCldKuaiEFNO+TSvzrgYOCW8xOsEjDRND97Pss="
+                  },
+                  "vpsfStatus/nixpkgs": {
+                    "rev": "5dfba6236110080a54247d6460bc2ff5dda939cc",
+                    "narHash": "sha256-bu1QxmXKmPuvBLN7bHP355OV9Qo13x9WCiRDH62CqRM="
+                  },
+                  "vpsfStatus/vpsadmin": {
+                    "rev": "939159f27b5d627930281d5fac0c0aa9ba53bfc7",
+                    "narHash": "sha256-3YDInHVVj5ke4aL8fjCYsNOK6S/r5W3LidG96V2/81g="
+                  },
+                  "vpsfStatus/vpsadmin/nixpkgs": {
+                    "rev": "5dfba6236110080a54247d6460bc2ff5dda939cc",
+                    "narHash": "sha256-bu1QxmXKmPuvBLN7bHP355OV9Qo13x9WCiRDH62CqRM="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos": {
+                    "rev": "6bdf458fd9105379860234ff33d352e55844f08f",
+                    "narHash": "sha256-mDLxNpbfUmo2FRXW5MJWJ8WqKLINUru6nVHB7zN4bVo="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos/impermanence": {
+                    "rev": "7b1d382faf603b6d264f58627330f9faa5cba149",
+                    "narHash": "sha256-03+JxvzmfwRu+5JafM0DLbxgHttOQZkUtDWBmeUkN8Y="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos/impermanence/home-manager": {
+                    "rev": "c47b2cc64a629f8e075de52e4742de688f930dc6",
+                    "narHash": "sha256-kkgA32s/f4jaa4UG+2f8C225Qvclxnqs76mf8zvTVPg="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos/impermanence/home-manager/nixpkgs": {
+                    "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+                    "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos/impermanence/nixpkgs": {
+                    "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+                    "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos/netlinkrb": {
+                    "rev": "d9de53d843d2586ffa5b7b404887fa801c697ddf",
+                    "narHash": "sha256-0bXTWUdUDr2XP+bEIfIbxXap8Niva/IoPXTxFeXXImg="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos/nixpkgs": {
+                    "rev": "5dfba6236110080a54247d6460bc2ff5dda939cc",
+                    "narHash": "sha256-bu1QxmXKmPuvBLN7bHP355OV9Qo13x9WCiRDH62CqRM="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos/nixpkgsUnstable": {
+                    "rev": "34ab99075ac4f7e40cf037eef32cb1c360bb85e9",
+                    "narHash": "sha256-hn1oU2rue2SYK8dAr8+WNZWtbsz1S2W5mnHlSEuh3bo="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos/ruby-lxc": {
+                    "rev": "004bf35eb90d41ba60b347b5b1e73d868a4f95d9",
+                    "narHash": "sha256-guAdOSP9MyCL3BQ1LGXAhcCoXgEU1fUE69d2ATMqUGE="
+                  },
+                  "vpsfStatus/vpsadminos": {
+                    "rev": "6bdf458fd9105379860234ff33d352e55844f08f",
+                    "narHash": "sha256-mDLxNpbfUmo2FRXW5MJWJ8WqKLINUru6nVHB7zN4bVo="
+                  },
+                  "vpsfStatus/vpsadminos/impermanence": {
+                    "rev": "7b1d382faf603b6d264f58627330f9faa5cba149",
+                    "narHash": "sha256-03+JxvzmfwRu+5JafM0DLbxgHttOQZkUtDWBmeUkN8Y="
+                  },
+                  "vpsfStatus/vpsadminos/impermanence/home-manager": {
+                    "rev": "c47b2cc64a629f8e075de52e4742de688f930dc6",
+                    "narHash": "sha256-kkgA32s/f4jaa4UG+2f8C225Qvclxnqs76mf8zvTVPg="
+                  },
+                  "vpsfStatus/vpsadminos/impermanence/home-manager/nixpkgs": {
+                    "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+                    "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc="
+                  },
+                  "vpsfStatus/vpsadminos/impermanence/nixpkgs": {
+                    "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+                    "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc="
+                  },
+                  "vpsfStatus/vpsadminos/netlinkrb": {
+                    "rev": "d9de53d843d2586ffa5b7b404887fa801c697ddf",
+                    "narHash": "sha256-0bXTWUdUDr2XP+bEIfIbxXap8Niva/IoPXTxFeXXImg="
+                  },
+                  "vpsfStatus/vpsadminos/nixpkgs": {
+                    "rev": "5dfba6236110080a54247d6460bc2ff5dda939cc",
+                    "narHash": "sha256-bu1QxmXKmPuvBLN7bHP355OV9Qo13x9WCiRDH62CqRM="
+                  },
+                  "vpsfStatus/vpsadminos/nixpkgsUnstable": {
+                    "rev": "34ab99075ac4f7e40cf037eef32cb1c360bb85e9",
+                    "narHash": "sha256-hn1oU2rue2SYK8dAr8+WNZWtbsz1S2W5mnHlSEuh3bo="
+                  },
+                  "vpsfStatus/vpsadminos/ruby-lxc": {
+                    "rev": "004bf35eb90d41ba60b347b5b1e73d868a4f95d9",
+                    "narHash": "sha256-guAdOSP9MyCL3BQ1LGXAhcCoXgEU1fUE69d2ATMqUGE="
+                  }
+                }
+              },
+              "config_sha256": "0b47fd29adb4ffca71e7acf48e143c29d3e0f98b254e0275b02bd65cbcd01f6c",
+              "machine_toplevels": {
+                "node1": "/nix/store/970qdyn9spg2mdg9rp4qn382q29a25xj-vpsadminos-system-node1-26.05pre-git",
+                "services": "/nix/store/gz9m3ff71nf60dbvly5jxpyaznv6073b-nixos-system-vpsadmin-services-26.05pre-git"
+              }
+            }
           },
           "dimensions": {
             "width": 671,
-            "height": 312
+            "height": 1100
           },
-          "sha256": "ec1a7aec65b1314720535a0d00053ec875d959d1b047de3462463a6587dc4975",
+          "sha256": "ffb00b29d23974c0623fd655b752d81af23de9bf5e09536613471274ce099d00",
           "review_status": "pending"
         },
         "en": {
@@ -1276,14 +1472,210 @@
           "output": "screenshots/en/networking/ip-address-list.png",
           "capture": {
             "driver": "webui",
-            "page": "/?page=networking&action=ip_addresses",
-            "runner": "vpsadmin-kb-captures/schema-5"
+            "page": "/?page=networking&action=ip_addresses&list=1&limit=100",
+            "runner": "vpsadmin-kb-captures/schema-5",
+            "provenance": {
+              "instance_id": "a408f97b-3f40-4a5e-88c0-2cf3ea51aa75",
+              "run_id": "ce148c72-7975-4048-8ff0-527ced9826cf",
+              "artifact_id": "22b19c9d-09a7-4cd4-9ad4-d1e7a130ac01",
+              "artifact_sha256": "19f62f228d490b024cc072896e5b693b11c85b525a7e71b177849734fec8552f",
+              "source": {
+                "schema": 1,
+                "revision": "d0b4f40708cc8b59aab7c91ae05fba695abc233c",
+                "source": "/nix/store/kdmyxmm7sj2qs7sw7zj038669nn2kaj7-source",
+                "lock_sha256": "9a518cc24aa2bc6af69fdefde9acc768705bbaca6d40926f66dfc3c25d01f81b",
+                "fixture_sha256": "128ffdf1a28dbab16c7f61a4cedd602d07ad4168056548c750ac71ab0e175a0e",
+                "inputs": {
+                  "nixpkgs": {
+                    "rev": "5dfba6236110080a54247d6460bc2ff5dda939cc",
+                    "narHash": "sha256-bu1QxmXKmPuvBLN7bHP355OV9Qo13x9WCiRDH62CqRM="
+                  },
+                  "toolsNixpkgs": {
+                    "rev": "0bb7ec54c8483066ec9d7720e780a5caa71f8612",
+                    "narHash": "sha256-iffAls3iaNTyJC2faYcUXSI+Gp02cDjYl+MygxKl2GI="
+                  },
+                  "vpsadmin": {
+                    "rev": "939159f27b5d627930281d5fac0c0aa9ba53bfc7",
+                    "narHash": "sha256-3YDInHVVj5ke4aL8fjCYsNOK6S/r5W3LidG96V2/81g="
+                  },
+                  "vpsadmin/nixpkgs": {
+                    "rev": "5dfba6236110080a54247d6460bc2ff5dda939cc",
+                    "narHash": "sha256-bu1QxmXKmPuvBLN7bHP355OV9Qo13x9WCiRDH62CqRM="
+                  },
+                  "vpsadmin/vpsadminos": {
+                    "rev": "6bdf458fd9105379860234ff33d352e55844f08f",
+                    "narHash": "sha256-mDLxNpbfUmo2FRXW5MJWJ8WqKLINUru6nVHB7zN4bVo="
+                  },
+                  "vpsadmin/vpsadminos/impermanence": {
+                    "rev": "7b1d382faf603b6d264f58627330f9faa5cba149",
+                    "narHash": "sha256-03+JxvzmfwRu+5JafM0DLbxgHttOQZkUtDWBmeUkN8Y="
+                  },
+                  "vpsadmin/vpsadminos/impermanence/home-manager": {
+                    "rev": "c47b2cc64a629f8e075de52e4742de688f930dc6",
+                    "narHash": "sha256-kkgA32s/f4jaa4UG+2f8C225Qvclxnqs76mf8zvTVPg="
+                  },
+                  "vpsadmin/vpsadminos/impermanence/home-manager/nixpkgs": {
+                    "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+                    "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc="
+                  },
+                  "vpsadmin/vpsadminos/impermanence/nixpkgs": {
+                    "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+                    "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc="
+                  },
+                  "vpsadmin/vpsadminos/netlinkrb": {
+                    "rev": "d9de53d843d2586ffa5b7b404887fa801c697ddf",
+                    "narHash": "sha256-0bXTWUdUDr2XP+bEIfIbxXap8Niva/IoPXTxFeXXImg="
+                  },
+                  "vpsadmin/vpsadminos/nixpkgs": {
+                    "rev": "5dfba6236110080a54247d6460bc2ff5dda939cc",
+                    "narHash": "sha256-bu1QxmXKmPuvBLN7bHP355OV9Qo13x9WCiRDH62CqRM="
+                  },
+                  "vpsadmin/vpsadminos/nixpkgsUnstable": {
+                    "rev": "34ab99075ac4f7e40cf037eef32cb1c360bb85e9",
+                    "narHash": "sha256-hn1oU2rue2SYK8dAr8+WNZWtbsz1S2W5mnHlSEuh3bo="
+                  },
+                  "vpsadmin/vpsadminos/ruby-lxc": {
+                    "rev": "004bf35eb90d41ba60b347b5b1e73d868a4f95d9",
+                    "narHash": "sha256-guAdOSP9MyCL3BQ1LGXAhcCoXgEU1fUE69d2ATMqUGE="
+                  },
+                  "vpsadminos": {
+                    "rev": "6bdf458fd9105379860234ff33d352e55844f08f",
+                    "narHash": "sha256-mDLxNpbfUmo2FRXW5MJWJ8WqKLINUru6nVHB7zN4bVo="
+                  },
+                  "vpsadminos/impermanence": {
+                    "rev": "7b1d382faf603b6d264f58627330f9faa5cba149",
+                    "narHash": "sha256-03+JxvzmfwRu+5JafM0DLbxgHttOQZkUtDWBmeUkN8Y="
+                  },
+                  "vpsadminos/impermanence/home-manager": {
+                    "rev": "c47b2cc64a629f8e075de52e4742de688f930dc6",
+                    "narHash": "sha256-kkgA32s/f4jaa4UG+2f8C225Qvclxnqs76mf8zvTVPg="
+                  },
+                  "vpsadminos/impermanence/home-manager/nixpkgs": {
+                    "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+                    "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc="
+                  },
+                  "vpsadminos/impermanence/nixpkgs": {
+                    "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+                    "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc="
+                  },
+                  "vpsadminos/netlinkrb": {
+                    "rev": "d9de53d843d2586ffa5b7b404887fa801c697ddf",
+                    "narHash": "sha256-0bXTWUdUDr2XP+bEIfIbxXap8Niva/IoPXTxFeXXImg="
+                  },
+                  "vpsadminos/nixpkgs": {
+                    "rev": "5dfba6236110080a54247d6460bc2ff5dda939cc",
+                    "narHash": "sha256-bu1QxmXKmPuvBLN7bHP355OV9Qo13x9WCiRDH62CqRM="
+                  },
+                  "vpsadminos/nixpkgsUnstable": {
+                    "rev": "34ab99075ac4f7e40cf037eef32cb1c360bb85e9",
+                    "narHash": "sha256-hn1oU2rue2SYK8dAr8+WNZWtbsz1S2W5mnHlSEuh3bo="
+                  },
+                  "vpsadminos/ruby-lxc": {
+                    "rev": "004bf35eb90d41ba60b347b5b1e73d868a4f95d9",
+                    "narHash": "sha256-guAdOSP9MyCL3BQ1LGXAhcCoXgEU1fUE69d2ATMqUGE="
+                  },
+                  "vpsfStatus": {
+                    "rev": "29853c364e2fa072152d2de4f17e57f1e802b9f3",
+                    "narHash": "sha256-fiaFXRCldKuaiEFNO+TSvzrgYOCW8xOsEjDRND97Pss="
+                  },
+                  "vpsfStatus/nixpkgs": {
+                    "rev": "5dfba6236110080a54247d6460bc2ff5dda939cc",
+                    "narHash": "sha256-bu1QxmXKmPuvBLN7bHP355OV9Qo13x9WCiRDH62CqRM="
+                  },
+                  "vpsfStatus/vpsadmin": {
+                    "rev": "939159f27b5d627930281d5fac0c0aa9ba53bfc7",
+                    "narHash": "sha256-3YDInHVVj5ke4aL8fjCYsNOK6S/r5W3LidG96V2/81g="
+                  },
+                  "vpsfStatus/vpsadmin/nixpkgs": {
+                    "rev": "5dfba6236110080a54247d6460bc2ff5dda939cc",
+                    "narHash": "sha256-bu1QxmXKmPuvBLN7bHP355OV9Qo13x9WCiRDH62CqRM="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos": {
+                    "rev": "6bdf458fd9105379860234ff33d352e55844f08f",
+                    "narHash": "sha256-mDLxNpbfUmo2FRXW5MJWJ8WqKLINUru6nVHB7zN4bVo="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos/impermanence": {
+                    "rev": "7b1d382faf603b6d264f58627330f9faa5cba149",
+                    "narHash": "sha256-03+JxvzmfwRu+5JafM0DLbxgHttOQZkUtDWBmeUkN8Y="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos/impermanence/home-manager": {
+                    "rev": "c47b2cc64a629f8e075de52e4742de688f930dc6",
+                    "narHash": "sha256-kkgA32s/f4jaa4UG+2f8C225Qvclxnqs76mf8zvTVPg="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos/impermanence/home-manager/nixpkgs": {
+                    "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+                    "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos/impermanence/nixpkgs": {
+                    "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+                    "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos/netlinkrb": {
+                    "rev": "d9de53d843d2586ffa5b7b404887fa801c697ddf",
+                    "narHash": "sha256-0bXTWUdUDr2XP+bEIfIbxXap8Niva/IoPXTxFeXXImg="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos/nixpkgs": {
+                    "rev": "5dfba6236110080a54247d6460bc2ff5dda939cc",
+                    "narHash": "sha256-bu1QxmXKmPuvBLN7bHP355OV9Qo13x9WCiRDH62CqRM="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos/nixpkgsUnstable": {
+                    "rev": "34ab99075ac4f7e40cf037eef32cb1c360bb85e9",
+                    "narHash": "sha256-hn1oU2rue2SYK8dAr8+WNZWtbsz1S2W5mnHlSEuh3bo="
+                  },
+                  "vpsfStatus/vpsadmin/vpsadminos/ruby-lxc": {
+                    "rev": "004bf35eb90d41ba60b347b5b1e73d868a4f95d9",
+                    "narHash": "sha256-guAdOSP9MyCL3BQ1LGXAhcCoXgEU1fUE69d2ATMqUGE="
+                  },
+                  "vpsfStatus/vpsadminos": {
+                    "rev": "6bdf458fd9105379860234ff33d352e55844f08f",
+                    "narHash": "sha256-mDLxNpbfUmo2FRXW5MJWJ8WqKLINUru6nVHB7zN4bVo="
+                  },
+                  "vpsfStatus/vpsadminos/impermanence": {
+                    "rev": "7b1d382faf603b6d264f58627330f9faa5cba149",
+                    "narHash": "sha256-03+JxvzmfwRu+5JafM0DLbxgHttOQZkUtDWBmeUkN8Y="
+                  },
+                  "vpsfStatus/vpsadminos/impermanence/home-manager": {
+                    "rev": "c47b2cc64a629f8e075de52e4742de688f930dc6",
+                    "narHash": "sha256-kkgA32s/f4jaa4UG+2f8C225Qvclxnqs76mf8zvTVPg="
+                  },
+                  "vpsfStatus/vpsadminos/impermanence/home-manager/nixpkgs": {
+                    "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+                    "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc="
+                  },
+                  "vpsfStatus/vpsadminos/impermanence/nixpkgs": {
+                    "rev": "e4bae1bd10c9c57b2cf517953ab70060a828ee6f",
+                    "narHash": "sha256-Kell/SpJYVkHWMvnhqJz/8DqQg2b6PguxVWOuadbHCc="
+                  },
+                  "vpsfStatus/vpsadminos/netlinkrb": {
+                    "rev": "d9de53d843d2586ffa5b7b404887fa801c697ddf",
+                    "narHash": "sha256-0bXTWUdUDr2XP+bEIfIbxXap8Niva/IoPXTxFeXXImg="
+                  },
+                  "vpsfStatus/vpsadminos/nixpkgs": {
+                    "rev": "5dfba6236110080a54247d6460bc2ff5dda939cc",
+                    "narHash": "sha256-bu1QxmXKmPuvBLN7bHP355OV9Qo13x9WCiRDH62CqRM="
+                  },
+                  "vpsfStatus/vpsadminos/nixpkgsUnstable": {
+                    "rev": "34ab99075ac4f7e40cf037eef32cb1c360bb85e9",
+                    "narHash": "sha256-hn1oU2rue2SYK8dAr8+WNZWtbsz1S2W5mnHlSEuh3bo="
+                  },
+                  "vpsfStatus/vpsadminos/ruby-lxc": {
+                    "rev": "004bf35eb90d41ba60b347b5b1e73d868a4f95d9",
+                    "narHash": "sha256-guAdOSP9MyCL3BQ1LGXAhcCoXgEU1fUE69d2ATMqUGE="
+                  }
+                }
+              },
+              "config_sha256": "0b47fd29adb4ffca71e7acf48e143c29d3e0f98b254e0275b02bd65cbcd01f6c",
+              "machine_toplevels": {
+                "node1": "/nix/store/970qdyn9spg2mdg9rp4qn382q29a25xj-vpsadminos-system-node1-26.05pre-git",
+                "services": "/nix/store/gz9m3ff71nf60dbvly5jxpyaznv6073b-nixos-system-vpsadmin-services-26.05pre-git"
+              }
+            }
           },
           "dimensions": {
             "width": 646,
-            "height": 312
+            "height": 1100
           },
-          "sha256": "d3b02a2bdc8a0cda93ab31fa544d9d0e0a9c51eec9750628ae7b95a353ef4706",
+          "sha256": "7801723e688d210b213702ded69141df6c9d63c5ae201e989c6fb99a78e4b3f4",
           "review_status": "pending"
         }
       }
