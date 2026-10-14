@@ -23,6 +23,10 @@ bindings:
   count: 1
 - language: cs
   page: navody:distribuce:nixos:impermanence
+  path: datasets.create.open
+  count: 2
+- language: cs
+  page: navody:distribuce:nixos:impermanence
   path: datasets.mount.open
   count: 1
 - language: cs
@@ -219,11 +223,19 @@ bindings:
   count: 3
 - language: en
   page: manuals:distributions:nixos:impermanence
+  path: datasets.create.open
+  count: 2
+- language: en
+  page: manuals:distributions:nixos:impermanence
   path: datasets.mount.open
   count: 1
 - language: en
   page: manuals:distributions:nixos:impermanence
   path: vps.boot-rescue.open
+  count: 1
+- language: en
+  page: manuals:distributions:nixos:impermanence
+  path: vps.features.open
   count: 1
 - language: en
   page: manuals:server:primary_dns
@@ -383,10 +395,6 @@ exceptions:
   path: vps.features.open
   reason: Features is only the article section heading, not an in-prose navigation
     instruction.
-- language: en
-  page: manuals:distributions:nixos:impermanence
-  path: vps.features.open
-  reason: The current English article does not mention the Features form.
 - language: en
   page: manuals:vps:datasets
   path: datasets.create.open

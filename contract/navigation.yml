@@ -608,8 +608,8 @@ paths:
   - id: datasets.create.open
     steps: [datasets.create]
     pages:
-      cs: [navody:vps:datasety, navody:vps:kvm]
-      en: [manuals:vps:datasets, manuals:vps:kvm]
+      cs: [navody:vps:datasety, navody:vps:kvm, navody:distribuce:nixos:impermanence]
+      en: [manuals:vps:datasets, manuals:vps:kvm, manuals:distributions:nixos:impermanence]
 
   - id: datasets.edit.open
     steps: [datasets.edit]

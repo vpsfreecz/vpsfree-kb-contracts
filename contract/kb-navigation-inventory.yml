@@ -338,27 +338,29 @@ discoveries:
     jsme připravili v kroku **7**."
   paths:
   - vps.features.open
-- id: e26d1c4e22b5e74b
+- id: 63a19d501bdfa8f4
   language: cs
   page: navody:distribuce:nixos:impermanence
   paragraph: 11
   text: "==== 5. Připojení root datasetu do /persistent ==== V režimu impermanence
-    bude váš kořenový souborový systém dočasný a při každém startu vymazán. Naše trvalé
-    úložiště připojíme do ''/persistent''. Může to být root dataset, nebo můžete vytvořit
-    další subdataset pro tento účel. Zde použijeme root dataset. V detailu VPS klikněte
-    na odkaz **Mount** u prvního uvedeného datasetu (jeho název je ID VPS) a připojte
-    ho do ''/persistent''."
+    bude tvůj kořenový souborový systém dočasný a při každém startu vymazán. Naše
+    trvalé úložiště připojíme do ''/persistent''. Může to být root dataset, nebo si
+    pro tento účel můžeš vytvořit další subdataset. Zde použijeme root dataset. V
+    detailu VPS klikni na odkaz **Mount** u prvního uvedeného datasetu (jeho název
+    je ID VPS) a připoj ho do ''/persistent''."
   paths:
+  - datasets.create.open
   - datasets.mount.open
-- id: ff6424ee5947162c
+- id: b44535b898711921
   language: cs
   page: navody:distribuce:nixos:impermanence
   paragraph: 9
-  text: "==== 3. Vytvoření VPS subdatasetu pro Nix store ==== V detailu VPS vytvořte
+  text: "==== 3. Vytvoření VPS subdatasetu pro Nix store ==== V detailu VPS vytvoř
     subdataset ''nix'', který bude připojen na ''/nix'' (proto jsme v předchozím kroku
-    nechtěli bootovat do NixOS). Možná budete muset uvolnit nějaké místo na disku,
-    abyste mohli vytvořit dataset, což lze provést zmenšením root datasetu."
-  reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
+    nechtěli bootovat do NixOS). Možná budeš muset uvolnit nějaké místo na disku,
+    abys mohl vytvořit dataset, což lze provést zmenšením root datasetu."
+  paths:
+  - datasets.create.open
 - id: 401d1ce48c76ff56
   language: cs
   page: navody:meet
@@ -1131,16 +1133,17 @@ discoveries:
     registration form.
   reason: Existing WebUI reference outside the localized navigation-label set; inventoried
     for future semantic binding.
-- id: 5a37f1497fca3a3e
+- id: 92d2e1a1b6bd2c4e
   language: en
   page: manuals:distributions:nixos:impermanence
   paragraph: 18
-  text: "==== 8. Turn on impermanence feature ==== In VPS details, enable the **NixOS
-    Impermanence** feature. This will configure your VPS so that it is started with
-    a clean, temporary dataset. Its contents will be lost on every reboot and it's
-    not backed up. Turning on the feature will cause the VPS to restart into the configuration
-    we've prepared in step **7**."
-  reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
+  text: "==== 8. Turn on impermanence feature ==== In VPS details, open **Features**
+    and enable the **NixOS Impermanence** feature. This will configure your VPS so
+    that it is started with a clean, temporary dataset. Its contents will be lost
+    on every reboot and it's not backed up. Turning on the feature will cause the
+    VPS to restart into the configuration we've prepared in step **7**."
+  paths:
+  - vps.features.open
 - id: 7b098ad283fd3d4b
   language: en
   page: manuals:distributions:nixos:impermanence
@@ -1159,7 +1162,8 @@ discoveries:
     to boot into NixOS in the previous step). You might have to free some diskspace
     in order to be able to create the dataset, you can do that by shrinking the root
     dataset."
-  reason: Broad lexical match is not a vpsAdmin WebUI navigation instruction.
+  paths:
+  - datasets.create.open
 - id: c6f2cccc09a24e18
   language: en
   page: manuals:distributions:nixos:impermanence
@@ -1171,6 +1175,7 @@ discoveries:
     In VPS details, click on **Mount** link of the first listed dataset (its name
     is the VPS ID) and mount it to ''/persistent''."
   paths:
+  - datasets.create.open
   - datasets.mount.open
 - id: 0a3fe5d179529430
   language: en
