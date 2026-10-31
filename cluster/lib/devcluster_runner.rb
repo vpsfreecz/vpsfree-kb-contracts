@@ -99,23 +99,25 @@ module DevClusters
       mutex = Mutex.new
       stopping = false
       shutdown_error = nil
+      tracking_error = nil
+      signal_trap = nil
       tracking = true
       @started_machines = []
       discover = proc do
         observation = { incomplete: false }
         begin
-          KbRuntime::ProcessIdentity.descendants(Process.pid, observation:)
+          KbRuntime::ProcessIdentity.descendants(Process.pid, retained: children.values, observation:)
         ensure
-          Array(observation[:records]).each { |record| children[[record['pid'], record['start_ticks']]] = record }
+          Array(observation[:records]).each { |record| children[KbRuntime::ProcessIdentity.lifetime_key(record)] ||= record }
         end
         !observation[:incomplete]
       end
       write_processes = proc do |complete|
-        state.write(process_path, { 'schema' => 1, 'instance_id' => opts[:instance_id], 'run_id' => opts[:run_id],
+        state.write(process_path, { 'schema' => 2, 'instance_id' => opts[:instance_id], 'run_id' => opts[:run_id],
           'artifact_id' => opts[:artifact_id], 'artifact_sha256' => opts[:artifact_sha256],
-          'runner' => runner, 'children' => children.values, 'complete' => complete })
+          'control' => runner, 'descendants' => children.values, 'complete' => complete && tracking_error.nil?,
+          'tracking_error' => tracking_error })
       end
-      publish = proc { mutex.synchronize { discover.call; write_processes.call(false) } }
       withdraw_ready = proc do
         begin
           marker = state.read(ready_path)
@@ -142,6 +144,36 @@ module DevClusters
           true
         end
       end
+      # Called only while holding the publication mutex. A failed observation
+      # permanently closes the ready/complete gates, even if later reads work.
+      fail_tracking = proc do |error|
+        unless tracking_error
+          bounded = lambda { |text, limit| text.to_s.encode('UTF-8', invalid: :replace, undef: :replace).delete("\0").byteslice(0, limit).scrub('') }
+          tracking_error = { 'class' => bounded.call(error.class.name, 256), 'message' => bounded.call(error.message, 2048) }
+          warn "Process tracking failed: #{error.full_message}"
+        end
+        begin
+          withdraw_ready.call
+        rescue StandardError => withdrawal
+          shutdown_error ||= withdrawal
+          warn "Readiness withdrawal failed: #{withdrawal.class}: #{withdrawal.message}"
+        end
+        begin
+          write_processes.call(false)
+        rescue StandardError => publication
+          warn "Failed tracking receipt could not be published: #{publication.class}: #{publication.message}"
+        end
+      end
+      observe = proc do |complete: false, &exit_proof|
+        observed = discover.call
+        proved = observed && tracking_error.nil? && (!exit_proof || exit_proof.call)
+        write_processes.call(complete && proved)
+        proved
+      rescue StandardError => error
+        fail_tracking.call(error)
+        false
+      end
+      publish = proc { mutex.synchronize { observe.call } }
       publish.call
       machines = build_machines(opts)
 
@@ -195,30 +227,53 @@ module DevClusters
         end
         start_tracker = proc do
           Thread.new do
-            loop do
-              keep_tracking = mutex.synchronize do
-                next false unless tracking
-                discover.call
-                write_processes.call(false)
-                true
+            begin
+              loop do
+                keep_tracking = mutex.synchronize do
+                  next false unless tracking
+                  observe.call
+                  tracking_error.nil?
+                end
+                break unless keep_tracking
+                sleep 0.05
               end
-              break unless keep_tracking
-              sleep 0.05
+            rescue StandardError => error
+              mutex.synchronize { fail_tracking.call(error) }
+            ensure
+              failed = mutex.synchronize do
+                fail_tracking.call(KbRuntime::Error.new('process tracker terminated unexpectedly')) if tracking && tracking_error.nil?
+                !tracking_error.nil?
+              end
+              signal_trap.call if failed
             end
           end
         end
         tracking_thread = start_tracker.call
+        signal_trap.call if tracking_error
 
         begin
           Thread.handle_interrupt(ShutdownRequested => :immediate) do
             start_machines(machines, opts[:timeout])
-            publish.call
-            state.write(state.path("run-#{opts[:run_id]}.json"), launch.merge('processes' => state.read(process_path)), immutable: true)
-            mutex.synchronize do
-              unless stopping
-                state.write(ready_path, { 'schema' => 1, 'instance_id' => opts[:instance_id], 'run_id' => opts[:run_id],
-                  'artifact_id' => opts[:artifact_id], 'artifact_sha256' => opts[:artifact_sha256] }, immutable: true)
+            loop do
+              published = mutex.synchronize do
+                begin
+                  unless tracking_thread.alive? || tracking_error
+                    fail_tracking.call(KbRuntime::Error.new('process tracker is not running'))
+                  end
+                  if !stopping && tracking_error.nil? && observe.call
+                    state.write(state.path("run-#{opts[:run_id]}.json"), launch.merge('processes' => state.read(process_path)), immutable: true)
+                    state.write(ready_path, { 'schema' => 1, 'instance_id' => opts[:instance_id], 'run_id' => opts[:run_id],
+                      'artifact_id' => opts[:artifact_id], 'artifact_sha256' => opts[:artifact_sha256] }, immutable: true)
+                    true
+                  end
+                rescue StandardError => error
+                  fail_tracking.call(error)
+                  false
+                end
               end
+              break if published
+              signal_trap.call if tracking_error
+              sleep 0.05
             end
             loop { sleep 2 }
           end
@@ -260,20 +315,24 @@ module DevClusters
               end
             end
             exited = mutex.synchronize do
-              observed = discover.call
-              write_processes.call(false)
-              observed && @started_machines.none? { |entry| entry.machine.running? } && children.values.all? { |record| KbRuntime::ProcessIdentity.gone?(record) }
+              observe.call do
+                @started_machines.none? { |entry| entry.machine.running? } && children.values.all? { |record| KbRuntime::ProcessIdentity.lifetime_gone?(record) }
+              end
             end
             unless exited
               sleep 0.05
               next
             end
             mutex.synchronize { tracking = false }
-            tracking_thread.join
+            begin
+              tracking_thread.join
+            rescue StandardError => error
+              mutex.synchronize { fail_tracking.call(error) }
+            end
             quiesced = mutex.synchronize do
-              observed = discover.call
-              write_processes.call(false)
-              observed && @started_machines.none? { |entry| entry.machine.running? } && children.values.all? { |record| KbRuntime::ProcessIdentity.gone?(record) }
+              observe.call do
+                @started_machines.none? { |entry| entry.machine.running? } && children.values.all? { |record| KbRuntime::ProcessIdentity.lifetime_gone?(record) }
+              end
             end
             unless quiesced
               mutex.synchronize { tracking = true }
@@ -292,10 +351,9 @@ module DevClusters
               finalized = true
             end
             complete = mutex.synchronize do
-              observed = discover.call
-              proved = observed && @started_machines.none? { |entry| entry.machine.running? } && children.values.all? { |record| KbRuntime::ProcessIdentity.gone?(record) }
-              write_processes.call(proved)
-              proved
+              observe.call(complete: true) do
+                @started_machines.none? { |entry| entry.machine.running? } && children.values.all? { |record| KbRuntime::ProcessIdentity.lifetime_gone?(record) }
+              end
             end
             break if complete
             mutex.synchronize { tracking = true }

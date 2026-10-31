@@ -318,6 +318,7 @@ module KbRuntime
           ready = state.path("ready-#{run_id}.json")
           if File.exist?(ready)
             ready_record = state.read(ready)
+            raise Error, 'runner tracking failed before readiness' unless ProcessReceipt.healthy?(process_record(built))
             raise Error, 'foreign readiness receipt' unless ready_record['schema'] == 1 && %w[instance_id run_id artifact_id artifact_sha256].all? { |key| ready_record[key] == built[key] } && live?(built)
             set_phase('verifying', run_id)
             establish_ssh_trust(built, deadline:)
@@ -348,14 +349,11 @@ module KbRuntime
     def process_record(record)
       path = state.path("processes-#{record.fetch('run_id')}.json")
       value = state.read(path)
-      unless %w[instance_id run_id artifact_id artifact_sha256].all? { |key| value[key] == record[key] }
-        raise Error, 'foreign process receipt'
-      end
-      value
+      ProcessReceipt.validate(value, record)
     end
 
     def live?(record)
-      ProcessIdentity.runner_matches?(process_record(record).fetch('runner'), record)
+      ProcessIdentity.runner_matches?(ProcessReceipt.control(process_record(record)), record)
     rescue Errno::ENOENT
       false
     end
@@ -375,22 +373,22 @@ module KbRuntime
       unless marker['schema'] == 1 && %w[instance_id run_id artifact_id artifact_sha256].all? { |key| marker[key] == record[key] }
         raise Error, 'foreign readiness receipt'
       end
-      live?(record)
+      ProcessReceipt.healthy?(process_record(record)) && live?(record)
     end
 
     def gone?(record)
       proof = process_record(record)
-      proof.fetch('complete') == true && [proof.fetch('runner'), *proof.fetch('children')].all? { |process| ProcessIdentity.gone?(process) }
+      ProcessReceipt.gone?(proof)
     end
 
     def control(record, command)
       handoff = pin_shutdown_paths(record)
-      handoff[:runner] = process_record(record).fetch('runner')
+      handoff[:runner] = ProcessReceipt.control(process_record(record))
       raise Error, 'runner identity does not match; no signal was sent' unless ProcessIdentity.runner_matches?(handoff[:runner], record)
       socket = UNIXSocket.new(handoff.fetch(:path))
       pid, uid, = socket.getsockopt(Socket::SOL_SOCKET, Socket::SO_PEERCRED).unpack('iii')
       raise Error, 'foreign runner control peer' unless uid == Process.uid && pid == handoff[:runner].fetch('pid') && ProcessIdentity.runner_matches?(handoff[:runner], record)
-      raise Error, 'runner launch changed before stop request' unless launch == record && process_record(record).fetch('runner') == handoff[:runner]
+      raise Error, 'runner launch changed before stop request' unless launch == record && ProcessReceipt.control(process_record(record)) == handoff[:runner]
       check_shutdown_paths(handoff, required: true)
       set_phase('stopping', record.fetch('run_id'))
       socket.puts(JSON.generate('schema' => 1, 'instance_id' => record['instance_id'], 'run_id' => record['run_id'], 'command' => command))
@@ -466,7 +464,7 @@ module KbRuntime
 
     def check_shutdown_exit(handoff, record)
       proof = process_record(record)
-      unless launch == handoff.fetch(:launch) && proof.fetch('runner') == handoff.fetch(:runner) && proof.fetch('complete') == true && [proof.fetch('runner'), *proof.fetch('children')].all? { |process| ProcessIdentity.gone?(process) }
+      unless launch == handoff.fetch(:launch) && ProcessReceipt.control(proof) == handoff.fetch(:runner) && ProcessReceipt.gone?(proof)
         raise Error, 'shutdown handoff lacks unchanged complete exit proof'
       end
     end
@@ -567,6 +565,7 @@ module KbRuntime
       state.transaction(wait: false) do
         identity = state.identity
         record = File.exist?(state.path('phase.json')) ? phase : nil
+        process_record(launch) if record && File.exist?(state.path("processes-#{record['run_id']}.json"))
         { 'schema' => 2, 'found' => true, 'state' => record ? record['phase'] : 'initialized',
           'instance_id' => identity['instance_id'], 'run_id' => record && record['run_id'],
           'ready' => record && record['phase'] == 'ready' && ready?(launch) }

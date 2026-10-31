@@ -920,7 +920,7 @@ test('actual controller stdout loss cancels acquired work and leaves no live chi
   } finally { fs.rmSync(root, { recursive: true }); }
 });
 
-async function withLeaseObservation(work) {
+async function withLeaseObservation(work, schema = 1) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'kb-lease-observation-'));
   const stateRoot = path.join(root, 'state');
   const directory = path.join(stateRoot, 'clusters/same-slug');
@@ -1075,7 +1075,8 @@ async function withLeaseObservation(work) {
       config_path: config, state_dir: options['--state-dir'], socket_dir: options['--sock-dir'],
       runner_identity: { executable: runner.executable, entrypoint: provider } });
     write(claim, { ...ids, artifact_sha256: value.artifact_sha256, owner_uid: process.getuid(), boot_id: runner.boot_id, state_root: stateRoot });
-    const record = { schema: 1, ...ids, artifact_sha256: value.artifact_sha256, runner, children: [], complete: false };
+    const record = schema === 1 ? { schema, ...ids, artifact_sha256: value.artifact_sha256, runner, children: [], complete: false } :
+      { schema, ...ids, artifact_sha256: value.artifact_sha256, control: runner, descendants: [], complete: false, tracking_error: null };
     await request('publish', { record });
     await work({ root, stateRoot, directory, processPath, config, claim, sdk, value, record, request, write, child, exited,
       observe: () => observeLeaseState(stateRoot, value, sdk) });
@@ -1460,4 +1461,47 @@ test('lease observation never excuses a disappearing protected entry or publicat
     }
     observation.snapshot();
   });
+});
+
+
+test('schema2 lease validates wait-only ancestry, strict control, first failure and monotonic lifetimes', async () => {
+  await withLeaseObservation(async (fixture) => {
+    const observation = fixture.observe();
+    const before = observation.snapshot();
+    const owner = fixture.record.control;
+    const lifetime = (record, parent) => ({ kind: 'descendant-lifetime', boot_id: record.boot_id,
+      pid: record.pid, start_ticks: record.start_ticks,
+      parent: { boot_id: parent.boot_id, pid: parent.pid, start_ticks: parent.start_ticks } });
+    const child = await fixture.request('child');
+    const entry = lifetime(child, owner);
+    const appended = { ...fixture.record, descendants: [entry] };
+    await fixture.request('publish', { record: appended });
+    observation.assertUnchanged(before);
+    const afterExec = await fixture.request('child-exec');
+    assert.notDeepEqual(afterExec.argv, child.argv);
+    assert.deepEqual(lifetime(afterExec, owner), entry);
+    observation.assertUnchanged(before);
+    const second = lifetime(await fixture.request('child'), owner);
+    const both = { ...appended, descendants: [entry, second] };
+    await fixture.request('publish', { record: both });
+    observation.assertUnchanged(before);
+    await fixture.request('publish', { record: { ...both, descendants: [lifetime(child, second), second] } });
+    assert.throws(() => observation.assertUnchanged(before), /ancestry must remain unchanged/);
+    const bad = [
+      { ...both, runner: owner }, { ...both, children: [] },
+      { ...both, tracking_error: { class: 'Errno::EACCES', message: 'unproved task data' } },
+      { ...both, tracking_error: { class: 'x'.repeat(257), message: '' } },
+      { ...both, control: { ...owner, owner_uid: process.getuid() + 1 } },
+      { ...both, descendants: [entry, entry] },
+      { ...both, descendants: [{ ...entry, parent: { ...entry.parent, pid: 999999 } }] },
+      { ...both, descendants: [{ ...entry, parent: { boot_id: entry.boot_id, pid: entry.pid, start_ticks: entry.start_ticks } }] },
+      { ...both, descendants: [{ ...entry, executable: '/forged-authority' }] },
+    ];
+    for (const record of bad) {
+      await fixture.request('publish', { record });
+      assert.throws(() => observation.assertUnchanged(before), /observation refused/);
+    }
+    await fixture.request('publish', { record: fixture.record });
+    assert.throws(() => observation.assertUnchanged(before), /previously observed child identity/);
+  }, 2);
 });
