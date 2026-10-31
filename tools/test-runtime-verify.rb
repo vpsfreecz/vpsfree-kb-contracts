@@ -340,9 +340,10 @@ class RuntimeVerifyTest < Minitest::Test
   end
 
   def descriptor(campaign, run = 'first-run')
-    { 'instance_id' => 'same-instance', 'run_id' => run, 'artifact_id' => 'same-artifact', 'artifact_sha256' => 'a' * 64,
+    run = { 'first-run' => '00000000-0000-4000-8000-000000000001', 'second-run' => '00000000-0000-4000-8000-000000000002' }.fetch(run, run)
+    { 'instance_id' => '00000000-0000-4000-8000-000000000003', 'run_id' => run, 'artifact_id' => '00000000-0000-4000-8000-000000000004', 'artifact_sha256' => 'a' * 64,
       'machines' => { 'services' => {}, 'node1' => {} },
-      'provenance' => { 'source' => campaign.source, 'guest_identity' => { 'schema' => 1, 'artifact_id' => 'same-artifact' },
+      'provenance' => { 'source' => campaign.source, 'guest_identity' => { 'schema' => 1, 'artifact_id' => '00000000-0000-4000-8000-000000000004' },
         'machine_toplevels' => { 'services' => '/nix/store/same-services', 'node1' => '/nix/store/same-node' } } }
   end
 
@@ -367,7 +368,9 @@ class RuntimeVerifyTest < Minitest::Test
         raise KbVerify::Error, "synthetic native #{action} failure" if action && action == fail_at
         if action == 'start'
           FileUtils.mkdir_p(file('state/clusters/same-slug'), mode: 0o700)
-          write('state/clusters/same-slug/processes-first-run.json', first.slice('instance_id', 'run_id', 'artifact_id', 'artifact_sha256').merge('schema' => 1, 'complete' => !incomplete))
+          control = KbRuntime::ProcessIdentity.read(Process.pid)
+          write("state/clusters/same-slug/launch-#{first['run_id']}.json", first.slice('instance_id', 'run_id', 'artifact_id', 'artifact_sha256').merge('boot_id' => control['boot_id']))
+          write("state/clusters/same-slug/processes-#{first['run_id']}.json", first.slice('instance_id', 'run_id', 'artifact_id', 'artifact_sha256').merge('schema' => 2, 'control' => control, 'descendants' => [], 'tracking_error' => nil, 'complete' => !incomplete))
         end
         [action == 'status' ? JSON.generate('found' => true, 'state' => 'stopped', 'ready' => false) : '', 0]
       end

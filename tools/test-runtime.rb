@@ -364,7 +364,7 @@ class ProcessDiscoveryTest < Minitest::Test
       info = JSON.parse(Timeout.timeout(5) { response.gets })
       refute_equal(pid, info['root_task'])
       refute_equal(info['child'], info['child_task'])
-      expected = [info['child'], info['grandchild']].map { |child| KbRuntime::ProcessIdentity.read(child) }
+      expected = [[info['child'], pid], [info['grandchild'], info['child']]].map { |child, parent| lifetime_record(child, parent) }
       assert(expected.all?)
       observation = { incomplete: false }
       found = KbRuntime::ProcessIdentity.descendants(pid, observation:)
@@ -432,7 +432,7 @@ class ProcessDiscoveryTest < Minitest::Test
     RUBY
     with_owned_root(program) do |pid, command, response|
       info = JSON.parse(Timeout.timeout(5) { response.gets })
-      first, late = [info['first'], info['late']].map { |child| KbRuntime::ProcessIdentity.read(child) }
+      first, late = [info['first'], info['late']].map { |child| lifetime_record(child, pid) }
       assert(first && late)
       read = File.method(:read)
       list = Dir.method(:children)
@@ -470,8 +470,8 @@ class ProcessDiscoveryTest < Minitest::Test
       retained = (found + discovered).to_h { |record| [[record['pid'], record['start_ticks']], record] }
       command.puts('exit-first')
       assert_equal({ 'first_gone' => true }, JSON.parse(Timeout.timeout(5) { response.gets }))
-      assert(KbRuntime::ProcessIdentity.gone?(first))
-      assert(KbRuntime::ProcessIdentity.matches?(late))
+      assert(KbRuntime::ProcessIdentity.lifetime_gone?(first))
+      assert(KbRuntime::ProcessIdentity.lifetime_matches?(late))
       assert_equal([late], KbRuntime::ProcessIdentity.descendants(pid))
       assert_equal(2, retained.size, 'an exited or reparented identity is retained until its own exit proof')
     end
@@ -545,74 +545,88 @@ class ProcessDiscoveryTest < Minitest::Test
     end
   end
 
-  def test_identity_visited_set_deduplicates_cycles_and_reparenting_observations
-    records = [42, 51, 52].to_h { |pid| [pid, identity(pid)] }
-    graph = { 42 => [51, 51], 51 => [52], 52 => [51, 42] }
-    visits = []
-    children = ->(pid, **_options) { visits << pid; graph.fetch(pid) }
-    KbRuntime::ProcessIdentity.stub(:read, ->(pid) { records.fetch(pid) }) do
-      KbRuntime::ProcessIdentity.stub(:children, children) do
-        assert_equal([records[51], records[52]], KbRuntime::ProcessIdentity.descendants(42))
-      end
-    end
-    assert_equal([42, 51, 52], visits)
-  end
-
-  def test_recursive_exit_or_reused_pid_keeps_the_captured_identity_without_following_the_replacement
-    [nil, identity(51).merge('start_ticks' => 999)].each do |replacement|
-      records = { 42 => identity(42), 51 => identity(51) }
-      child_reads = 0
-      visits = []
-      read = lambda do |pid|
-        next records.fetch(42) if pid == 42
-        child_reads += 1
-        child_reads == 1 ? records.fetch(51) : replacement
-      end
-      children = ->(pid, **_options) { visits << pid; assert_equal(42, pid); [51] }
-      observation = { incomplete: false }
-      KbRuntime::ProcessIdentity.stub(:boot_id, 'synthetic-boot') do
-        KbRuntime::ProcessIdentity.stub(:read, read) do
-          KbRuntime::ProcessIdentity.stub(:children, children) do
-            assert_equal([records[51]], KbRuntime::ProcessIdentity.descendants(42, observation:))
-          end
-        end
-      end
-      assert_equal([42], visits)
-      assert(observation[:incomplete])
-    end
-  end
-
-  def test_changed_live_identity_and_live_missing_task_directory_refuse_without_losing_captured_records
-    [{'owner_uid' => Process.uid + 1}, { 'boot_id' => 'different-boot' }, { 'executable' => '/different' }, { 'argv' => ['different'] }].each do |change|
-      root, child = identity(42), identity(51)
-      calls = 0
-      read = lambda do |pid|
-        next root if pid == 42
-        calls += 1
-        calls == 1 ? child : child.merge(change)
-      end
-      observation = { incomplete: false }
-      KbRuntime::ProcessIdentity.stub(:boot_id, 'synthetic-boot') do
-        KbRuntime::ProcessIdentity.stub(:read, read) do
-          KbRuntime::ProcessIdentity.stub(:children, ->(pid, **_options) { assert_equal(42, pid); [51] }) do
-            assert_raises(KbRuntime::Error) { KbRuntime::ProcessIdentity.descendants(42, observation:) }
-          end
-        end
-      end
-      assert_equal([child], observation[:records])
-    end
+  def test_lifetime_discovery_deduplicates_task_children_and_anchors_parent_proof
     root = identity(42)
+    samples = { 51 => lifetime_sample(51, 42), 52 => lifetime_sample(52, 51) }
+    graph = { 42 => [51, 51], 51 => [52], 52 => [] }
     observation = { incomplete: false }
     KbRuntime::ProcessIdentity.stub(:read, root) do
-      Dir.stub(:children, ->(_path) { raise Errno::ENOENT }) do
-        assert_raises(Errno::ENOENT) { KbRuntime::ProcessIdentity.descendants(42, observation:) }
+      KbRuntime::ProcessIdentity.stub(:lifetime_sample, ->(pid) { samples.fetch(pid) }) do
+        KbRuntime::ProcessIdentity.stub(:children, ->(pid, **_options) { graph.fetch(pid) }) do
+          found = KbRuntime::ProcessIdentity.descendants(42, observation:)
+          assert_equal([synthetic_lifetime(51, root), synthetic_lifetime(52, samples[51])], found)
+        end
       end
     end
     refute(observation[:incomplete])
   end
 
-  def test_a_recursive_live_missing_child_file_refuses_but_keeps_other_observed_identities
-    records = [42, 51, 52].to_h { |pid| [pid, identity(pid)] }
+  def test_exit_or_reuse_after_admission_keeps_proved_lifetime_without_following_replacement
+    [nil, lifetime_sample(51, 42).merge('start_ticks' => 999)].each do |replacement|
+      root = identity(42)
+      reads = 0
+      sample = lambda do |_pid|
+        reads += 1
+        reads <= 2 ? lifetime_sample(51, 42) : replacement
+      end
+      observation = { incomplete: false }
+      KbRuntime::ProcessIdentity.stub(:read, root) do
+        KbRuntime::ProcessIdentity.stub(:lifetime_sample, sample) do
+          KbRuntime::ProcessIdentity.stub(:children, ->(pid, **_options) { assert_equal(42, pid); [51] }) do
+            assert_equal([synthetic_lifetime(51, root)], KbRuntime::ProcessIdentity.descendants(42, observation:))
+          end
+        end
+      end
+      assert(observation[:incomplete])
+    end
+  end
+
+  def test_changed_strict_control_refuses_before_descendant_admission
+    [{ 'owner_uid' => Process.uid + 1 }, { 'boot_id' => SecureRandom.uuid },
+     { 'executable' => '/different' }, { 'argv' => ['different'] }].each do |change|
+      root = identity(42)
+      calls = 0
+      read = ->(_pid) { calls += 1; calls == 1 ? root : root.merge(change) }
+      KbRuntime::ProcessIdentity.stub(:read, read) do
+        assert_raises(KbRuntime::Error) { KbRuntime::ProcessIdentity.descendants(42) }
+      end
+    end
+  end
+
+  def test_unproved_parent_relation_refuses_and_is_never_admitted
+    root = identity(42)
+    observation = { incomplete: false }
+    KbRuntime::ProcessIdentity.stub(:read, root) do
+      KbRuntime::ProcessIdentity.stub(:lifetime_sample, ->(_pid) { lifetime_sample(51, 999) }) do
+        KbRuntime::ProcessIdentity.stub(:children, ->(_pid, **_options) { [51] }) do
+          assert_raises(KbRuntime::Error) { KbRuntime::ProcessIdentity.descendants(42, observation:) }
+        end
+      end
+    end
+    assert_empty(observation[:records])
+  end
+
+  def test_retained_reparented_descendant_is_revisited_but_reused_pid_is_not
+    root = identity(42)
+    retained = synthetic_lifetime(51, root)
+    samples = { 51 => lifetime_sample(51, 1), 52 => lifetime_sample(52, 51) }
+    KbRuntime::ProcessIdentity.stub(:read, root) do
+      KbRuntime::ProcessIdentity.stub(:lifetime_sample, ->(pid) { samples.fetch(pid) }) do
+        KbRuntime::ProcessIdentity.stub(:children, ->(pid, **_options) { { 42 => [], 51 => [52], 52 => [] }.fetch(pid) }) do
+          assert_equal([retained, synthetic_lifetime(52, samples[51])], KbRuntime::ProcessIdentity.descendants(42, retained: [retained]))
+        end
+      end
+      KbRuntime::ProcessIdentity.stub(:lifetime_sample, samples[51].merge('start_ticks' => 999)) do
+        KbRuntime::ProcessIdentity.stub(:children, ->(pid, **_options) { assert_equal(42, pid); [] }) do
+          assert_empty(KbRuntime::ProcessIdentity.descendants(42, retained: [retained]))
+        end
+      end
+    end
+  end
+
+  def test_recursive_missing_live_child_list_refuses_and_retains_other_proved_records
+    root = identity(42)
+    samples = { 51 => lifetime_sample(51, 42), 52 => lifetime_sample(52, 42) }
     lists = { '/proc/42/task' => ['42'], '/proc/51/task' => ['51'], '/proc/52/task' => ['52'] }
     read = lambda do |path|
       case path
@@ -623,22 +637,39 @@ class ProcessDiscoveryTest < Minitest::Test
       end
     end
     observation = { incomplete: false }
-    KbRuntime::ProcessIdentity.stub(:read, ->(pid) { records.fetch(pid) }) do
-      Dir.stub(:children, ->(path) { lists.fetch(path) }) do
-        File.stub(:read, read) do
-          File.stub(:stat, ->(path) { assert_equal('/proc/52/task/52', path); Object.new }) do
-            assert_raises(Errno::ENOENT) { KbRuntime::ProcessIdentity.descendants(42, observation:) }
+    KbRuntime::ProcessIdentity.stub(:read, root) do
+      KbRuntime::ProcessIdentity.stub(:lifetime_sample, ->(pid) { samples.fetch(pid) }) do
+        Dir.stub(:children, ->(path) { lists.fetch(path) }) do
+          File.stub(:read, read) do
+            File.stub(:stat, ->(path) { assert_equal('/proc/52/task/52', path); Object.new }) do
+              assert_raises(Errno::ENOENT) { KbRuntime::ProcessIdentity.descendants(42, observation:) }
+            end
           end
         end
       end
     end
-    assert_equal([records[51], records[52]], observation[:records])
-    refute(observation[:incomplete], 'unsupported live data remains an error, not an ordinary exit')
+    assert_equal([synthetic_lifetime(51, root), synthetic_lifetime(52, root)], observation[:records])
   end
 
   def identity(pid)
-    { 'pid' => pid, 'start_ticks' => pid * 10, 'boot_id' => 'synthetic-boot', 'owner_uid' => Process.uid,
+    { 'pid' => pid, 'start_ticks' => pid * 10, 'boot_id' => KbRuntime::ProcessIdentity.boot_id, 'owner_uid' => Process.uid,
       'executable' => RbConfig.ruby, 'argv' => ['synthetic', pid.to_s] }
+  end
+
+  def lifetime_sample(pid, parent)
+    identity(pid).slice('boot_id', 'pid', 'start_ticks').merge('ppid' => parent)
+  end
+
+  def synthetic_lifetime(pid, parent)
+    identity(pid).slice('boot_id', 'pid', 'start_ticks').merge('kind' => 'descendant-lifetime',
+      'parent' => parent.slice('boot_id', 'pid', 'start_ticks'))
+  end
+
+  def lifetime_record(pid, parent)
+    sample = KbRuntime::ProcessIdentity.lifetime_sample(pid)
+    parent_sample = KbRuntime::ProcessIdentity.lifetime_sample(parent)
+    sample.slice('boot_id', 'pid', 'start_ticks').merge('kind' => 'descendant-lifetime',
+      'parent' => parent_sample.slice('boot_id', 'pid', 'start_ticks'))
   end
 
   def with_owned_root(program)
@@ -1764,8 +1795,8 @@ class RuntimeLifecycleTest < Minitest::Test
       context = { value: value, server: server, requested: false, released: false, descriptors: [] }
       value.start(config: input, network: 'local', timeout: 5)
       context[:record] = value.launch
-      context[:runner] = value.process_record(context[:record]).fetch('runner')
-      context[:initial_children] = value.process_record(context[:record]).fetch('children')
+      context[:runner] = value.process_record(context[:record]).fetch('control')
+      context[:initial_children] = value.process_record(context[:record]).fetch('descendants')
       yield context
     ensure
       if context && context[:record]
@@ -1859,14 +1890,14 @@ class RuntimeLifecycleTest < Minitest::Test
       begin_shutdown(context)
       proof = context[:value].process_record(context[:record])
       assert_equal(1, context[:initial_children].length)
-      assert_equal(2, proof['children'].length)
-      assert_equal(context[:initial_children], proof['children'].first(1))
-      assert_equal(context[:runner], proof['runner'])
+      assert_equal(2, proof['descendants'].length)
+      assert_equal(context[:initial_children], proof['descendants'].first(1))
+      assert_equal(context[:runner], proof['control'])
       refute(context[:value].gone?(context[:record]))
       assert_nil(finish_shutdown(context))
       terminal = context[:value].process_record(context[:record])
-      assert_equal(proof['children'], terminal['children'])
-      assert(terminal['children'].all? { |child| KbRuntime::ProcessIdentity.gone?(child) })
+      assert_equal(proof['descendants'], terminal['descendants'])
+      assert(terminal['descendants'].all? { |child| KbRuntime::ProcessIdentity.lifetime_gone?(child) })
       assert_equal('stopped', context[:value].phase['phase'])
     end
   end
@@ -1943,7 +1974,7 @@ class RuntimeLifecycleTest < Minitest::Test
           runner = context[:runner].merge('start_ticks' => 'changed')
           context[:value].define_singleton_method(:process_record) do |launch|
             proof = original_record.call(launch)
-            proof['complete'] ? proof.merge('runner' => runner) : proof
+            proof['complete'] ? proof.merge('control' => runner) : proof
           end
         end
         error = finish_shutdown(context)
@@ -2241,7 +2272,7 @@ class RuntimeLifecycleTest < Minitest::Test
         assert_equal(1, Dir.glob(File.join(value.state.directory, 'launch-*.json')).length)
         assert_equal(1, Dir.glob(File.join(value.state.directory, 'spawn-*.json')).length)
         record = value.launch
-        assert_equal(1, value.process_record(record).fetch('children').length)
+        assert_equal(1, value.process_record(record).fetch('descendants').length)
         assert(value.status['ready'])
         value.stop(timeout: 5)
         assert_equal('stopped', value.phase['phase'])
@@ -2694,5 +2725,160 @@ class LifecycleCompletionFormattingTest < Minitest::Test
         holder&.join
       end
     end
+  end
+end
+
+
+class ProcessReceiptTest < Minitest::Test
+  require_relative 'fixtures/schema1-process-reader'
+
+  def test_exact_old_reader_refuses_schema2_before_socket_action_even_with_legacy_ready_marker
+    launch, proof = fixture
+    source = KbRuntime::Schema1ProcessReader.new
+    state = Object.new
+    state.define_singleton_method(:path) { |name| name }
+    state.define_singleton_method(:read) do |path|
+      path.start_with?('ready-') ? proof.slice(*KbRuntime::ProcessReceipt::IDS).merge('schema' => 1) : proof
+    end
+    source.define_singleton_method(:state) { state }
+    source.define_singleton_method(:phase) { { 'phase' => 'ready', 'run_id' => launch['run_id'] } }
+    source.define_singleton_method(:launch) { launch }
+    source.define_singleton_method(:validate_launch) { |record, _run| record }
+    source.define_singleton_method(:pin_shutdown_paths) { |_record| {} }
+    source.define_singleton_method(:close_shutdown_paths) { |_handoff| }
+    UNIXSocket.stub(:new, ->(*) { flunk('old reader must not authenticate or act on a socket') }) do
+      assert_raises(KeyError) { source.ready?(launch) }
+      assert_raises(KeyError) { source.send(:control, launch, 'stop') }
+      refute(source.gone?(launch))
+      proof['complete'] = true
+      assert_raises(KeyError) { source.gone?(launch) }
+      assert_raises(KeyError) { source.send(:check_shutdown_exit, { launch:, runner: proof['control'] }, launch) }
+    end
+  end
+
+  def fixture
+    control = KbRuntime::ProcessIdentity.read(Process.pid)
+    launch = { 'instance_id' => SecureRandom.uuid, 'run_id' => SecureRandom.uuid,
+      'artifact_id' => SecureRandom.uuid, 'artifact_sha256' => 'a' * 64, 'boot_id' => control['boot_id'] }
+    child = { 'kind' => 'descendant-lifetime', 'boot_id' => control['boot_id'], 'pid' => 42,
+      'start_ticks' => 123, 'parent' => control.slice('boot_id', 'pid', 'start_ticks') }
+    proof = launch.slice(*KbRuntime::ProcessReceipt::IDS).merge('schema' => 2, 'control' => control,
+      'descendants' => [child], 'complete' => false, 'tracking_error' => nil)
+    [launch, proof]
+  end
+
+  def test_versions_graph_and_control_have_distinct_authority
+    launch, proof = fixture
+    assert_same(proof, KbRuntime::ProcessReceipt.validate(proof, launch))
+    child = proof['descendants'].first
+    refute(KbRuntime::ProcessIdentity.matches?(child))
+    refute(KbRuntime::ProcessIdentity.runner_matches?(child, launch))
+    bad = [proof.merge('schema' => 3), proof.merge('runner' => proof['control']),
+      proof.merge('children' => []), proof.merge('complete' => nil),
+      proof.merge('tracking_error' => { 'class' => 'E' * 257, 'message' => '' }),
+      proof.merge('tracking_error' => { 'class' => 'Error', 'message' => 'm' * 2049 }),
+      proof.merge('tracking_error' => { 'class' => 'Error', 'message' => 'failed' }, 'complete' => true)]
+    bad += ['instance_id', 'run_id', 'artifact_id'].map { |key| proof.merge(key => SecureRandom.uuid) }
+    bad += [child.merge('owner_uid' => Process.uid), child.merge('boot_id' => SecureRandom.uuid),
+      child.merge('start_ticks' => -1), child.merge('parent' => child.slice('boot_id', 'pid', 'start_ticks')),
+      child.merge('parent' => child['parent'].merge('pid' => 999))].map { |value| proof.merge('descendants' => [value]) }
+    bad << proof.merge('descendants' => [child, child])
+    bad.each { |value| assert_raises(KbRuntime::Error) { KbRuntime::ProcessReceipt.validate(value, launch) } }
+    reused = child.merge('start_ticks' => 124)
+    assert(KbRuntime::ProcessReceipt.validate(proof.merge('descendants' => [child, reused]), launch))
+    second = child.merge('pid' => 43, 'parent' => child.slice('boot_id', 'pid', 'start_ticks'))
+    cycle = child.merge('parent' => second.slice('boot_id', 'pid', 'start_ticks'))
+    assert_raises(KbRuntime::Error) { KbRuntime::ProcessReceipt.validate(proof.merge('descendants' => [cycle, second]), launch) }
+  end
+
+  def test_legacy_complete_and_incomplete_keep_original_exit_rules_without_conversion
+    launch, proof = fixture
+    old = proof.slice(*KbRuntime::ProcessReceipt::IDS).merge('schema' => 1, 'runner' => proof['control'],
+      'children' => [], 'complete' => false)
+    original = Marshal.dump(old)
+    assert_same(old, KbRuntime::ProcessReceipt.validate(old, launch))
+    KbRuntime::ProcessIdentity.stub(:gone?, true) do
+      refute(KbRuntime::ProcessReceipt.gone?(old))
+      assert(KbRuntime::ProcessReceipt.gone?(old.merge('complete' => true)))
+    end
+    assert_equal(original, Marshal.dump(old))
+    assert_raises(KbRuntime::Error) { KbRuntime::ProcessReceipt.validate(old.merge('descendants' => []), launch) }
+  end
+
+  def test_wait_lifetime_stat_denial_malformed_and_mixed_samples_are_not_disappearance
+    process = KbRuntime::ProcessIdentity
+    [Errno::EACCES, Errno::EPERM].each do |failure|
+      File.stub(:read, ->(_path) { raise failure }) { assert_raises(failure) { process.lifetime_sample(42) } }
+    end
+    File.stub(:read, 'malformed') { assert_raises(KbRuntime::Error) { process.lifetime_sample(42) } }
+    stat = lambda { |start| '42 (fixture) S 1 ' + ('0 ' * 17) + start.to_s }
+    reads = 0
+    File.stub(:read, ->(path) { next process.boot_id unless path.end_with?('/stat'); reads += 1; stat.call(reads) }) do
+      # Stub boot separately so the producer cannot recursively read this hook.
+      process.stub(:boot_id, SecureRandom.uuid) do
+        assert_raises(KbRuntime::Error) { process.lifetime_sample(42) }
+      end
+    end
+  end
+
+  def test_same_uid_exec_keeps_proved_lifetime_and_does_not_supply_signal_identity
+    response_r, response_w = IO.pipe
+    input_r, input_w = IO.pipe
+    target = 'STDOUT.sync=true; puts "exec-ready"; STDIN.read'
+    source = "require 'rbconfig'; STDOUT.sync=true; puts 'initial-ready'; STDIN.gets; exec RbConfig.ruby, '-e', ARGV.fetch(0)"
+    pid = Process.spawn(RbConfig.ruby, '-e', source, target, in: input_r, out: response_w, err: File::NULL, close_others: true)
+    input_r.close; response_w.close
+    assert_equal("initial-ready\n", Timeout.timeout(5) { response_r.gets })
+    before = KbRuntime::ProcessIdentity.read(pid)
+    record = KbRuntime::ProcessIdentity.descendants(Process.pid).find { |child| child['pid'] == pid }
+    assert(record)
+    refute(KbRuntime::ProcessIdentity.lifetime_gone?(record))
+    input_w.puts('exec')
+    assert_equal("exec-ready\n", Timeout.timeout(5) { response_r.gets })
+    refute_equal(before['argv'], KbRuntime::ProcessIdentity.read(pid)['argv'])
+    assert_includes(KbRuntime::ProcessIdentity.descendants(Process.pid, retained: [record]), record)
+    refute(KbRuntime::ProcessIdentity.matches?(record))
+    input_w.close
+    assert(Process.waitpid2(pid).last.success?); pid = nil
+    assert(KbRuntime::ProcessIdentity.lifetime_gone?(record))
+  ensure
+    input_w&.close unless input_w&.closed?
+    [input_r, response_r, response_w].compact.each { |io| io.close unless io.closed? }
+    Process.wait(pid) if pid
+  end
+
+  def test_installed_bridge_helper_exe_denial_is_not_a_lifetime_observation_dependency
+    helper = '/run/wrappers/bin/qemu-bridge-helper'
+    skip('installed bridge helper is unavailable') unless File.executable?(helper)
+    reader, writer = IO.pipe
+    loop { writer.write_nonblock('x' * 4096) }
+  rescue IO::WaitWritable
+    # The already-reviewed invalid option exits before network/TUN operations.
+    pid = Process.spawn(helper, '--kb-proc-diagnostic-invalid', err: writer, out: File::NULL, close_others: true)
+    writer.close
+    denied = Timeout.timeout(5) do
+      loop do
+        begin
+          File.readlink("/proc/#{pid}/exe")
+        rescue Errno::EACCES
+          break true
+        end
+        Thread.pass
+      end
+    end
+    assert(denied)
+    assert_raises(Errno::EACCES) { KbRuntime::ProcessIdentity.read(pid) }
+    record = KbRuntime::ProcessIdentity.descendants(Process.pid).find { |child| child['pid'] == pid }
+    assert(record)
+    refute(KbRuntime::ProcessIdentity.lifetime_gone?(record))
+    bytes = reader.read
+    assert_includes(bytes, 'Usage: qemu-bridge-helper')
+    assert_equal(1, Process.waitpid2(pid).last.exitstatus); pid = nil
+    assert(KbRuntime::ProcessIdentity.lifetime_gone?(record))
+  ensure
+    writer&.close unless writer&.closed?
+    reader&.read if pid && reader && !reader.closed?
+    reader&.close unless reader&.closed?
+    Process.wait(pid) if pid
   end
 end

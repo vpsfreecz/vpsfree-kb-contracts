@@ -697,12 +697,12 @@ class RunnerSessionTest < Minitest::Test
         proof = Timeout.timeout(5) do
           loop do
             current = context[:engine].process_record(context[:record])
-            break current if current['children'].any? { |child| child['pid'] == late['pid'] }
+            break current if current['descendants'].any? { |child| child['pid'] == late['pid'] }
             Thread.pass
           end
         end
-        assert_equal(context[:runner], proof['runner'])
-        assert_equal(2, proof['children'].size)
+        assert_equal(context[:runner], proof['control'])
+        assert_equal(2, proof['descendants'].size)
         refute(proof['complete'])
         peer.puts('exit')
         assert_equal({ 'stage' => 'reaped', 'running' => false }, JSON.parse(Timeout.timeout(5) { peer.gets }))
@@ -735,11 +735,11 @@ class RunnerSessionTest < Minitest::Test
         peer.puts('finish')
         assert_equal('finished', JSON.parse(Timeout.timeout(5) { peer.gets })['stage'])
         Timeout.timeout(5) { Thread.pass until context[:engine].gone?(context[:record]) }
-        assert_equal(2, context[:engine].process_record(context[:record])['children'].size, 'identities are append-only')
+        assert_equal(2, context[:engine].process_record(context[:record])['descendants'].size, 'identities are append-only')
         assert_equal(:stopped, Timeout.timeout(5) { waiter.value })
         assert_shutdown(context)
         assert_equal(1, File.readlines(File.join(context[:record]['state_dir'], 'stop-calls.jsonl')).length)
-        assert_equal(context[:runner], context[:engine].process_record(context[:record])['runner'])
+        assert_equal(context[:runner], context[:engine].process_record(context[:record])['control'])
       end
     ensure
       primary = $!
@@ -825,7 +825,7 @@ class RunnerSessionTest < Minitest::Test
         assert_equal(mode == 'task-proof-after' ? 'post-cleanup' : 'quiesced', barrier['point'])
         assert(barrier['tracker_alive'])
         proof = context[:engine].process_record(context[:record])
-        assert_equal(context[:runner], proof['runner'])
+        assert_equal(context[:runner], proof['control'])
         refute(proof['complete'])
         assert(context[:engine].live?(context[:record]))
         refute(context[:engine].gone?(context[:record]))
@@ -853,17 +853,17 @@ class RunnerSessionTest < Minitest::Test
           assert(events[observed]['incomplete']) if mode == 'task-proof-before'
         end
         if mode == 'task-proof-child'
-          child = KbRuntime::ProcessIdentity.read(barrier['child'])
+          child = proof['descendants'].find { |record| record['pid'] == barrier['child'] }
           assert(child)
-          assert_includes(proof['children'], child)
-          refute_includes(proof['children'].map { |record| record['pid'] }, barrier['worker_task'])
-          assert_equal(2, proof['children'].length)
+          assert_includes(proof['descendants'], child)
+          refute_includes(proof['descendants'].map { |record| record['pid'] }, barrier['worker_task'])
+          assert_equal(2, proof['descendants'].length)
         end
         peer.puts('release')
         assert_equal('released', JSON.parse(Timeout.timeout(5) { peer.gets })['stage'])
         shutdown(context)
         terminal = context[:engine].process_record(context[:record])
-        assert_equal(proof['children'], terminal['children'], 'retained identities cannot disappear between observations')
+        assert_equal(proof['descendants'], terminal['descendants'], 'retained identities cannot disappear between observations')
         events = File.readlines(events_path).map { |line| JSON.parse(line) }
         assert_equal(1, events.count { |event| event['stage'] == 'finalize' })
         assert_equal(1, events.count { |event| event['stage'] == 'cleanup' })
@@ -873,7 +873,7 @@ class RunnerSessionTest < Minitest::Test
         end
         assert_operator(events.index { |event| event['stage'] == 'finalize' }, :<, events.index { |event| event['stage'] == 'cleanup' })
         assert(events.any? { |event| event['stage'] == 'discovery' && event['point'] == 'post-cleanup' && !event['incomplete'] })
-        assert(KbRuntime::ProcessIdentity.gone?(child)) if child
+        assert(KbRuntime::ProcessIdentity.lifetime_gone?(child)) if child
       end
     ensure
       primary = $!
@@ -1022,16 +1022,18 @@ class RunnerSessionTest < Minitest::Test
         # signal a reused PID: the directly spawned child has not been reaped.
         pid = Process.spawn(*runner_argv(context), in: File::NULL, out: log, err: log, close_others: true)
         owned_tuple = KbRuntime::ProcessIdentity.read(pid)
-        assert(KbRuntime::ProcessIdentity.runner_matches?(owned_tuple, context[:record]))
+        # Keep the initial tuple for failure cleanup, but authenticate after ready.
         Timeout.timeout(5) do
           Thread.pass until File.exist?(context[:state].path("ready-#{context[:record]['run_id']}.json"))
         end
+        owned_tuple = KbRuntime::ProcessIdentity.read(pid)
+        assert(KbRuntime::ProcessIdentity.runner_matches?(owned_tuple, context[:record]))
         proof = context[:engine].process_record(context[:record])
-        assert_equal(owned_tuple, proof['runner'])
-        assert_equal(pid, proof['runner']['pid'])
-        context[:runner] = proof['runner']
-        context[:children] = proof['children']
-        assert_equal(1, proof['children'].length)
+        assert_equal(owned_tuple, proof['control'])
+        assert_equal(pid, proof['control']['pid'])
+        context[:runner] = proof['control']
+        context[:children] = proof['descendants']
+        assert_equal(1, proof['descendants'].length)
         context[:engine].set_phase('ready', context[:record]['run_id'])
         assert(context[:engine].ready?(context[:record]))
         request = { 'schema' => 1, 'instance_id' => context[:record]['instance_id'],
@@ -1064,7 +1066,7 @@ class RunnerSessionTest < Minitest::Test
         drain = Timeout.timeout(5) { drain_server.accept }
         stopped = JSON.parse(Timeout.timeout(5) { drain.gets })
         assert_equal('stop', stopped['stage'])
-        assert_equal(proof['children'].first['pid'], stopped['child'])
+        assert_equal(proof['descendants'].first['pid'], stopped['child'])
         assert_equal(5, stopped['timeout'])
         assert_retained_runner(context)
         refute(context[:engine].process_record(context[:record])['complete'])
@@ -1091,7 +1093,7 @@ class RunnerSessionTest < Minitest::Test
         assert_equal(:stopped, Timeout.timeout(5) { waiter.value })
         assert_shutdown(context)
         assert_equal(1, File.readlines(File.join(context[:record]['state_dir'], 'stop-calls.jsonl')).length)
-        assert_equal(proof['children'], context[:engine].process_record(context[:record])['children'])
+        assert_equal(proof['descendants'], context[:engine].process_record(context[:record])['descendants'])
         status = reap.call
         assert(status.success?, 'the same directly owned runner exits normally')
       ensure
@@ -1154,7 +1156,7 @@ class RunnerSessionTest < Minitest::Test
       File.write(load_paths, JSON.generate($LOAD_PATH), mode: 'wb', perm: 0o600)
       File.write(entrypoint, runner_program, mode: 'wb', perm: 0o600)
       record['runner_identity'] = { 'executable' => RbConfig.ruby, 'entrypoint' => entrypoint }
-      record['runner'] = entrypoint
+      record['control'] = entrypoint
       state.write(state.path("launch-#{record['run_id']}.json"), record, immutable: true)
       state.write(state.path("spawn-#{record['run_id']}.json"), { 'stage' => 'spawned' })
       state.write(state.path('phase.json'), { 'phase' => 'starting', 'run_id' => record['run_id'] })
@@ -1321,26 +1323,26 @@ class RunnerSessionTest < Minitest::Test
     assert_equal(controller_pid, controller['controller_pid'])
     assert_equal(controller_pid, controller['group'])
     proof = context[:engine].process_record(context[:record])
-    assert_equal(controller['runner_pid'], proof['runner']['pid'])
-    assert_equal(context[:record]['boot_id'], proof['runner']['boot_id'])
-    assert_equal(Process.uid, proof['runner']['owner_uid'])
-    assert(KbRuntime::ProcessIdentity.runner_matches?(proof['runner'], context[:record]))
-    context[:runner] = proof['runner']
-    context[:children] = proof['children']
+    assert_equal(controller['runner_pid'], proof['control']['pid'])
+    assert_equal(context[:record]['boot_id'], proof['control']['boot_id'])
+    assert_equal(Process.uid, proof['control']['owner_uid'])
+    assert(KbRuntime::ProcessIdentity.runner_matches?(proof['control'], context[:record]))
+    context[:runner] = proof['control']
+    context[:children] = proof['descendants']
     marker = JSON.parse(File.read(context[:marker]))
-    assert_equal(proof['runner']['pid'], marker['session'])
-    assert_equal(proof['runner']['pid'], marker['group'])
+    assert_equal(proof['control']['pid'], marker['session'])
+    assert_equal(proof['control']['pid'], marker['group'])
     refute_equal(controller['session'], marker['session'])
     guard_paths = %w[gate operation].map { |kind| File.join(context[:state].root, 'locks', "#{context[:state].slug}.#{kind}.lock") }
     (guard_paths + [context[:generation]]).each { |path| refute_includes(marker['fds'], path) }
-    assert_equal(1, proof['children'].length)
-    assert_equal(marker['session'], Process.getsid(proof['children'].first['pid']))
+    assert_equal(1, proof['descendants'].length)
+    assert_equal(marker['session'], Process.getsid(proof['descendants'].first['pid']))
   end
 
   def assert_retained_runner(context)
     assert_equal(context[:runner], KbRuntime::ProcessIdentity.read(context[:runner]['pid']))
-    assert_equal(context[:children], context[:engine].process_record(context[:record])['children'])
-    assert(context[:children].all? { |child| KbRuntime::ProcessIdentity.matches?(child) })
+    assert_equal(context[:children], context[:engine].process_record(context[:record])['descendants'])
+    assert(context[:children].all? { |child| KbRuntime::ProcessIdentity.lifetime_matches?(child) })
     assert_equal(context[:runner]['pid'], Process.getsid(context[:runner]['pid']))
     assert_equal(context[:runner]['pid'], Process.getpgid(context[:runner]['pid']))
   end
@@ -1614,9 +1616,9 @@ class RunnerSessionTest < Minitest::Test
           end
         end
         original_descendants = KbRuntime::ProcessIdentity.method(:descendants)
-        KbRuntime::ProcessIdentity.define_singleton_method(:descendants) do |pid, observation: {}|
+        KbRuntime::ProcessIdentity.define_singleton_method(:descendants) do |pid, retained: [], observation: {}|
           pass = $task_proof&.before_discovery
-          records = original_descendants.call(pid, observation:)
+          records = original_descendants.call(pid, retained:, observation:)
           $task_proof&.after_discovery(pass, observation)
           records
         end
@@ -1706,6 +1708,117 @@ class RunnerSessionTest < Minitest::Test
           end
         end
       end
+      if mode.start_with?('tracking-failure-')
+        fault_directory = ARGV[ARGV.index('--state-dir') + 1]
+        $fault_directory = fault_directory
+        $fault_ready_barrier = Queue.new
+        $fault_completion_barrier = Queue.new
+        fault_root = File.dirname(File.dirname(File.dirname(fault_directory)))
+        $fault_peer = UNIXSocket.new(File.join(fault_root, 'fault.sock'))
+        $fault_peer.puts(JSON.generate('stage' => 'fixture-started'))
+        Thread.new do
+          loop do
+            case $fault_peer.gets
+            when "release\n" then $fault_completion_barrier << true
+            when "finish\n" then break
+            else raise 'unexpected fault fixture teardown'
+            end
+          end
+          $fault_machine&.fixture_finish
+          Process.exit!(0)
+        end
+        class TrackingFailureMachine < SessionMachine
+          def wait_for_boot(timeout:)
+            super
+            $fault_booted = true
+            $fault_ready_barrier.pop if $session_fixture_mode == 'tracking-failure-concurrent'
+          end
+          def stop(timeout:)
+            super
+            $fault_stopped = true
+            $fault_peer.puts(JSON.generate('stage' => 'machines-reaped', 'child' => @child))
+          end
+          def fixture_finish
+            @writer&.close unless @writer&.closed?
+            @reaper&.join
+          end
+        end
+        class SessionRunner
+          def build_machines(opts)
+            [MachineState.new(name: 'services', machine: ($fault_machine = TrackingFailureMachine.new(opts[:state_dir])))]
+          end
+        end
+        original_discovery = KbRuntime::ProcessIdentity.method(:descendants)
+        original_gone = KbRuntime::ProcessIdentity.method(:lifetime_gone?)
+        KbRuntime::ProcessIdentity.define_singleton_method(:lifetime_gone?) do |record|
+          if $fault_after_discovery && Thread.current == Thread.main && !$fault_completion_injected
+            $fault_completion_injected = true
+            $fault_peer.puts(JSON.generate('stage' => 'completion-blocked'))
+            $fault_completion_barrier.pop
+            raise Errno::EACCES, 'first completion lifetime observation failure'
+          end
+          original_gone.call(record)
+        end
+        KbRuntime::ProcessIdentity.define_singleton_method(:descendants) do |pid, retained: [], observation: {}|
+          mode = $session_fixture_mode
+          $fault_after_discovery = false if Thread.current == Thread.main
+          if (mode == 'tracking-failure-join' || mode.start_with?('tracking-failure-lifetime-')) &&
+              Thread.current != Thread.main && !Thread.current.instance_variable_get(:@fault_join)
+            thread = Thread.current
+            thread.instance_variable_set(:@fault_join, true)
+            native_join = thread.method(:join)
+            thread.define_singleton_method(:join) do |*args|
+              result = native_join.call(*args)
+              $fault_tracker_joined = true
+              Kernel.raise IOError, 'first tracker join failure' if mode == 'tracking-failure-join'
+              result
+            end
+            File.write(File.join($fault_directory, 'join-armed'), '', mode: 'wb', perm: 0o600)
+          end
+          if mode == 'tracking-failure-exit' && File.exist?(File.join($fault_directory, 'inject-failure')) && Thread.current != Thread.main
+            Thread.exit
+          end
+          fail_now = (mode == 'tracking-failure-concurrent' && $fault_booted && Thread.current != Thread.main) ||
+            (mode == 'tracking-failure-before' && $fault_booted && Thread.current == Thread.main) ||
+            (mode == 'tracking-failure-after' && File.exist?(File.join($fault_directory, 'inject-failure')) && Thread.current != Thread.main) ||
+            (mode == 'tracking-failure-drain' && $fault_stopped && Thread.current == Thread.main)
+          if fail_now
+            $fault_ready_barrier << true if mode == 'tracking-failure-concurrent'
+            $fault_count = ($fault_count || 0) + 1
+            raise Errno::EACCES, ($fault_count == 1 ? 'first unproved task observation' : 'later observation error')
+          end
+          result = original_discovery.call(pid, retained:, observation:)
+          if Thread.current == Thread.main && $fault_stopped && !observation[:incomplete]
+            phase = if File.exist?(File.join($fault_directory, 'cleaned'))
+                      'post-cleanup'
+                    elsif $fault_tracker_joined
+                      'quiesced'
+                    else
+                      'completion'
+                    end
+            $fault_after_discovery = mode == 'tracking-failure-lifetime-' + phase
+          end
+          result
+        end
+        if mode == 'tracking-failure-ready'
+          native_write = KbRuntime::State.instance_method(:write)
+          KbRuntime::State.define_method(:write) do |path, value, **options|
+            raise IOError, 'first ready publication failure' if File.basename(path).start_with?('ready-')
+            native_write.bind_call(self, path, value, **options)
+          end
+        end
+        if mode == 'tracking-failure-complete-publication'
+          native_write = KbRuntime::State.instance_method(:write)
+          KbRuntime::State.define_method(:write) do |path, value, **options|
+            if File.basename(path).start_with?('processes-') && value['complete']
+              $fault_peer.puts(JSON.generate('stage' => 'completion-blocked'))
+              $fault_completion_barrier.pop
+              raise IOError, 'first complete receipt publication failure'
+            end
+            native_write.bind_call(self, path, value, **options)
+          end
+        end
+      end
       exit SessionRunner.run(ARGV, hash_base: 'synthetic-network')
     RUBY
   end
@@ -1725,8 +1838,8 @@ class RunnerSessionTest
           assert_equal(4, Dir.children(context[:record]['socket_dir']).length)
           refute(Dir.children(context[:record]['socket_dir']).any? { |name| name.end_with?('.pid') })
           shutdown(context)
-          assert_equal(context[:children], context[:engine].process_record(context[:record])['children'])
-          assert(context[:children].all? { |child| KbRuntime::ProcessIdentity.gone?(child) })
+          assert_equal(context[:children], context[:engine].process_record(context[:record])['descendants'])
+          assert(context[:children].all? { |child| KbRuntime::ProcessIdentity.lifetime_gone?(child) })
           native = File.read(File.join(context[:record]['state_dir'], 'services-log.log'))
           assert_includes(native, 'ACTION: qemu_exit')
           assert_includes(native, 'STATUS: 0')
@@ -1766,15 +1879,15 @@ class RunnerSessionTest
     controller = JSON.parse(Timeout.timeout(5) { output.gets })
     assert_equal(controller_pid, controller['controller_pid'])
     proof = context[:engine].process_record(context[:record])
-    assert_equal(controller['runner_pid'], proof['runner']['pid'])
-    assert(KbRuntime::ProcessIdentity.runner_matches?(proof['runner'], context[:record]))
-    context[:runner] = proof['runner']
-    context[:children] = proof['children']
-    assert_equal(4, proof['children'].length, 'three daemons and the owned stand-in VM process')
-    assert(proof['children'].all? { |child| KbRuntime::ProcessIdentity.matches?(child) })
+    assert_equal(controller['runner_pid'], proof['control']['pid'])
+    assert(KbRuntime::ProcessIdentity.runner_matches?(proof['control'], context[:record]))
+    context[:runner] = proof['control']
+    context[:children] = proof['descendants']
+    assert_equal(4, proof['descendants'].length, 'three daemons and the owned stand-in VM process')
+    assert(proof['descendants'].all? { |child| KbRuntime::ProcessIdentity.lifetime_matches?(child) })
     marker = JSON.parse(File.read(context[:marker]))
-    assert_equal(proof['runner']['pid'], marker['session'])
-    assert_equal(proof['runner']['pid'], marker['group'])
+    assert_equal(proof['control']['pid'], marker['session'])
+    assert_equal(proof['control']['pid'], marker['group'])
     assert_equal(%w[vmSharedDir vpsadmin vpsadminos].sort, marker['shares'].keys.sort)
     guards = %w[gate operation].map { |kind| File.join(context[:state].root, 'locks', "#{context[:state].slug}.#{kind}.lock") }
     marker['shares'].each_value do |observed|
@@ -1861,5 +1974,132 @@ class RunnerSessionTest
     yield
   ensure
     singleton_class.send(:remove_method, :runner_program)
+  end
+end
+
+
+class RunnerSessionTest
+  def test_tracking_failure_before_ready_cannot_publish_ready_or_skip_machine_drain
+    tracking_failure('before')
+  end
+
+  def test_tracking_failure_after_ready_withdraws_marker_and_retains_first_error
+    tracking_failure('after')
+  end
+
+  def test_ready_publication_failure_is_atomic_with_failed_process_proof
+    tracking_failure('ready')
+  end
+
+  def test_tracking_failure_during_drain_never_finalizes_or_releases
+    tracking_failure('drain')
+  end
+
+  def test_tracking_failure_concurrent_with_ready_gate_never_publishes_ready
+    tracking_failure('concurrent')
+  end
+
+  def test_unexpected_tracker_exit_withdraws_ready_and_drains_known_machine
+    tracking_failure('exit')
+  end
+
+  def test_tracker_join_failure_cannot_unwind_known_machine_drain
+    tracking_failure('join')
+  end
+
+  %w[completion quiesced post-cleanup].each do |phase|
+    define_method("test_completion_lifetime_failure_#{phase.tr('-', '_')}_retains_live_control") do
+      tracking_failure("lifetime-#{phase}")
+    end
+  end
+
+  def test_final_complete_receipt_failure_retains_live_control_and_incomplete_claims
+    tracking_failure('complete-publication')
+  end
+
+  private
+
+  def tracking_failure(point)
+    with_runner(mode: "tracking-failure-#{point}") do |context|
+      server = UNIXServer.new(File.join(context[:state].root, 'fault.sock'))
+      File.chmod(0o600, server.path)
+      log = File.open(context[:log], 'w', 0o600)
+      pid = Process.spawn(*runner_argv(context), in: File::NULL, out: log, err: log, close_others: true)
+      log.close
+      context[:shutdown_attempted] = true
+      peer = Timeout.timeout(5) { server.accept }
+      assert_equal('fixture-started', JSON.parse(Timeout.timeout(5) { peer.gets })['stage'])
+      ready = context[:state].path("ready-#{context[:record]['run_id']}.json")
+      completion = point.start_with?('lifetime-') || point == 'complete-publication'
+      if %w[after drain join exit].include?(point) || completion
+        Timeout.timeout(5) { Thread.pass until File.exist?(ready) }
+        context[:engine].set_phase('ready', context[:record]['run_id'])
+        assert(context[:engine].ready?(context[:record]))
+        if %w[after exit].include?(point)
+          File.write(File.join(context[:record]['state_dir'], 'inject-failure'), '', mode: 'wb', perm: 0o600)
+        else
+          if point == 'join' || point.start_with?('lifetime-')
+            Timeout.timeout(5) { Thread.pass until File.exist?(File.join(context[:record]['state_dir'], 'join-armed')) }
+          end
+          error = assert_raises(KbRuntime::Error) { context[:engine].stop(timeout: 0) }
+          assert_match(/owned shutdown incomplete/, error.message)
+        end
+      end
+      stopped = JSON.parse(Timeout.timeout(5) { peer.gets })
+      assert_equal('machines-reaped', stopped['stage'])
+      if completion
+        assert_equal('completion-blocked', JSON.parse(Timeout.timeout(5) { peer.gets })['stage'])
+        refute(context[:engine].process_record(context[:record])['complete'])
+        assert(context[:engine].live?(context[:record]))
+        peer.puts('release')
+      end
+      proof = Timeout.timeout(5) do
+        loop do
+          value = context[:engine].process_record(context[:record])
+          break value if value['tracking_error']
+          Thread.pass
+        end
+      end
+      first_error = proof['tracking_error']
+      assert_match(point == 'exit' ? /process tracker terminated unexpectedly/ : /first /, first_error['message'])
+      if completion
+        assert_equal(point == 'complete-publication' ? 'IOError' : 'Errno::EACCES', first_error['class'])
+      end
+      refute(proof['complete'])
+      refute(File.exist?(ready))
+      refute(context[:engine].ready?(context[:record]))
+      refute(context[:engine].gone?(context[:record]))
+      assert(context[:engine].live?(context[:record]))
+      handoff = context[:engine].send(:control, context[:record], 'stop')
+      context[:engine].send(:close_shutdown_paths, handoff)
+      assert_equal('stopping', context[:engine].phase['phase'])
+      assert(File.socket?(File.join(context[:record]['socket_dir'], 'control.sock')))
+      assert_equal(context[:claims], Dir.glob(File.join(context[:engine].resources.root, '*.json')).to_h { |path| [path, File.binread(path)] })
+      assert_equal(1, File.readlines(File.join(context[:record]['state_dir'], 'stop-calls.jsonl')).length)
+      safe_cleanup = %w[lifetime-post-cleanup complete-publication].include?(point)
+      assert_equal(safe_cleanup, File.exist?(File.join(context[:record]['state_dir'], 'finalized')))
+      assert_equal(safe_cleanup, File.exist?(File.join(context[:record]['state_dir'], 'cleaned')))
+      # An unrelated namespace entry cannot become cleanup authority on error.
+      unknown = File.join(context[:record]['socket_dir'], 'unknown.sock.pid')
+      File.write(unknown, 'retained', mode: 'wb', perm: 0o600)
+      assert_equal(first_error, context[:engine].process_record(context[:record])['tracking_error'])
+      assert_equal('retained', File.read(unknown))
+      peer.puts('finish')
+      assert(Process.waitpid2(pid).last.success?); pid = nil
+      refute(context[:engine].gone?(context[:record]), 'dead failed runner is not a complete proof')
+    ensure
+      # The fixture endpoint, never PID discovery, ends the already-reaped
+      # synthetic machine's owner after negative proof assertions.
+      if pid && peer && !peer.closed?
+        begin
+          peer.puts('finish')
+        rescue Errno::EPIPE, IOError
+        end
+        Process.wait(pid)
+      end
+      peer&.close
+      server&.close
+      log&.close unless log&.closed?
+    end
   end
 end

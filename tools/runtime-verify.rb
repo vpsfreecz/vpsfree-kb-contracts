@@ -5,6 +5,7 @@ require 'optparse'
 require 'open3'
 require 'shellwords'
 require_relative '../cluster/lib/kb_source'
+require_relative '../cluster/lib/kb_process'
 require_relative 'capture-export'
 
 module KbVerify
@@ -662,7 +663,14 @@ module KbVerify
       stopped = JSON.parse(result)
       check(stopped['found'] == true && stopped['state'] == 'stopped' && stopped['ready'] == false, 'ordinary public stop completed')
       proof = read("state/clusters/same-slug/processes-#{first.fetch('run_id')}.json")
-      check(proof['schema'] == 1 && proof['complete'] == true &&
+      launch = read("state/clusters/same-slug/launch-#{first.fetch('run_id')}.json")
+      begin
+        KbRuntime::ProcessReceipt.validate(proof, launch)
+      rescue KbRuntime::Error, KeyError
+        raise Error, 'invalid retained complete exit receipt'
+      end
+      check(proof['schema'] == 2 && proof['complete'] == true && proof['tracking_error'].nil? &&
+        proof['control'].is_a?(Hash) && proof['descendants'].is_a?(Array) &&
         %w[instance_id run_id artifact_id artifact_sha256].all? { |key| proof[key] == first.fetch(key) }, 'retained complete exit receipt')
       checkpoint('same-artifact-public-resume')
       engine('resume', '--timeout', '900')

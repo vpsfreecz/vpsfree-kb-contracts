@@ -27,8 +27,34 @@ Read-only status does not initialize missing state.
 Each runner start records a fresh run UUID and immutable reservation and launch
 receipts. They bind a prepared artifact UUID and receipt digest to configuration
 bytes, socket paths, requested resources, source, runner and expected system
-closures. The runner records its boot ID, PID, Linux start ticks, executable and
-exact argument vector, plus owned child identities.
+closures. The runner's control identity binds its boot ID, PID, Linux start ticks,
+owner UID, executable and exact argument vector. Socket peer authentication and
+control operations require that full identity.
+
+Process receipt schema 2 stores `control`, `descendants`, `complete` and
+`tracking_error`, alongside the existing instance/run/artifact bindings. It has no
+`runner` or `children` aliases. Each `descendant-lifetime` records boot ID, PID,
+start ticks and its first proved parent lifetime. Parent links form an acyclic
+graph anchored in the authenticated control process. The inventory retains every
+proved lifetime, including reparented processes and distinct lifetimes that reuse
+a PID. These records only require waiting for exit; they never authorize signals
+or control operations.
+
+Discovery brackets child admission with stable process lifetimes and the actual
+all-task parent/child relation. It continues to visit retained live descendants
+after reparenting. A descendant's ordinary exec or credential change preserves
+its lifetime, including when a privileged bridge helper's executable link becomes
+unreadable. Stat/task permission failures, malformed data, unproved ancestry and
+changed control identity refuse observation. A descendant is gone only under the
+same boot when absent, zombie or replaced by a different start time.
+
+Readers explicitly distinguish schemas 1 and 2 and reject mixed or unknown
+forms. Schema 1 retains its original full-identity and complete-exit rules;
+readers never convert an old incomplete receipt. Older controllers cannot manage
+schema-2 runs because the required legacy control keys are absent. Finish each
+run with its owning source before changing controller generation. A dead
+incomplete old run retains its original claims and recovery requirements.
+
 Private records are published by atomic rename. A reader validates both the
 named file and its opened descriptor, including ownership, mode and size. If a
 safe replacement changes the inode between those checks, it restarts the read,
@@ -42,6 +68,18 @@ vector stay the same. Session establishment failure refuses before machine
 creation. The separate session protects the run from inherited terminal and
 process-group signals; a containing cgroup, supervisor or host failure can still
 end it. Complete ownership and exit evidence remain required for cleanup.
+
+The tracker latches its first observation or publication error, withdraws readiness
+under the same mutex used to publish it, and starts the existing one-shot graceful
+drain. Its process receipt retains bounded error class/message fields, with full
+native diagnostics in the owned runner log. An errored or unexpectedly terminated
+tracker cannot publish readiness or complete exit proof. Discovery or join errors
+do not skip graceful handling of known machines and their reapers. Later readable
+observations cannot clear an ownership gap: the runner retains its control path,
+state and claims rather than finalizing or releasing ambiguous effects.
+An error during final receipt publication does not undo machine cleanup already
+proved safe. It still prevents complete ownership proof, control-socket retirement
+and claim release.
 
 Readiness belongs to that exact run. The runner's boot marker confirms its test
 shell. The engine separately waits for valid SSH host keys from every recorded

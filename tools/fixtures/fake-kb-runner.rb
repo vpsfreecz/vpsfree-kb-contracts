@@ -27,23 +27,27 @@ end
 reader, writer = IO.pipe
 child = Process.spawn(RbConfig.ruby, '-e', 'STDIN.read', in: reader, close_others: true)
 reader.close
-children = [KbRuntime::ProcessIdentity.read(child)]
-record = { 'schema' => 1, 'instance_id' => launch['instance_id'], 'run_id' => launch['run_id'],
+descendant = lambda do |pid|
+  KbRuntime::ProcessIdentity.lifetime_sample(pid).slice('boot_id', 'pid', 'start_ticks').merge(
+    'kind' => 'descendant-lifetime', 'parent' => runner.slice('boot_id', 'pid', 'start_ticks'))
+end
+children = [descendant.call(child)]
+record = { 'schema' => 2, 'instance_id' => launch['instance_id'], 'run_id' => launch['run_id'],
            'artifact_id' => launch['artifact_id'], 'artifact_sha256' => launch['artifact_sha256'],
-           'runner' => runner, 'children' => children, 'complete' => false }
+           'control' => runner, 'descendants' => children, 'complete' => false, 'tracking_error' => nil }
 process_path = state.path("processes-#{launch['run_id']}.json")
 control = File.join(options.fetch('sock-dir'), 'control.sock')
 state.lock('runner', create: true) do
   server = UNIXServer.new(control)
   File.chmod(0o600, control)
   state.write(process_path, record)
-  state.write(state.path("ready-#{launch['run_id']}.json"), record.slice('schema', 'instance_id', 'run_id', 'artifact_id', 'artifact_sha256'), immutable: true)
+  state.write(state.path("ready-#{launch['run_id']}.json"), record.slice('instance_id', 'run_id', 'artifact_id', 'artifact_sha256').merge('schema' => 1), immutable: true)
   attempts = 0
   barrier = extra_child = extra_writer = nil
   loop do
     peer = server.accept
     request = JSON.parse(peer.gets)
-    raise 'fake control identity differs' unless request == record.slice('schema', 'instance_id', 'run_id').merge('command' => 'stop')
+    raise 'fake control identity differs' unless request == record.slice('instance_id', 'run_id').merge('schema' => 1, 'command' => 'stop')
     attempts += 1
     mode = shutdown.fetch('mode', 'normal')
     unless mode == 'early-eof'
@@ -60,7 +64,7 @@ state.lock('runner', create: true) do
       extra_reader, extra_writer = IO.pipe
       extra_child = Process.spawn(RbConfig.ruby, '-e', 'STDIN.read', in: extra_reader, close_others: true)
       extra_reader.close
-      children << KbRuntime::ProcessIdentity.read(extra_child)
+      children << descendant.call(extra_child)
       state.write(process_path, record)
     end
     if shutdown['barrier']

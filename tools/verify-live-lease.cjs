@@ -171,25 +171,11 @@ const liveObservation = String.raw`
       reservation['boot_id'] == launch['boot_id']
     process_path = state.path("processes-#{expected.fetch('run_id')}.json")
     record = state.read(process_path)
-    raise KbRuntime::Error, 'process receipt differs' unless record.is_a?(Hash) &&
-      record.keys.sort == (fields + %w[schema runner children complete]).sort && record['schema'] == 1 &&
-      fields.all? { |key| record[key] == expected[key] } && record['complete'] == false && record['children'].is_a?(Array)
-    valid = lambda do |identity|
-      identity.is_a?(Hash) && identity.keys.sort == %w[argv boot_id executable owner_uid pid start_ticks] &&
-        identity['pid'].is_a?(Integer) && identity['pid'] > 1 && identity['pid'] <= 2**31 - 1 &&
-        identity['start_ticks'].is_a?(Integer) && identity['start_ticks'] >= 0 && identity['start_ticks'] <= 2**53 - 1 &&
-        identity['boot_id'] == launch['boot_id'] && identity['owner_uid'] == Process.uid &&
-        identity['executable'].is_a?(String) && identity['executable'].start_with?('/') &&
-        !identity['executable'].include?("\0") && identity['argv'].is_a?(Array) &&
-        identity['argv'].all? { |argument| argument.is_a?(String) && !argument.include?("\0") }
-    end
-    runner = record['runner']
-    raise KbRuntime::Error, 'runner differs' unless valid.call(runner) && KbRuntime::ProcessIdentity.runner_matches?(runner, launch)
-    keys = record['children'].map do |child|
-      raise KbRuntime::Error, 'invalid child identity' unless valid.call(child) && child['pid'] != runner['pid']
-      [child['pid'], child['start_ticks']]
-    end
-    raise KbRuntime::Error, 'duplicate child identity' unless keys.uniq == keys
+    KbRuntime::ProcessReceipt.validate(record, launch)
+    raise KbRuntime::Error, 'process receipt is not healthy/live' unless
+      record['complete'] == false && KbRuntime::ProcessReceipt.healthy?(record)
+    control = KbRuntime::ProcessReceipt.control(record)
+    raise KbRuntime::Error, 'runner differs' unless KbRuntime::ProcessIdentity.runner_matches?(control, launch)
     STDOUT.write(JSON.generate('process_path' => process_path, 'claim_path' => claim, 'record' => record))
   rescue StandardError => error
     warn "Live process observation refused: #{error.class}"
@@ -207,14 +193,20 @@ function observeLeaseState(root, value, sdkSource) {
     } catch (error) { throw new Error('Live process observation refused', { cause: error }); }
   };
   const initial = read();
-  const seen = new Set();
+  const seen = new Map();
+  const control = (record) => record.schema === 1 ? record.runner : record.control;
+  const descendants = (record) => record.schema === 1 ? record.children : record.descendants;
   const update = (observation) => {
     assert.equal(observation.process_path, initial.process_path);
     assert.equal(observation.claim_path, initial.claim_path);
-    assert.deepEqual(observation.record.runner, initial.record.runner, 'authenticated runner must remain unchanged');
-    const keys = new Set(observation.record.children.map((child) => JSON.stringify([child.pid, child.start_ticks])));
-    for (const key of seen) assert(keys.has(key), 'previously observed child identity must remain recorded');
-    for (const key of keys) seen.add(key);
+    assert.equal(observation.record.schema, initial.record.schema, 'process proof version must remain unchanged');
+    assert.deepEqual(control(observation.record), control(initial.record), 'authenticated runner must remain unchanged');
+    const records = new Map(descendants(observation.record).map((child) => [JSON.stringify([child.boot_id, child.pid, child.start_ticks]), child]));
+    for (const [key, previous] of seen) {
+      assert(records.has(key), 'previously observed child identity must remain recorded');
+      if (observation.record.schema === 2) assert.deepEqual(records.get(key), previous, 'proved ancestry must remain unchanged');
+    }
+    for (const [key, child] of records) seen.set(key, child);
   };
   update(initial);
   return {
