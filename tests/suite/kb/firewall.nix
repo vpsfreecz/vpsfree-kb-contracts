@@ -290,19 +290,63 @@ import ../../make-test.nix (
         machine.succeeds("ping -c 1 -W 2 #{Shellwords.escape(ipv4)}")
         machine.succeeds("ping -6 -c 1 -W 2 #{Shellwords.escape(ipv6)}")
         in_container(ct, 'ping -c 1 -W 2 10.0.2.3')
+      rescue StandardError
+        firewall_failure_diagnostics(ct)
+        raise
       end
 
-      def restart_and_wait(ct)
+      def firewall_failure_diagnostics(ct)
+        diagnostics = [
+          'ss -lnt',
+          'systemctl --no-pager --full status ssh.service sshd.service',
+          'systemctl --no-pager cat ssh.service sshd.service | head -n 160',
+          'systemctl --no-pager show ssh.service sshd.service ' \
+            '-p Id -p LoadState -p ActiveState -p SubState -p UnitFileState ' \
+            '-p Result -p Conditions -p ConditionResult -p Asserts -p AssertResult ' \
+            '-p Job -p Requires -p Wants -p After -p Before -p FragmentPath ' \
+            '-p DropInPaths | head -n 100',
+          'systemctl --no-pager --full list-jobs | head -n 40',
+          'systemctl --no-pager show default.target multi-user.target network.target ' \
+            'network-online.target sshd-keygen.target ' \
+            '-p Id -p LoadState -p ActiveState -p SubState -p Requires -p Wants ' \
+            '-p After -p Before -p Job | head -n 100',
+          'systemctl --no-pager --plain list-dependencies --all ssh.service | head -n 60',
+          'systemctl --no-pager --plain list-dependencies --all sshd.service | head -n 60',
+          'journalctl --no-pager -n 60 -u ssh.service -u sshd.service ' \
+            '-u kb-firewall-listener@80.service -u kb-firewall-listener@443.service ' \
+            '-u kb-firewall-listener-80.service -u kb-firewall-listener-443.service',
+          'journalctl --no-pager -b -p warning -n 60',
+          'if command -v firewall-cmd >/dev/null; then ' \
+            'firewall-cmd --get-active-zones; firewall-cmd --zone=public --list-all; fi',
+          'if command -v nft >/dev/null; then nft list ruleset | head -n 120; fi'
+        ].join('; ')
+        diagnostics = "(#{diagnostics}) 2>&1 | head -c 32768"
+        machine.execute(
+          "osctl ct exec #{Shellwords.escape(ct)} bash -lc #{Shellwords.escape(diagnostics)}",
+          timeout: 15
+        )
+      rescue StandardError
+        # Diagnostics must not replace the original readiness/connectivity error.
+        nil
+      end
+
+      def restart_and_wait(ct, ssh_service: 'ssh.service')
         machine.succeeds(
           "osctl ct restart #{Shellwords.escape(ct)}",
           timeout: 300
         )
         machine.wait_until_container_online(ct, timeout: 300)
-        in_container(
-          ct,
-          "until ss -lnt | grep -Eq ':(22|80|443)[[:space:]]'; do sleep 1; done",
+        listeners = [22, 80, 443].map do |port|
+          "ss -H -lnt | grep -Eq ':#{port}[[:space:]]'"
+        end
+        ready = ["systemctl is-active --quiet #{Shellwords.escape(ssh_service)}", *listeners].join(' && ')
+        machine.wait_until_succeeds(
+          "osctl ct exec #{Shellwords.escape(ct)} bash -lc #{Shellwords.escape(ready)}",
           timeout: 120
         )
+      rescue StandardError
+        firewall_failure_diagnostics(ct)
+        raise
       end
 
       def cleanup_container(ct)
@@ -508,7 +552,7 @@ import ../../make-test.nix (
             expect_established_connections
             expect_firewall_behaviour(CT, ipv4: IPV4, ipv6: IPV6)
 
-            restart_and_wait(CT)
+            restart_and_wait(CT, ssh_service: 'sshd.service')
             in_container(CT, 'systemctl is-active firewalld')
             in_container(CT, 'firewall-cmd --get-zone-of-interface=eth0 | grep -Fx public')
             expect_firewall_behaviour(CT, ipv4: IPV4, ipv6: IPV6)
@@ -585,7 +629,7 @@ import ../../make-test.nix (
             expect_established_connections
             expect_firewall_behaviour(CT, ipv4: IPV4, ipv6: IPV6)
 
-            restart_and_wait(CT)
+            restart_and_wait(CT, ssh_service: 'sshd.service')
             in_container(
               CT,
               'nix eval --json ' \
