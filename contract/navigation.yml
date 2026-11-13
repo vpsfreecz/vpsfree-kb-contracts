@@ -1,5 +1,5 @@
 schema: 1
-vpsadmin_revision: 942c6eaed41331f823d8e0f670ed239e2b308440
+vpsadmin_revision: 0d1db93cd0d38b77f1e29c40ddd71b45581ecfff
 languages:
   - cs
   - en
@@ -106,6 +106,26 @@ controls:
       fingerprint: 780cff337602656a3feac47e2f02c3f929ad98e9b7bb5018fbd0bd021676d41e
     captures:
       - getting-started/vps-list
+
+  - id: vps.incidents.menu
+    label: { en: Incident policies, cs: Pravidla incidentů }
+    source:
+      path: webui/forms/incident_policy.forms.php
+      contains: "'vps.incidents.menu'"
+      related:
+        - path: webui/forms/incident_policy.forms.php
+          contains: "return '?page=adminvps&action=incidents&veid='"
+      fingerprint: 39e31936838044a8515486242f56523335e850e0a3f4a6ae4338261e1624c3de
+
+  - id: vps.incident-reports.menu
+    label: { en: Incident reports, cs: Incidenty }
+    source:
+      path: webui/forms/incident_policy.forms.php
+      contains: "'vps.incident-reports.menu'"
+      related:
+        - path: webui/forms/incident_policy.forms.php
+          contains: "'?page=incidents&action=list&list=1&vps='"
+      fingerprint: 02b0fd061836330dd275c13f71ec30e5102f2566f162813251500ca4608c06d1
 
   - id: userdata.menu
     label: { en: User data, cs: User data }
@@ -604,6 +624,18 @@ paths:
     pages:
       cs: [informace:novacci, navody:server:ssh]
       en: [information:new_members, manuals:server:ssh]
+
+  - id: vps.incidents.open
+    steps: [vps.menu, vps.incidents.menu]
+    pages:
+      cs: [navody:vps:incidenty]
+      en: [manuals:vps:incidents]
+
+  - id: vps.incident-reports.open
+    steps: [vps.menu, vps.incident-reports.menu]
+    pages:
+      cs: [navody:vps:incidenty]
+      en: [manuals:vps:incidents]
 
   - id: datasets.create.open
     steps: [datasets.create]

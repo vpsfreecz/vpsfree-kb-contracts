@@ -39,7 +39,7 @@ done < <(find tests -type f -name '*.nix' -print0 | sort -z)
 tests_meta=$(mktemp)
 trap 'rm -f "$tests_meta"' EXIT
 nix eval .#testsMeta.x86_64-linux --json >"$tests_meta"
-for ruby_source in runner/validate*.rb cluster/launcher.rb cluster/source-metadata.rb cluster/artifact-lock.rb cluster/lib/kb_*.rb cluster/lib/devcluster_runner.rb tools/test-runtime.rb tools/test-closure.rb tools/test-machine.rb tools/fixtures/fake-kb-runner.rb; do
+for ruby_source in runner/validate*.rb cluster/launcher.rb cluster/source-metadata.rb cluster/artifact-lock.rb cluster/lib/kb_*.rb cluster/lib/devcluster_runner.rb cluster/fixtures/*.rb tools/test-runtime.rb tools/test-closure.rb tools/test-machine.rb tools/fixtures/fake-kb-runner.rb; do
   ruby -c "$ruby_source"
 done
 ruby tools/test-runtime.rb

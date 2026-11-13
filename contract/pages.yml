@@ -2,7 +2,7 @@
 schema: 2
 repository: vpsfreecz/vpsfree-kb-contracts
 revisions:
-  vpsadmin: 942c6eaed41331f823d8e0f670ed239e2b308440
+  vpsadmin: 0d1db93cd0d38b77f1e29c40ddd71b45581ecfff
   vpsadminos: 6bdf458fd9105379860234ff33d352e55844f08f
 pages:
   firewall:
