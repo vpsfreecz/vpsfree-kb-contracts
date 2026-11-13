@@ -86,6 +86,14 @@ bindings:
   path: networking.host-addresses.add
   count: 1
 - language: cs
+  page: navody:vps:incidenty
+  path: vps.incidents.open
+  count: 1
+- language: cs
+  page: navody:vps:incidenty
+  path: vps.incident-reports.open
+  count: 1
+- language: cs
   page: navody:vps:kvm
   path: datasets.create.open
   count: 1
@@ -280,6 +288,14 @@ bindings:
 - language: en
   page: manuals:vps:ip_addresses
   path: networking.host-addresses.add
+  count: 1
+- language: en
+  page: manuals:vps:incidents
+  path: vps.incidents.open
+  count: 1
+- language: en
+  page: manuals:vps:incidents
+  path: vps.incident-reports.open
   count: 1
 - language: en
   page: manuals:vps:kvm

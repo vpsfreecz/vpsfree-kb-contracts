@@ -17,6 +17,19 @@ workloads.
 Screenshot scenarios then add their labeled, idempotent VPS, dataset, mount,
 NAS, snapshot, account, console, and traffic fixtures through the WebUI.
 
+The `screenshots` topology adds `fixtures/incident_escalation.rb` to the
+existing public test configuration for the API, supervisor and database setup.
+Tasks use the API configuration. The fixture declares one `oomd` policy with
+warning and stop limits of 3 and 10. Its selector requires the `oomd` codename,
+the `node_vps_event` source kind, a non-null source key and node ID, a source
+node matching the VPS node, and a `restart` or `stop` action.
+
+Global overrides take precedence over the declared limits, and overrides for
+a VPS take precedence over global overrides. Counts and current limits remain
+visible. Other topologies use the backend's explicit test configuration, which
+declares `oomd` and two manual test policies. Record the loaded policy file and
+digest alongside the application source in capture evidence.
+
 All mutable cluster state is outside this directory in the ignored `.devcluster/v2/`
 tree. Do not place credentials, generated certificates, SSH keys, or VM state
 in Git.

@@ -1335,6 +1335,18 @@ let
       ...
     }:
     let
+      screenshotApiConfig = pkgs.linkFarm "kb-screenshot-api-config" (
+        lib.mapAttrsToList (name: _: {
+          inherit name;
+          path = vpsadmin.outPath + "/tests/configs/vpsadmin/api/${name}";
+        }) (builtins.readDir (vpsadmin.outPath + "/tests/configs/vpsadmin/api"))
+        ++ [
+          {
+            name = "incident_escalation.rb";
+            path = ../fixtures/incident_escalation.rb;
+          }
+        ]
+      );
       mkVpsfreeWebHost = language: {
         addSSL = true;
         sslCertificate = "${certStoreDir}/vpsadmin-cert.crt";
@@ -1374,6 +1386,12 @@ let
         (sshModule "/etc/ssh/ssh_host_ed25519_key")
         vpsfStatusModule
       ]
+      # Full screenshots show the site policy; generic fixtures keep static fallback.
+      ++ lib.optional (topology == "screenshots") {
+        vpsadmin.databaseSetup.configDirectory = lib.mkForce screenshotApiConfig;
+        vpsadmin.api.configDirectory = lib.mkForce screenshotApiConfig;
+        vpsadmin.supervisor.configDirectory = lib.mkForce screenshotApiConfig;
+      }
       ++ lib.optional installNotificationTemplates {
         vpsadmin.api.managedNotificationTemplates = {
           paths = [ notificationTemplatesStorePath ];
