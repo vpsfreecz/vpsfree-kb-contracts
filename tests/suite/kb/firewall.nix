@@ -188,6 +188,38 @@ import ../../make-test.nix (
         end
       end
 
+      def wait_for_listeners(ct)
+        command = <<~SH
+          set -eu
+          listeners=$(ss -H -lnt)
+          for port in 22 80 81 443; do
+            printf '%s\\n' "$listeners" | grep -Eq ":$port[[:space:]]" || exit 1
+          done
+          printf '%s\\n' "$listeners"
+        SH
+        machine.wait_until_succeeds(
+          "osctl ct exec #{Shellwords.escape(ct)} " \
+          "bash -lc #{Shellwords.escape(command)}",
+          timeout: 120
+        )
+      rescue StandardError
+        diagnostics = <<~SH
+          ss -lntp
+          systemctl --no-pager --full --lines=10 status sshd.service sshd.socket 'ssh*' 'kb-firewall-listener*' || true
+          journalctl --no-pager --lines=80 --unit='ssh*' --unit='kb-firewall-listener*'
+        SH
+        begin
+          machine.execute(
+            "osctl ct exec #{Shellwords.escape(ct)} " \
+            "bash -lc #{Shellwords.escape(diagnostics)}",
+            timeout: 30
+          )
+        rescue StandardError => e
+          warn "Unable to collect listener diagnostics for #{ct}: #{e.message}"
+        end
+        raise
+      end
+
       def prepare_systemd_listeners(ct, ssh_service:)
         write_container_file(
           ct,
@@ -196,11 +228,11 @@ import ../../make-test.nix (
         )
         in_container(
           ct,
-          "systemctl daemon-reload; systemctl enable --now #{ssh_service}; " \
+          "set -eu; systemctl daemon-reload; systemctl enable --now #{ssh_service}; " \
           'systemctl enable --now kb-firewall-listener@80.service ' \
-          'kb-firewall-listener@81.service kb-firewall-listener@443.service; ' \
-          "ss -lnt | grep -E ':(22|80|81|443)[[:space:]]'"
+          'kb-firewall-listener@81.service kb-firewall-listener@443.service'
         )
+        wait_for_listeners(ct)
       end
 
       def begin_established_connection(address, family)
@@ -298,11 +330,7 @@ import ../../make-test.nix (
           timeout: 300
         )
         machine.wait_until_container_online(ct, timeout: 300)
-        in_container(
-          ct,
-          "until ss -lnt | grep -Eq ':(22|80|443)[[:space:]]'; do sleep 1; done",
-          timeout: 120
-        )
+        wait_for_listeners(ct)
       end
 
       def cleanup_container(ct)
@@ -470,6 +498,15 @@ import ../../make-test.nix (
         IPV4 = '192.0.2.24'
         IPV6 = '2001:db8:24::1'
 
+        SSH_SERVICE_MODE_CHECK = <<~SH.freeze
+          set -eu
+          systemctl show --property=Id --property=UnitFileState --property=ActiveState sshd.service sshd.socket
+          test "$(systemctl is-enabled sshd.service)" = enabled
+          test "$(systemctl is-active sshd.service)" = active
+          test "$(systemctl is-enabled sshd.socket)" = disabled
+          test "$(systemctl is-active sshd.socket)" = inactive
+        SH
+
         after(:suite) { cleanup_container(CT) }
 
         describe 'the documented Fedora firewalld firewall' do
@@ -486,10 +523,14 @@ import ../../make-test.nix (
               'dnf install -y openssh-server socat curl firewalld',
               timeout: 1200
             )
+            # Select one persistent SSH mode: the image enables both units,
+            # but sshd.socket conflicts with the standalone service.
+            in_container(CT, 'systemctl disable --now sshd.socket')
             prepare_systemd_listeners(
               CT,
               ssh_service: 'sshd.service'
             )
+            in_container(CT, SSH_SERVICE_MODE_CHECK)
             in_container(
               CT,
               'systemctl enable --now firewalld; ' \
@@ -509,6 +550,7 @@ import ../../make-test.nix (
             expect_firewall_behaviour(CT, ipv4: IPV4, ipv6: IPV6)
 
             restart_and_wait(CT)
+            in_container(CT, SSH_SERVICE_MODE_CHECK)
             in_container(CT, 'systemctl is-active firewalld')
             in_container(CT, 'firewall-cmd --get-zone-of-interface=eth0 | grep -Fx public')
             expect_firewall_behaviour(CT, ipv4: IPV4, ipv6: IPV6)
