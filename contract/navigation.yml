@@ -1,5 +1,5 @@
 schema: 1
-vpsadmin_revision: 942c6eaed41331f823d8e0f670ed239e2b308440
+vpsadmin_revision: 093cdfb6d02239daf79c5386d117a82ed0af860f
 languages:
   - cs
   - en
@@ -47,7 +47,11 @@ controls:
       related:
         - path: webui/lib/functions.lib.php
           contains: 'data-vpsadmin-doc-id="node.kernel-history"'
-      fingerprint: eac723566efae23197d7e06907b4893c28d3623302eef9c2add8de7a7f072668
+        - path: webui/forms/node.forms.php
+          contains: livepatch_id
+        - path: webui/forms/node.forms.php
+          contains: '$eventCell = node_livepatch_event_cell('
+      fingerprint: fa04bc672da9c6ff0988a87d38acf605213c6a9d5b7d61b199ac7d0fba1dfffb
 
   - id: node.kernel-boot-evidence
     label: { en: Boot evidence, cs: Podklady ke spuštění }

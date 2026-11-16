@@ -75,6 +75,46 @@ class ContractCheckerTest < Minitest::Test
     end
   end
 
+  def test_kernel_history_dispatch_drift_is_rejected
+    mutations = [
+      [
+        "if ($event->event_type === 'livepatch') {",
+        "if ($event->event_type === 'livepatch_v2') {"
+      ],
+      [
+        '$eventCell = node_livepatch_event_cell(',
+        '$eventCell = node_livepatch_event_label('
+      ]
+    ]
+    retained = [
+      '$event->livepatch_id ?? null',
+      "if (!is_string($livepatch_id) || $livepatch_id === '') {",
+      "return $label . ' &middot; <code>' . h($livepatch_id) . '</code>';"
+    ]
+    accepted = []
+
+    mutations.each do |from, to|
+      with_vpsadmin_copy do |vpsadmin|
+        path = File.join(vpsadmin, 'webui/forms/node.forms.php')
+        replace_in_file(path, from, to)
+        contents = File.read(path)
+        retained.each { |fragment| assert_includes(contents, fragment) }
+        _out, error, status = run_checker(CONTRACT, CAPTURES, vpsadmin: vpsadmin)
+
+        if status.success?
+          accepted << "#{from} -> #{to}"
+        else
+          assert_match(
+            /node\.kernel-history: coupled label\/route\/landmark declaration changed/,
+            error
+          )
+        end
+      end
+    end
+
+    assert_empty(accepted, "accepted dispatch mutations: #{accepted.join(', ')}")
+  end
+
   def test_all_source_drifts_are_reported_together
     with_vpsadmin_copy do |vpsadmin|
       replace_in_file(
