@@ -1,5 +1,5 @@
 schema: 1
-vpsadmin_revision: 4062a8da3314aa7b48170b0d6f441446bad9b207
+vpsadmin_revision: 9e98d254277114535715353edfd5ddd77fab235e
 languages:
   - cs
   - en
@@ -334,7 +334,7 @@ controls:
     source:
       path: webui/public/index.php
       contains: "?page=backup"
-      fingerprint: ae9b0e75d94bafb85fc24b06c4797b5c0acf87fe90bfcc1cbce3c12ce5692243
+      fingerprint: 86ede1e5cef9c41d4e9318300c74d00ce66c03e22936fd45ab7803d79f093b27
 
   - id: backups.vps
     label: { en: VPS backups, cs: Zálohy VPS }
